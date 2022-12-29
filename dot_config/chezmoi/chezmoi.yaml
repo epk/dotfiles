@@ -1,6 +1,6 @@
 sourceDir: ~/src/github.com/epk/dotfiles
 mode: symlink
 progress: true
-verbose: true
+verbose: false
 git:
     autoPush: true
