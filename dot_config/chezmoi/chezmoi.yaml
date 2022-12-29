@@ -5,6 +5,9 @@ git:
   autoPush: true
 edit:
   command: code
-  args: [--wait]
+  args:
+  - --wait
 diff:
   command: difft
+  exclude:
+  - externals
