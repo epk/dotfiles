@@ -28,3 +28,7 @@
      exact = true
      stripComponents = 1
      refreshPeriod = "168h"
+[".LS_COLORS"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/trapd00r/LS_COLORS/master/LS_COLORS"
+    refreshPeriod = "168h"
