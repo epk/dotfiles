@@ -12,4 +12,7 @@ BREW_ZSH_PATH=$(brew --prefix zsh)
 if [[ "$CURRENTSHELL" != "$BREW_ZSH_PATH/bin/zsh" ]]; then
   sudo dscl . -change /Users/$USER UserShell $SHELL $BREW_ZSH_PATH/bin/zsh
 fi
+
+defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$PWD/iterm2"
+defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
 {{ end -}}
