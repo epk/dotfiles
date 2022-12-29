@@ -7,7 +7,3 @@ edit:
   command: code
   args:
   - --wait
-diff:
-  command: difft
-  exclude:
-  - externals
