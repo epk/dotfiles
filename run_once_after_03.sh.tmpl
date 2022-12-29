@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+GOPATH=$HOME
+mkdir -p $GOPATH/src $GOPATH/pkg $GOPATH/bin
+
+mkdir -p $HOME/.npm-global
+npm config set prefix '~/.npm-global'
+
+{{- if eq .chezmoi.os "darwin" -}}
+CURRENTSHELL=$(dscl . -read /Users/$USER UserShell | awk '{print $2}')
+BREW_ZSH_PATH=$(brew --prefix zsh)
+if [[ "$CURRENTSHELL" != "$BREW_ZSH_PATH/bin/zsh" ]]; then
+  sudo dscl . -change /Users/$USER UserShell $SHELL $BREW_ZSH_PATH/bin/zsh
+fi
+{{ end -}}
