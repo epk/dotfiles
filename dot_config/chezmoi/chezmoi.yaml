@@ -3,6 +3,7 @@ progress: true
 verbose: false
 git:
   autoPush: true
+  autoCommit: true
 edit:
   command: code
   args:
