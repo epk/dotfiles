@@ -1,4 +1,4 @@
-mode: symlink
+mode: file
 progress: true
 verbose: false
 git:
