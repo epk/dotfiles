@@ -1,0 +1,59 @@
+# Compiled source
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+*.aux
+*.app
+*.framework
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases
+*.log
+*.sqlite
+*.aff
+*.dic
+*.db
+tags
+cscope.out
+cscope.in.out
+cscope.po.out
+
+# OS-generated files, backup files, etc
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+Repo
+* (Autosaved).txt
+*.swp
+*.swo
+*.bak
+
+# qmake project user files
+*.pro.user*
+*.pri.user*
+*.qbs.user*
+
+# Ruby things
+.byebug_history
+.pry_history
+.bundle
+
+# direnv
+.envrc
