@@ -8,3 +8,12 @@ edit:
   command: code
   args:
   - --wait
+textconv:
+- pattern: "**/*.plist"
+  command: "plutil"
+  args:
+  - "-convert"
+  - "xml1"
+  - "-o"
+  - "-"
+  - "-"
