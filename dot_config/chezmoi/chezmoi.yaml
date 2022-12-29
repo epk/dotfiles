@@ -3,3 +3,8 @@ progress: true
 verbose: false
 git:
   autoPush: true
+edit:
+  command: code
+  args: [--wait]
+diff:
+  command: difft
