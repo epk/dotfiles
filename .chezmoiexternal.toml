@@ -32,3 +32,9 @@
     type = "file"
     url = "https://raw.githubusercontent.com/trapd00r/LS_COLORS/master/LS_COLORS"
     refreshPeriod = "168h"
+[".nano/nanorc"]
+     type = "archive"
+     url = "https://github.com/scopatz/nanorc/archive/master.tar.gz"
+     exact = true
+     stripComponents = 1
+     refreshPeriod = "168h"
