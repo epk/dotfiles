@@ -1,0 +1,27 @@
+#!/bin/bash
+
+alias back="cd .."
+alias home="cd ~"
+
+# folder shortcuts
+alias dl="cd ~/Downloads"
+alias dt="cd ~/Desktop"
+
+# reload zsh config
+alias reload!='. ~/.zshrc'
+
+#get IP address
+alias localip="ipconfig getifaddr en0"
+
+#kubectl-short-aliases
+alias k=kubectl
+
+# Neovim
+alias vi=nvim
+alias vim=nvim
+
+# dirs
+alias epk="cd ~/src/github.com/epk"
+
+# ls
+alias ls=lsd
