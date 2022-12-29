@@ -28,7 +28,7 @@
     exact = true
     stripComponents = 1
     refreshPeriod = "168h"
-[".nano/nanorc]
+[".nano/nanorc"]
     type = "archive"
     url = "https://github.com/scopatz/nanorc/archive/master.tar.gz"
     exact = true
