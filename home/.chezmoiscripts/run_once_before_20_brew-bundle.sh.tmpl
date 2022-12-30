@@ -27,10 +27,10 @@ brew 'gh'
 brew 'go'
 brew 'node'
 brew 'python'
-{{ if not .isShopify -}}
+{{ if not .isShopify }}
 brew 'ruby-build'
 brew 'rbenv'
-{{ end -}}
+{{ end }}
 brew 'rust'
 
 # utilities
@@ -40,6 +40,7 @@ brew 'automake'
 brew 'awk'
 brew 'bash'
 brew 'bat'
+brew 'chezmoi'
 brew 'cmake'
 brew 'coreutils'
 brew 'diff-so-fancy'
@@ -73,12 +74,12 @@ cask 'visual-studio-code'
 cask '1password-cli'
 cask '1password'
 
-{{ if not .isShopify -}}
+{{ if not .isShopify }}
 cask 'docker'
 cask 'zoom'
-{{ end -}}
+{{ end }}
 
-{{ if not .isShopify -}}
+{{ if not .isShopify }}
 # Mac App Store
 mas "1Password for Safari", id: 1569813296
 mas "Hush", id: 1544743900
@@ -89,7 +90,7 @@ mas "Slack", id: 803453959
 mas "Structured", id: 1499198946
 mas "Tailscale", id: 1475387142
 mas "Wipr", id: 1320666476
-{{ end -}}
+{{ end }}
 EOF
 
 {{ end -}}
