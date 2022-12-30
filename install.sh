@@ -54,7 +54,7 @@ script_dir="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
 set -- init --source="${script_dir}"
 
 if [ -n "${DOTFILES_ONE_SHOT-}" ]; then
-  set -- "$@" --one-shot
+  set -- "$@" --one-shot --no-tty
 else
   set -- "$@" --apply
 fi

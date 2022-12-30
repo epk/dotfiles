@@ -1,7 +1,7 @@
 
 [user]
-	name = Aditya Sharma
-	email = git@adi.run
+	name = {{ .name }}
+	email = {{ .email }}
 	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/Cr+bIMxMzkk8dN7xxRsaJeHRifwlyTuh/ja9Uy9MN
 
 [core]
@@ -88,10 +88,10 @@
 	rebase = true
 	default = current
 [credential "https://github.com"]
-	helper = 
+	helper =
 	helper = !/opt/homebrew/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
+	helper =
 	helper = !/opt/homebrew/bin/gh auth git-credential
 [gpg]
 	format = ssh

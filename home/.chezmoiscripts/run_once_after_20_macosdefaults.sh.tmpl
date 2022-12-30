@@ -7,6 +7,10 @@ if [[ "$CURRENTSHELL" != "$BREW_ZSH_PATH/bin/zsh" ]]; then
   sudo dscl . -change /Users/$USER UserShell $SHELL $BREW_ZSH_PATH/bin/zsh
 fi
 
-defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$PWD/iterm2"
+defaults write com.googlecode.iterm2 PrefsCustomFolder -string  "{{ .chezmoi.workingTree }}/iterm2"
 defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
+
+sudo scutil --set ComputerName {{ .computerName | quote }}
+sudo scutil --set HostName {{ .computerName | quote }}
+sudo scutil --set LocalHostName {{ .computerName | lower | replace "'" "-" | replace " " "-" | quote }}
 {{ end -}}

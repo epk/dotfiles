@@ -14,6 +14,8 @@ function traceroute-mapper {
   open "https://stefansundin.github.io/traceroute-mapper/?trace=$(traceroute -q1 $*)"
 }
 
+{{ if .isShopify -}}
 function update-kubeconfig {
   gsutil cp gs://cluster-info/kubeconfig.yml $HOME/.kube/config.shopify.cloudplatform
 }
+{{ end -}}
