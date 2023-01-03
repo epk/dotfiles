@@ -1,7 +1,4 @@
 {{- if eq .chezmoi.os "darwin" -}}
-#!/usr/bin/env bash
-
-brew bundle --no-lock --file=/dev/stdin <<EOF
 cask_args appdir: '/Applications'
 
 # taps
@@ -91,6 +88,5 @@ mas "Structured", id: 1499198946
 mas "Tailscale", id: 1475387142
 mas "Wipr", id: 1320666476
 {{ end }}
-EOF
 
 {{ end -}}
