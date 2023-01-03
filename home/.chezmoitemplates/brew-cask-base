@@ -1,3 +1,4 @@
+# macOS Casks
 tap 'homebrew/cask' || true
 tap 'buo/cask-upgrade' || true
 

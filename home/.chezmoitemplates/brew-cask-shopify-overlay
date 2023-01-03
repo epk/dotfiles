@@ -1,3 +1,4 @@
+# Shopify specific casks
 cask 'google-chrome'
 cask 'cloudflare-warp'
 cask 'slack'
