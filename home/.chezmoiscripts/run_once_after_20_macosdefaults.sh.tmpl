@@ -10,6 +10,15 @@ fi
 defaults write com.googlecode.iterm2 PrefsCustomFolder -string  "{{ .chezmoi.workingTree }}/iterm2"
 defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
 
+# Fast Dock Hiding
+defaults write com.apple.dock autohide-delay -float 0; defaults write com.apple.dock autohide-time-modifier -int 0;killall Dock
+
+# Make Hidden Apps Transparent in Dock
+defaults write com.apple.Dock showhidden -bool TRUE && killall Dock
+
+# JPG Screenshots
+defaults write com.apple.screencapture type jpg
+
 sudo scutil --set ComputerName {{ .computerName | quote }}
 sudo scutil --set HostName {{ .computerName | quote }}
 sudo scutil --set LocalHostName {{ .computerName | lower | replace "'" "-" | replace " " "-" | quote }}

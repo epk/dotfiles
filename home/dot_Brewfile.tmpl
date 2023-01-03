@@ -74,6 +74,11 @@ cask '1password'
 {{ if not .isShopify }}
 cask 'docker'
 cask 'zoom'
+{{ else }}
+cask 'google-chrome'
+cask 'cloudflare-warp'
+cask 'slack'
+cask 'tuple'
 {{ end }}
 
 {{ if not .isShopify }}
