@@ -1,0 +1,17 @@
+tap 'homebrew/cask' || true
+tap 'buo/cask-upgrade' || true
+
+cask_args appdir: '/Applications'
+# Essentials
+cask 'appcleaner'
+cask 'google-cloud-sdk'
+cask 'iterm2'
+cask 'rectangle'
+cask 'visual-studio-code'
+cask '1password-cli'
+cask '1password'
+
+# fonts
+tap 'homebrew/cask-fonts' || true
+tap 'epk/epk' || true
+cask 'font-sf-mono-nerd-font'
