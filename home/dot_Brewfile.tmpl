@@ -1,6 +1,6 @@
 {{ template "brew-base" . -}}
 
-{{- if eq .chezmoi.os "darwin" -}}
+{{ if eq .chezmoi.os "darwin" }}
 {{ template "brew-cask-base" . -}}
 {{ if not .isShopify }}
 {{ template "brew-cask-personal-overlay" . -}}
