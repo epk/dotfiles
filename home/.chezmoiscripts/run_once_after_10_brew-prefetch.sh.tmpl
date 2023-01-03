@@ -5,10 +5,10 @@ brew bundle list --no-lock --global | tr '\n' ' ' | xargs brew fetch --deps --re
 if [[ $? != 0 ]]; then
   echo "unable to pre fetch brew cask packages"
 fi
+
 brew bundle list --casks --no-lock --global | tr '\n' ' ' | xargs brew fetch --cask --retry --quiet
 if [[ $? != 0 ]]; then
   echo "unable to pre fetch brew cask packages"
 fi
 
-brew bundle --no-lock --global
 {{ end -}}
