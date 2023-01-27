@@ -23,5 +23,7 @@ alias vim=nvim
 # dirs
 alias epk="cd ~/src/github.com/epk"
 
+{{- if eq .chezmoi.os "darwin" }}
 # ls
 alias ls=lsd
+{{ end }}
