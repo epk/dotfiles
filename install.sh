@@ -53,15 +53,12 @@ script_dir="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
 
 set -- init --source="${script_dir}"
 
-if [ -n "${DOTFILES_ONE_SHOT-}" ]; then
-  set -- "$@" --one-shot --no-tty
-else
+if [[ -t 1 ]]; then
   set -- "$@" --apply
+else
+  set -- "$@" --one-shot --no-tty
 fi
 
-if [ -n "${DOTFILES_DEBUG-}" ]; then
-  set -- "$@" --debug
-fi
 
 log_task "Running 'chezmoi $*'"
 # replace current process with chezmoi

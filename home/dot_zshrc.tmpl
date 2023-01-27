@@ -32,7 +32,9 @@ export FZF_BASE=$(command -v fzf)
 plugins=(
   fzf
   1password
+{{ if eq .chezmoi.os "darwin" }}
   autojump
+{{ end }}
   colorize
   colored-man-pages
   docker
@@ -76,7 +78,9 @@ if [ -x "$(command -v rbenv)" ]; then
   eval "$(rbenv init -)"
 fi
 
+{{ if eq .chezmoi.os "darwin" }}
 eval $(gdircolors $HOME/.LS_COLORS)
+{{ end }}
 
 export KUBECONFIG=/Users/$DEFAULT_USER/.kube/config
 
