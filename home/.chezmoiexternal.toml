@@ -38,3 +38,9 @@
      exact = true
      stripComponents = 1
      refreshPeriod = "168h"
+[".config/kitty/kitty-themes/themes"]
+    type = "archive"
+    url = "https://github.com/dexpota/kitty-themes/archive/master.tar.gz"
+    exact = true
+    stripComponents = 1
+    refreshPeriod = "168h"
