@@ -1,5 +1,4 @@
 # macOS Casks
-tap 'homebrew/cask' || true
 tap 'buo/cask-upgrade' || true
 
 cask_args appdir: '/Applications'
@@ -13,6 +12,5 @@ cask '1password-cli'
 cask '1password'
 
 # fonts
-tap 'homebrew/cask-fonts' || true
 tap 'epk/epk' || true
 cask 'font-sf-mono-nerd-font'
