@@ -101,3 +101,8 @@
 [commit]
 	gpgsign = true
 {{ end -}}
+
+{{ if .isShopify }}
+[include]
+       path = /Users/adi/.config/dev/gitconfig
+{{ end -}}
