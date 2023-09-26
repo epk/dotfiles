@@ -85,7 +85,7 @@ eval $(gdircolors $HOME/.LS_COLORS)
 export KUBECONFIG=$HOME/.kube/config
 
 {{ if .isShopify -}}
-export KUBECONFIG=$HOME/.kube/config.shopify.cloudplatform:$KUBECONFIG
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config.shopify.cloudplatform
 export GOPRIVATE="github.com/Shopify/*"
 [ -f /opt/dev/dev.sh ] && source /opt/dev/dev.sh
 [[ -f /opt/dev/sh/chruby/chruby.sh ]] && { type chruby >/dev/null 2>&1 || chruby () { source /opt/dev/sh/chruby/chruby.sh; chruby "$@"; } }

@@ -16,6 +16,6 @@ function traceroute-mapper {
 
 {{ if .isShopify -}}
 function update-kubeconfig {
-  gsutil cat gs://cluster-info/kubeconfig.yml | ruby -e 'require "yaml"; cfg = YAML.load($stdin.read); cfg["contexts"].each {|ctx| ctx["context"]["user"] = "gke-gcloud-auth-plugin"}; puts cfg.to_yaml' > $HOME/.kube/config.shopify.cloudplatform
+  gsutil cp gs://cluster-info/kubeconfig.yml $HOME/.kube/config.shopify.cloudplatform
 }
 {{ end -}}
