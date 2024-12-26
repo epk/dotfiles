@@ -1,14 +1,16 @@
-# Casks for Personal Use
-cask 'docker'
-cask 'zoom'
-
 # CLI to manage Mac App Store apps from the command line
 brew 'mas'
 # mas manged apps
 mas "1Password for Safari", id: 1569813296
-mas "Hush", id: 1544743900
 mas "Infuse", id: 1136220934
 mas "Slack", id: 803453959
-mas "Structured", id: 1499198946
 mas "Tailscale", id: 1475387142
-mas "Wipr", id: 1320666476
+mas "Kindle", id: 302584613
+mas "Wipr", id: 1662217862
+mas "Whatsapp", id: 310633997
+
+# Apple Apps
+mas "Keynote", id: 409183694
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541
+mas "Apple Configurator", id: 1037126344
