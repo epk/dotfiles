@@ -7,9 +7,6 @@ if [[ "$CURRENTSHELL" != "$BREW_ZSH_PATH/bin/zsh" ]]; then
   sudo dscl . -change /Users/$USER UserShell $SHELL $BREW_ZSH_PATH/bin/zsh
 fi
 
-defaults write com.googlecode.iterm2 PrefsCustomFolder -string  "{{ .chezmoi.workingTree }}/iterm2"
-defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
-
 # Fast Dock Hiding
 defaults write com.apple.dock autohide-delay -float 0; defaults write com.apple.dock autohide-time-modifier -int 0;killall Dock
 

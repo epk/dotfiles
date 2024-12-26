@@ -5,7 +5,7 @@ cask_args appdir: '/Applications'
 # Essentials
 cask 'appcleaner'
 cask 'google-cloud-sdk'
-cask 'iterm2'
+cask 'ghostty'
 cask 'rectangle'
 cask 'visual-studio-code'
 cask '1password-cli'
