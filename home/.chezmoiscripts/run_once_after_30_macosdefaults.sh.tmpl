@@ -10,6 +10,9 @@ fi
 # Fast Dock Hiding
 defaults write com.apple.dock autohide-delay -float 0; defaults write com.apple.dock autohide-time-modifier -int 0;killall Dock
 
+# Hide dock by default
+defaults write com.apple.dock autohide -bool true; killall Dock
+
 # Make Hidden Apps Transparent in Dock
 defaults write com.apple.Dock showhidden -bool TRUE && killall Dock
 
