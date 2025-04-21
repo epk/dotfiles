@@ -27,10 +27,13 @@ fi
 
 export DISABLE_AUTO_UPDATE="true"
 
+# Register the widget and bind it to Ctrl+R
+zle -N fzf-history-widget
+bindkey '^R' fzf-history-widget
+
 export FZF_BASE=$(command -v fzf)
 # shellcheck disable=SC2034
 plugins=(
-  fzf
   1password
 {{ if eq .chezmoi.os "darwin" }}
   autojump
