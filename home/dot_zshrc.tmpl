@@ -30,6 +30,7 @@ export DISABLE_AUTO_UPDATE="true"
 export FZF_BASE=$(command -v fzf)
 # shellcheck disable=SC2034
 plugins=(
+  fzf
   1password
 {{ if eq .chezmoi.os "darwin" }}
   autojump
