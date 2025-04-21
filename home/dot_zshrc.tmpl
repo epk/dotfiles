@@ -27,10 +27,6 @@ fi
 
 export DISABLE_AUTO_UPDATE="true"
 
-# Register the widget and bind it to Ctrl+R
-zle -N fzf-history-widget
-bindkey '^R' fzf-history-widget
-
 export FZF_BASE=$(command -v fzf)
 # shellcheck disable=SC2034
 plugins=(
@@ -70,6 +66,10 @@ fi
 for file in ~/.{aliases,functions}; do
   [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
+
+# Register the widget and bind it to Ctrl+R
+zle -N fzf-history-widget
+bindkey '^R' fzf-history-widget
 
 #hub => git
 if [ -x "$(command -v hub)" ]; then
