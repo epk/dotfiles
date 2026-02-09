@@ -1,9 +1,11 @@
-# Basic Ghostty configuration - no theme, using defaults
-
 # Cursor settings
 cursor-style = block
 cursor-style-blink = true
 
-# Enable bold text
+# Font
 bold-is-bright = true
-font-family = JetBrainsMono Nerd Font
+
+# Window
+macos-titlebar-style = tabs
+copy-on-select = clipboard
+auto-update-channel = tip
