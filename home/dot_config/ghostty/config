@@ -7,6 +7,5 @@ bold-is-bright = true
 
 # Window
 macos-titlebar-style = tabs
-copy-on-select = clipboard
 auto-update-channel = tip
 macos-option-as-alt = true
