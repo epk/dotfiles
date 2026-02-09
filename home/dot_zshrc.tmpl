@@ -27,6 +27,26 @@ else
   compinit -C
 fi
 
+# Completion styling (previously provided by oh-my-zsh)
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# Key bindings
+bindkey -e
+bindkey '^[[H'    beginning-of-line
+bindkey '^[[F'    end-of-line
+bindkey '^[[3~'   delete-char
+bindkey '^[[1;3C' forward-word
+bindkey '^[[1;3D' backward-word
+
+# Terminal title (current dir / running command)
+autoload -Uz add-zsh-hook
+function _set_title_precmd()  { print -Pn "\e]2;%~\a" }
+function _set_title_preexec() { print -Pn "\e]2;${1}\a" }
+add-zsh-hook precmd  _set_title_precmd
+add-zsh-hook preexec _set_title_preexec
+
 {{ if eq .chezmoi.os "darwin" }}
 # Plugins via Homebrew
 source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
@@ -35,7 +55,10 @@ source "$BREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-se
 source "$BREW_PREFIX/share/zsh-you-should-use/you-should-use.plugin.zsh"
 {{ end }}
 
-# fzf keybindings + completion
+# fzf (use fd for speed + .gitignore respect)
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
 eval "$(fzf --zsh)"
 
 {{ if eq .chezmoi.os "darwin" }}

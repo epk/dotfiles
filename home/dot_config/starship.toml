@@ -5,6 +5,7 @@ $directory\
 $git_branch\
 $git_status\
 $kubernetes\
+$jobs\
 $line_break\
 $character"""
 
