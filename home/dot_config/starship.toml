@@ -17,7 +17,7 @@ error_symbol = "[❯](bold red)"
 
 # Status segment — only visible when last command failed
 [custom.status]
-when = 'test "$STARSHIP_CMD_STATUS" != "0" 2>/dev/null'
+when = 'test "${STARSHIP_CMD_STATUS:-0}" != "0"'
 command = 'echo x'
 format = '[✘](bold fg:red bg:black)[](fg:black bg:#4078C0)'
 shell = ['bash', '--noprofile', '--norc']
