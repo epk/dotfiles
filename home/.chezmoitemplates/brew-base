@@ -42,6 +42,7 @@ brew 'zlib'
 brew 'zsh'
 
 # shell prompt + plugins
+brew 'sheldon'
 brew 'starship'
 brew 'zsh-autosuggestions'
 brew 'zsh-fast-syntax-highlighting'

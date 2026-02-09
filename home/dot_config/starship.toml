@@ -3,9 +3,9 @@ command_timeout = 5000
 format = """
 ${custom.status}\
 $directory\
-${custom.git_clean}\
-${custom.git_dirty}\
-${custom.git_none}\
+${custom.no_git}\
+$git_branch\
+$git_status\
 $line_break\
 $character"""
 
@@ -15,7 +15,7 @@ right_format = "$cmd_duration"
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
 
-# Status segment — only visible when last command failed or background jobs exist
+# Status segment — only visible when last command failed
 [custom.status]
 when = 'test "$STARSHIP_CMD_STATUS" != "0" 2>/dev/null'
 command = 'echo x'
@@ -30,32 +30,30 @@ fish_style_pwd_dir_length = 1
 style = "fg:#FFFFFF bg:#4078C0"
 format = "[ $path ]($style)"
 
-[custom.git_none]
+# Close directory segment when not in a git repo
+[custom.no_git]
 when = '! git rev-parse --is-inside-work-tree 2>/dev/null'
 command = 'echo x'
 format = '[](fg:#4078C0)'
 shell = ['bash', '--noprofile', '--norc']
 description = 'No git repo'
 
-[custom.git_clean]
-when = 'git diff --quiet HEAD 2>/dev/null && test -z "$(git ls-files --others --exclude-standard 2>/dev/null | head -1)"'
-command = 'git branch --show-current 2>/dev/null || git rev-parse --short HEAD 2>/dev/null'
-format = '[](fg:#4078C0 bg:#43A047)[  $output ](fg:#FFFFFF bg:#43A047)[](fg:#43A047)'
-shell = ['bash', '--noprofile', '--norc']
-description = 'Git clean'
-
-[custom.git_dirty]
-when = '! git diff --quiet HEAD 2>/dev/null || test -n "$(git ls-files --others --exclude-standard 2>/dev/null | head -1)"'
-command = 'git branch --show-current 2>/dev/null || git rev-parse --short HEAD 2>/dev/null'
-format = '[](fg:#4078C0 bg:#C4A000)[  $output ✎ ](fg:#1C1C2E bg:#C4A000)[](fg:#C4A000)'
-shell = ['bash', '--noprofile', '--norc']
-description = 'Git dirty'
-
 [git_branch]
-disabled = true
+format = '[](fg:#4078C0 bg:#43A047)[  $branch](fg:#FFFFFF bg:#43A047)'
 
 [git_status]
-disabled = true
+format = '([$all_status](fg:#43A047 bg:#43A047)[ ✎](fg:#FFFFFF bg:#43A047))[ ](fg:#FFFFFF bg:#43A047)[](fg:#43A047)'
+modified = '!'
+staged = '!'
+untracked = '!'
+renamed = '!'
+deleted = '!'
+conflicted = '!'
+ahead = ''
+behind = ''
+diverged = ''
+up_to_date = ''
+stashed = ''
 
 [cmd_duration]
 min_time = 2000

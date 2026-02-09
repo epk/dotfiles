@@ -1,0 +1,87 @@
+shell = "zsh"
+
+[plugins.history]
+inline = """
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=10000
+setopt extended_history hist_expire_dups_first hist_ignore_dups hist_ignore_space
+setopt hist_verify hist_reduce_blanks inc_append_history share_history
+"""
+
+{{ if eq .chezmoi.os "darwin" }}
+[plugins.fpath-brew]
+inline = 'FPATH="{{ env "HOMEBREW_PREFIX" | default "/opt/homebrew" }}/share/zsh/site-functions:${FPATH}"'
+{{ end }}
+
+[plugins.completions]
+inline = """
+autoload -Uz compinit
+if [[ -n "$HOME/.zcompdump"(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+"""
+
+[plugins.directory-nav]
+inline = """
+setopt auto_cd auto_pushd pushd_ignore_dups pushdminus
+"""
+
+[plugins.keybindings]
+inline = """
+bindkey -e
+bindkey '^[[H'    beginning-of-line
+bindkey '^[[F'    end-of-line
+bindkey '^[[3~'   delete-char
+bindkey '^[[1;3C' forward-word
+bindkey '^[[1;3D' backward-word
+"""
+
+[plugins.terminal-title]
+inline = '''
+autoload -Uz add-zsh-hook
+function _set_title_precmd()  { print -Pn "\e]2;%~\a" }
+function _set_title_preexec() { print -Pn "\e]2;${1}\a" }
+add-zsh-hook precmd  _set_title_precmd
+add-zsh-hook preexec _set_title_preexec
+'''
+
+[plugins.colored-man]
+inline = '''
+export LESS_TERMCAP_mb=$'\e[1;31m'
+export LESS_TERMCAP_md=$'\e[1;36m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[1;44;33m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;32m'
+'''
+
+{{ if eq .chezmoi.os "darwin" }}
+[plugins.zsh-autosuggestions]
+local = "{{ env "HOMEBREW_PREFIX" | default "/opt/homebrew" }}/share/zsh-autosuggestions"
+use = ["zsh-autosuggestions.zsh"]
+
+[plugins.zsh-fast-syntax-highlighting]
+local = "{{ env "HOMEBREW_PREFIX" | default "/opt/homebrew" }}/share/zsh-fast-syntax-highlighting"
+use = ["fast-syntax-highlighting.plugin.zsh"]
+
+[plugins.zsh-history-substring-search]
+local = "{{ env "HOMEBREW_PREFIX" | default "/opt/homebrew" }}/share/zsh-history-substring-search"
+use = ["zsh-history-substring-search.zsh"]
+
+[plugins.zsh-history-substring-search.hooks]
+post = """
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+"""
+
+[plugins.zsh-you-should-use]
+local = "{{ env "HOMEBREW_PREFIX" | default "/opt/homebrew" }}/share/zsh-you-should-use"
+use = ["you-should-use.plugin.zsh"]
+{{ end }}

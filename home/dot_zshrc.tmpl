@@ -8,54 +8,10 @@ export GOPATH=$HOME
 export EDITOR=nano
 export PATH=$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.krew/bin:/usr/local/sbin:$PATH
 
-# History (previously provided by oh-my-zsh)
-HISTFILE="$HOME/.zsh_history"
-HISTSIZE=50000
-SAVEHIST=10000
-setopt extended_history
-setopt hist_expire_dups_first
-setopt hist_ignore_dups
-setopt hist_ignore_space
-setopt hist_verify
-setopt share_history
+# Plugins, completions, history, keybindings (managed by sheldon)
+eval "$(sheldon source)"
 
-# Completions (cached — only regenerates once per day)
-autoload -Uz compinit
-if [[ -n "$HOME/.zcompdump"(#qN.mh+24) ]]; then
-  compinit
-else
-  compinit -C
-fi
-
-# Completion styling (previously provided by oh-my-zsh)
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-
-# Key bindings
-bindkey -e
-bindkey '^[[H'    beginning-of-line
-bindkey '^[[F'    end-of-line
-bindkey '^[[3~'   delete-char
-bindkey '^[[1;3C' forward-word
-bindkey '^[[1;3D' backward-word
-
-# Terminal title (current dir / running command)
-autoload -Uz add-zsh-hook
-function _set_title_precmd()  { print -Pn "\e]2;%~\a" }
-function _set_title_preexec() { print -Pn "\e]2;${1}\a" }
-add-zsh-hook precmd  _set_title_precmd
-add-zsh-hook preexec _set_title_preexec
-
-{{ if eq .chezmoi.os "darwin" }}
-# Plugins via Homebrew
-source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source "$BREW_PREFIX/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-source "$BREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh"
-source "$BREW_PREFIX/share/zsh-you-should-use/you-should-use.plugin.zsh"
-{{ end }}
-
-# fzf (use fd for speed + .gitignore respect)
+# fzf
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
@@ -67,7 +23,6 @@ eval "$(fzf --zsh)"
 if [ -f "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/path.zsh.inc" ]; then
   source "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/path.zsh.inc";
 fi
-
 # shellcheck disable=SC1091
 if [ -f "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/completion.zsh.inc" ]; then
   source "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/completion.zsh.inc";
@@ -89,7 +44,7 @@ export GOPRIVATE="github.com/Shopify/*"
 [ -f /opt/dev/dev.sh ] && source /opt/dev/dev.sh
 [[ -f /opt/dev/sh/chruby/chruby.sh ]] && { type chruby >/dev/null 2>&1 || chruby () { source /opt/dev/sh/chruby/chruby.sh; chruby "$@"; } }
 
-# tec profile (sourced after Homebrew so tec tools take PATH precedence)
+# tec profile
 [[ -x {{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init ]] && eval "$({{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init zsh)"
 {{ end -}}
 
@@ -97,8 +52,6 @@ export GOPRIVATE="github.com/Shopify/*"
 eval "$(zoxide init zsh)"
 {{ end }}
 
-# Starship prompt (must be last before try)
 eval "$(starship init zsh)"
 
-# Initialize try - lightweight experiments for people with ADHD
 command -v try &>/dev/null && eval "$(try init ~/src/tries)"
