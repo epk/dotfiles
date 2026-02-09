@@ -1,5 +1,15 @@
 command_timeout = 1000
 
+format = """
+$directory\
+$git_branch\
+$git_status\
+$kubernetes\
+$line_break\
+$character"""
+
+right_format = "$cmd_duration"
+
 [character]
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
@@ -7,28 +17,30 @@ error_symbol = "[❯](bold red)"
 [directory]
 truncation_length = 3
 truncate_to_repo = true
+style = "bold cyan"
 
 [git_branch]
 format = "[$symbol$branch(:$remote_branch)]($style) "
+symbol = " "
 
 [git_status]
 format = '([\[$all_status$ahead_behind\]]($style) )'
 
-[golang]
-detect_files = ["go.mod"]
-
-[nodejs]
-detect_files = ["package.json"]
-
-[python]
-detect_files = ["requirements.txt", "pyproject.toml"]
-
-[rust]
-detect_files = ["Cargo.toml"]
+[cmd_duration]
+min_time = 2000
+format = "[$duration]($style)"
 
 [kubernetes]
 disabled = false
 format = '[$symbol$context( \($namespace\))]($style) '
+symbol = "☸ "
+detect_env_vars = []
+
+[gcloud]
+disabled = true
+
+[docker_context]
+disabled = true
 
 [package]
 disabled = true

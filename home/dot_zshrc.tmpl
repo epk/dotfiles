@@ -4,16 +4,28 @@
 BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 {{ end }}
 
-# shellcheck disable=SC2034
-DEFAULT_USER=$USER
-
 export GOPATH=$HOME
 export EDITOR=nano
 export PATH=$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.krew/bin:/usr/local/sbin:$PATH
 
-# Completions
+# History (previously provided by oh-my-zsh)
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=10000
+setopt extended_history
+setopt hist_expire_dups_first
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt hist_verify
+setopt share_history
+
+# Completions (cached — only regenerates once per day)
 autoload -Uz compinit
-compinit
+if [[ -n "$HOME/.zcompdump"(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
 
 {{ if eq .chezmoi.os "darwin" }}
 # Plugins via Homebrew
