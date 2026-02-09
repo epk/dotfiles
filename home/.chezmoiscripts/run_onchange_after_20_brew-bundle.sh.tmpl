@@ -2,6 +2,10 @@
 #!/usr/bin/env bash
 
 # Brewfile hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
+# brew-base hash: {{ include ".chezmoitemplates/brew-base" | sha256sum }}
+# brew-cask-base hash: {{ include ".chezmoitemplates/brew-cask-base" | sha256sum }}
+# brew-cask-personal-overlay hash: {{ include ".chezmoitemplates/brew-cask-personal-overlay" | sha256sum }}
+# brew-cask-shopify-overlay hash: {{ include ".chezmoitemplates/brew-cask-shopify-overlay" | sha256sum }}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 brew bundle --global
 {{ end -}}

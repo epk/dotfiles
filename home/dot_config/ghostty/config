@@ -6,4 +6,4 @@ cursor-style-blink = true
 
 # Enable bold text
 bold-is-bright = true
-font-family = SFMono Nerd Font
+font-family = JetBrainsMono Nerd Font

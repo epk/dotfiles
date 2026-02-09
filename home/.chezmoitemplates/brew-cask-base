@@ -12,5 +12,4 @@ cask '1password-cli'
 cask '1password'
 
 # fonts
-tap 'epk/epk' || true
-cask 'font-sf-mono-nerd-font'
+cask 'font-jetbrains-mono-nerd-font'
