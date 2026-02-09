@@ -21,7 +21,6 @@ ZSH_THEME="agnoster"
 if type brew &>/dev/null
 then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 fi
 {{ end }}
 
@@ -92,4 +91,10 @@ export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config.shopify.cloudplatform
 export GOPRIVATE="github.com/Shopify/*"
 [ -f /opt/dev/dev.sh ] && source /opt/dev/dev.sh
 [[ -f /opt/dev/sh/chruby/chruby.sh ]] && { type chruby >/dev/null 2>&1 || chruby () { source /opt/dev/sh/chruby/chruby.sh; chruby "$@"; } }
+
+# tec profile (sourced after Homebrew so tec tools take PATH precedence)
+[[ -x {{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init ]] && eval "$({{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init zsh)"
 {{ end -}}
+
+# Initialize try - lightweight experiments for people with ADHD
+eval "$(try init ~/src/tries)"
