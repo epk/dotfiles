@@ -1,4 +1,4 @@
-command_timeout = 1000
+command_timeout = 5000
 
 format = """
 $directory\
@@ -16,8 +16,9 @@ success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
 
 [directory]
-truncation_length = 3
-truncate_to_repo = true
+truncation_length = 0
+truncate_to_repo = false
+fish_style_pwd_dir_length = 1
 style = "bold cyan"
 
 [git_branch]
