@@ -1,4 +1,5 @@
 {{ if eq .chezmoi.os "darwin" }}
+# Homebrew
 [[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 {{ end }}
@@ -6,40 +7,27 @@ BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 # shellcheck disable=SC2034
 DEFAULT_USER=$USER
 
-export ZSH="$HOME/.oh-my-zsh"
 export GOPATH=$HOME
-
 export EDITOR=nano
 export PATH=$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.krew/bin:/usr/local/sbin:$PATH
 
-# shellcheck disable=SC2034
-ZSH_THEME="agnoster"
-
-export DISABLE_AUTO_UPDATE="true"
+# Completions
+autoload -Uz compinit
+compinit
 
 {{ if eq .chezmoi.os "darwin" }}
-export FZF_BASE="$BREW_PREFIX/opt/fzf"
+# Plugins via Homebrew
+source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$BREW_PREFIX/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+source "$BREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh"
+source "$BREW_PREFIX/share/zsh-you-should-use/you-should-use.plugin.zsh"
 {{ end }}
-# shellcheck disable=SC2034
-plugins=(
-  fzf
-  1password
-  colorize
-  colored-man-pages
-  docker
-  fast-syntax-highlighting
-  gh
-  git
-  history-substring-search
-  vscode
-  you-should-use
-  zsh-autosuggestions
-)
 
-# shellcheck disable=SC1090
-source $ZSH/oh-my-zsh.sh
+# fzf keybindings + completion
+eval "$(fzf --zsh)"
 
 {{ if eq .chezmoi.os "darwin" }}
+# GCloud SDK
 # shellcheck disable=SC1091
 if [ -f "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/path.zsh.inc" ]; then
   source "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/path.zsh.inc";
@@ -49,20 +37,14 @@ fi
 if [ -f "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/completion.zsh.inc" ]; then
   source "$BREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk/completion.zsh.inc";
 fi
+
+eval "$(gdircolors "$HOME/.LS_COLORS")"
 {{ end }}
 
 # shellcheck disable=SC1090
 for file in ~/.{aliases,functions}; do
   [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
-
-# Register the widget and bind it to Ctrl+R
-zle -N fzf-history-widget
-bindkey '^R' fzf-history-widget
-
-{{ if eq .chezmoi.os "darwin" }}
-eval "$(gdircolors "$HOME/.LS_COLORS")"
-{{ end }}
 
 export KUBECONFIG=$HOME/.kube/config
 
@@ -76,9 +58,12 @@ export GOPRIVATE="github.com/Shopify/*"
 [[ -x {{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init ]] && eval "$({{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init zsh)"
 {{ end -}}
 
-# Initialize try - lightweight experiments for people with ADHD
-command -v try &>/dev/null && eval "$(try init ~/src/tries)"
-
 {{ if eq .chezmoi.os "darwin" }}
 eval "$(zoxide init zsh)"
 {{ end }}
+
+# Starship prompt (must be last before try)
+eval "$(starship init zsh)"
+
+# Initialize try - lightweight experiments for people with ADHD
+command -v try &>/dev/null && eval "$(try init ~/src/tries)"

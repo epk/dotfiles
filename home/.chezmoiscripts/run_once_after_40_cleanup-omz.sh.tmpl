@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+{{ if eq .chezmoi.os "darwin" }}
+[ -d "$HOME/.oh-my-zsh" ] && rm -rf "$HOME/.oh-my-zsh"
+{{ end }}
