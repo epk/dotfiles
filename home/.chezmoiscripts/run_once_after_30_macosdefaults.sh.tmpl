@@ -1,10 +1,11 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/usr/bin/env bash
 
-CURRENTSHELL=$(dscl . -read /Users/$USER UserShell | awk '{print $2}')
+# sudo caches credentials for ~5 minutes, so only the first call prompts
+CURRENTSHELL=$(dscl . -read "/Users/$USER" UserShell | awk '{print $2}')
 BREW_ZSH_PATH=$(brew --prefix zsh)
 if [[ "$CURRENTSHELL" != "$BREW_ZSH_PATH/bin/zsh" ]]; then
-  sudo dscl . -change /Users/$USER UserShell $SHELL $BREW_ZSH_PATH/bin/zsh
+  sudo dscl . -change "/Users/$USER" UserShell "$SHELL" "$BREW_ZSH_PATH/bin/zsh"
 fi
 
 # =============================================================================

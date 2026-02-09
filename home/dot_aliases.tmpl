@@ -1,17 +1,14 @@
 #!/bin/bash
 
+# navigation
 alias back="cd .."
 alias home="cd ~"
-
-# folder shortcuts
 alias dl="cd ~/Downloads"
 alias dt="cd ~/Desktop"
+alias epk="cd ~/src/github.com/epk"
 
-# reload zsh config
+# shell
 alias reload!='. ~/.zshrc'
-
-#get IP address
-alias localip="ipconfig getifaddr en0"
 
 # git
 alias ga='git add'
@@ -53,13 +50,9 @@ alias gswc='git switch -c'
 alias k=kubectl
 compdef k=kubectl
 
-# dirs
-alias epk="cd ~/src/github.com/epk"
-
 {{- if eq .chezmoi.os "darwin" }}
-# ls
+# macOS overrides
+alias localip="ipconfig getifaddr en0"
 alias ls=lsd
-
-# cat
 alias cat=bat
 {{ end }}

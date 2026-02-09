@@ -1,23 +1,24 @@
 #!/bin/bash
 
 # make a directory then cd into it
-function mkd() {
-	mkdir -p "$@" && cd "$_";
+mkd() {
+  mkdir -p "$1" && cd "$1"
 }
 
-function gco_master() {
+# checkout the default branch (main or master)
+gco_master() {
   git switch "$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 }
 
 {{ if eq .chezmoi.os "darwin" }}
-# Visualize traceroute
-function traceroute-mapper {
+# visualize traceroute on a map
+traceroute-mapper() {
   open "https://stefansundin.github.io/traceroute-mapper/?trace=$(traceroute -q1 "$@")"
 }
 {{ end }}
 
 {{ if .isShopify -}}
-function update-kubeconfig {
-  gsutil cp gs://cluster-info/kubeconfig-dns-endpoints.yml $HOME/.kube/config.shopify.cloudplatform
+update-kubeconfig() {
+  gsutil cp gs://cluster-info/kubeconfig-dns-endpoints.yml "$HOME/.kube/config.shopify.cloudplatform"
 }
 {{ end -}}

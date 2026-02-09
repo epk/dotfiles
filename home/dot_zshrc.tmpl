@@ -48,10 +48,7 @@ export GOPRIVATE="github.com/Shopify/*"
 [[ -x {{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init ]] && eval "$({{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init zsh)"
 {{ end -}}
 
-{{ if eq .chezmoi.os "darwin" }}
 eval "$(zoxide init zsh)"
-{{ end }}
-
 eval "$(starship init zsh)"
 
 command -v try &>/dev/null && eval "$(try init ~/src/tries)"

@@ -53,7 +53,7 @@ script_dir="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
 
 set -- init --source="${script_dir}"
 
-if [[ -t 1 ]]; then
+if [ -t 1 ]; then
   set -- "$@" --apply
 else
   set -- "$@" --one-shot --no-tty
