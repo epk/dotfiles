@@ -17,8 +17,3 @@ traceroute-mapper() {
 }
 {{ end }}
 
-{{ if .isShopify -}}
-update-kubeconfig() {
-  gsutil cp gs://cluster-info/kubeconfig-dns-endpoints.yml "$HOME/.kube/config.shopify.cloudplatform"
-}
-{{ end -}}

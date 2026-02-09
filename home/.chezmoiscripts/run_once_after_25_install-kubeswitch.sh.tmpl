@@ -1,0 +1,10 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+
+echo "Installing kubeswitch..."
+curl -fsSL -o "$HOME/bin/switcher" https://github.com/danielfoehrKn/kubeswitch/releases/download/0.9.3/switcher_darwin_arm64
+chmod +x "$HOME/bin/switcher"
+
+curl -fsSL -o "$HOME/bin/switch" https://raw.githubusercontent.com/danielfoehrKn/kubeswitch/master/hack/switch/switch.sh
+chmod +x "$HOME/bin/switch"
+{{ end -}}

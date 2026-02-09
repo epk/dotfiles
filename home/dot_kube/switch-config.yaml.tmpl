@@ -1,0 +1,12 @@
+kind: SwitchConfig
+kubeconfigPaths:
+  - path: ~/.kube/config
+{{ if .isShopify }}  - path: ~/.kube/config.shopify.cloudplatform
+hooks:
+  - name: sync-shopify-kubeconfig
+    type: InlineCommand
+    arguments:
+      - "gcloud storage cp gs://cluster-info/kubeconfig-dns-endpoints.yml ~/.kube/config.shopify.cloudplatform"
+    execution:
+      interval: 6h
+{{ end -}}
