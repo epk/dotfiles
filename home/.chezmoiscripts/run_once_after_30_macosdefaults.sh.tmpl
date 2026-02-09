@@ -7,17 +7,102 @@ if [[ "$CURRENTSHELL" != "$BREW_ZSH_PATH/bin/zsh" ]]; then
   sudo dscl . -change /Users/$USER UserShell $SHELL $BREW_ZSH_PATH/bin/zsh
 fi
 
+# =============================================================================
+# Dock
+# =============================================================================
+
 # Fast Dock Hiding
-defaults write com.apple.dock autohide-delay -float 0; defaults write com.apple.dock autohide-time-modifier -int 0;killall Dock
+defaults write com.apple.dock autohide-delay -float 0
+defaults write com.apple.dock autohide-time-modifier -int 0
 
 # Hide dock by default
-defaults write com.apple.dock autohide -bool true; killall Dock
+defaults write com.apple.dock autohide -bool true
 
 # Make Hidden Apps Transparent in Dock
-defaults write com.apple.Dock showhidden -bool TRUE && killall Dock
+defaults write com.apple.Dock showhidden -bool true
+
+# Dock icon size
+defaults write com.apple.dock tilesize -int 76
+
+# Minimize windows into their application's icon
+defaults write com.apple.dock minimize-to-application -bool true
+
+# Hot corner: bottom-right → Quick Note
+defaults write com.apple.dock wvous-br-corner -int 14
+defaults write com.apple.dock wvous-br-modifier -int 0
+
+killall Dock
+
+# =============================================================================
+# Keyboard
+# =============================================================================
+
+# Fast key repeat rate
+defaults write NSGlobalDomain KeyRepeat -int 2
+
+# Short delay before key repeat starts
+defaults write NSGlobalDomain InitialKeyRepeat -int 30
+
+# =============================================================================
+# Finder
+# =============================================================================
+
+# Use list view by default
+defaults write com.apple.finder FXPreferredViewStyle -string Nlsv
+
+# Search the current folder by default
+defaults write com.apple.finder FXDefaultSearchScope -string SCcf
+
+# Auto-delete Trash items after 30 days
+defaults write com.apple.finder FXRemoveOldTrashItems -bool true
+
+killall Finder
+
+# =============================================================================
+# Window Manager
+# =============================================================================
+
+# Disable all macOS Sequoia tiling features (using Rectangle instead)
+defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false
+defaults write com.apple.WindowManager EnableTilingByEdgeDrag -bool false
+defaults write com.apple.WindowManager EnableTilingOptionAccelerator -bool false
+defaults write com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
+
+# Hide desktop items when clicking wallpaper
+defaults write com.apple.WindowManager HideDesktop -bool true
+
+# Hide widgets
+defaults write com.apple.WindowManager StandardHideWidgets -bool true
+defaults write com.apple.WindowManager StageManagerHideWidgets -bool true
+
+# =============================================================================
+# Login & Session
+# =============================================================================
+
+# Don't reopen windows when logging back in
+defaults write com.apple.loginwindow TALLogoutSavesState -bool false
+
+# =============================================================================
+# Screenshots
+# =============================================================================
 
 # JPG Screenshots
 defaults write com.apple.screencapture type jpg
+
+# =============================================================================
+# Power Management
+# =============================================================================
+
+# AC: never sleep display or system
+sudo pmset -c displaysleep 0
+sudo pmset -c sleep 0
+
+# Battery: display sleeps after 60 min
+sudo pmset -b displaysleep 60
+
+# =============================================================================
+# Computer Name
+# =============================================================================
 
 sudo scutil --set ComputerName {{ .computerName | quote }}
 sudo scutil --set HostName {{ .computerName | quote }}

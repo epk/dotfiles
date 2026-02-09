@@ -1,5 +1,4 @@
 # version control
-tap 'github/gh' || true
 brew 'git'
 brew 'gh'
 
@@ -11,7 +10,7 @@ brew 'python'
 brew 'rustup'
 
 # utilities
-brew 'autojump'
+brew 'zoxide'
 brew 'autoconf'
 brew 'automake'
 brew 'awk'

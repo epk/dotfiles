@@ -17,19 +17,19 @@
 	autoupdate = 1
 
 [push]
-	default = simple
 	autoSetupRemote = true
 
 [color]
 	ui = true
 
 [help]
-	autocorrect = 1
+	autocorrect = prompt
 
 [diff]
 	renames = copies
 	compactionHeuristic = true
 	algorithm = patience
+	tool = difftastic
 
 [protocol]
 	version = 2
@@ -51,9 +51,6 @@
 [branch]
 	autosetuprebase = always
 	rebase = true
-
-[diff]
-  tool = difftastic
 
 [difftool "difftastic"]
   cmd = difft "$LOCAL" "$REMOTE"
@@ -104,5 +101,5 @@
 
 {{ if .isShopify }}
 [include]
-       path = /Users/adi/.config/dev/gitconfig
+       path = {{ .chezmoi.homeDir }}/.config/dev/gitconfig
 {{ end -}}

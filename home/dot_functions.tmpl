@@ -5,14 +5,16 @@ function mkd() {
 	mkdir -p "$@" && cd "$_";
 }
 
-func gco_master() {
-  git switch $(awk -F "/" '{print $NF}' .git/refs/remotes/origin/HEAD)
+function gco_master() {
+  git switch "$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 }
 
+{{ if eq .chezmoi.os "darwin" }}
 # Visualize traceroute
 function traceroute-mapper {
-  open "https://stefansundin.github.io/traceroute-mapper/?trace=$(traceroute -q1 $*)"
+  open "https://stefansundin.github.io/traceroute-mapper/?trace=$(traceroute -q1 "$@")"
 }
+{{ end }}
 
 {{ if .isShopify -}}
 function update-kubeconfig {
