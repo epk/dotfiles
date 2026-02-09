@@ -1,11 +1,11 @@
 command_timeout = 5000
 
 format = """
+${custom.status}\
 $directory\
-$git_branch\
-$git_status\
-$kubernetes\
-$jobs\
+${custom.git_clean}\
+${custom.git_dirty}\
+${custom.git_none}\
 $line_break\
 $character"""
 
@@ -15,28 +15,54 @@ right_format = "$cmd_duration"
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
 
+# Status segment — only visible when last command failed or background jobs exist
+[custom.status]
+when = 'test "$STARSHIP_CMD_STATUS" != "0" 2>/dev/null'
+command = 'echo x'
+format = '[✘](bold fg:red bg:black)[](fg:black bg:#4078C0)'
+shell = ['bash', '--noprofile', '--norc']
+description = 'Error status'
+
 [directory]
 truncation_length = 0
 truncate_to_repo = false
 fish_style_pwd_dir_length = 1
-style = "bold cyan"
+style = "fg:#FFFFFF bg:#4078C0"
+format = "[ $path ]($style)"
+
+[custom.git_none]
+when = '! git rev-parse --is-inside-work-tree 2>/dev/null'
+command = 'echo x'
+format = '[](fg:#4078C0)'
+shell = ['bash', '--noprofile', '--norc']
+description = 'No git repo'
+
+[custom.git_clean]
+when = 'git diff --quiet HEAD 2>/dev/null && test -z "$(git ls-files --others --exclude-standard 2>/dev/null | head -1)"'
+command = 'git branch --show-current 2>/dev/null || git rev-parse --short HEAD 2>/dev/null'
+format = '[](fg:#4078C0 bg:#43A047)[  $output ](fg:#FFFFFF bg:#43A047)[](fg:#43A047)'
+shell = ['bash', '--noprofile', '--norc']
+description = 'Git clean'
+
+[custom.git_dirty]
+when = '! git diff --quiet HEAD 2>/dev/null || test -n "$(git ls-files --others --exclude-standard 2>/dev/null | head -1)"'
+command = 'git branch --show-current 2>/dev/null || git rev-parse --short HEAD 2>/dev/null'
+format = '[](fg:#4078C0 bg:#C4A000)[  $output ✎ ](fg:#1C1C2E bg:#C4A000)[](fg:#C4A000)'
+shell = ['bash', '--noprofile', '--norc']
+description = 'Git dirty'
 
 [git_branch]
-format = "[$symbol$branch(:$remote_branch)]($style) "
-symbol = " "
+disabled = true
 
 [git_status]
-format = '([\[$all_status$ahead_behind\]]($style) )'
+disabled = true
 
 [cmd_duration]
 min_time = 2000
 format = "[$duration]($style)"
 
 [kubernetes]
-disabled = false
-format = '[$symbol$context( \($namespace\))]($style) '
-symbol = "☸ "
-detect_env_vars = []
+disabled = true
 
 [gcloud]
 disabled = true
