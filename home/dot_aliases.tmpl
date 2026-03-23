@@ -48,7 +48,10 @@ alias gswc='git switch -c'
 
 # kubectl
 alias k=kubectl
-compdef k=kubectl
+if command -v kubectl &>/dev/null; then
+  source <(kubectl completion zsh)
+  compdef k=kubectl
+fi
 
 {{- if eq .chezmoi.os "darwin" }}
 # macOS overrides
