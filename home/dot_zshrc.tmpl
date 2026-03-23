@@ -6,7 +6,7 @@ BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 
 export GOPATH=$HOME
 export EDITOR=nano
-export PATH=$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.krew/bin:/usr/local/sbin:$PATH
+export PATH=$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.krew/bin:$(ruby -e 'puts Gem.user_dir')/bin:/usr/local/sbin:$PATH
 
 # Plugins, completions, history, keybindings (managed by sheldon)
 eval "$(sheldon source)"
