@@ -1,3 +1,2 @@
 # Shopify specific casks
 cask 'tuple'
-cask 'cursor'
