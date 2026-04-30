@@ -1,0 +1,10 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# numpy in gcloud's venv speeds up SSH/SCP over Cloud IAP tunnels.
+VENV_PIP="$HOME/.config/gcloud/virtenv/bin/pip"
+
+[ -x "$VENV_PIP" ] || exit 0
+"$VENV_PIP" show numpy >/dev/null 2>&1 || "$VENV_PIP" install numpy
+{{ end -}}
