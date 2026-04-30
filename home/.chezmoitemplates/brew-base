@@ -5,9 +5,9 @@ brew 'gh'
 # languages
 brew 'go'
 brew 'gimme'
-brew 'node'
-brew 'python'
+brew 'pnpm'
 brew 'rustup'
+brew 'uv'
 
 # utilities
 brew 'zoxide'

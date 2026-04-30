@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PNPM_HOME="${PNPM_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/pnpm}"
+export PNPM_HOME
+export PATH="$PNPM_HOME:$PATH"
+mkdir -p "$PNPM_HOME"
+
+pnpm config set global-bin-dir "$PNPM_HOME"
+pnpm env use --global lts
