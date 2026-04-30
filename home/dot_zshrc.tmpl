@@ -55,4 +55,4 @@ command -v ruby &>/dev/null && export PATH="$(ruby -e 'puts Gem.user_dir')/bin:$
 eval "$(zoxide init zsh)"
 eval "$(starship init zsh)"
 
-command -v try &>/dev/null && eval "$(try init ~/src/tries)"
+command -v try &>/dev/null && eval "$(command try init ~/src/tries)"
