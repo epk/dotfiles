@@ -47,6 +47,7 @@ export GOPRIVATE="github.com/Shopify/*"
 
 # tec profile
 [[ -x {{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init ]] && eval "$({{ .chezmoi.homeDir }}/.local/state/tec/profiles/base/current/global/init zsh)"
+export DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K=false
 {{ end -}}
 
 command -v ruby &>/dev/null && export PATH="$(ruby -e 'puts Gem.user_dir')/bin:$PATH"
