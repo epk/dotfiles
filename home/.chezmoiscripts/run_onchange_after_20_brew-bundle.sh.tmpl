@@ -8,4 +8,8 @@
 # brew-cask-shopify-overlay hash: {{ include ".chezmoitemplates/brew-cask-shopify-overlay" | sha256sum }}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 brew bundle --global
+
+# Brew sometimes leaves $(brew --prefix)/share group-writable, which makes
+# zsh's compinit complain about insecure directories. Strip it.
+chmod g-w "$(brew --prefix)/share"
 {{ end -}}

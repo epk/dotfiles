@@ -102,6 +102,16 @@ sudo pmset -c sleep 0
 sudo pmset -b displaysleep 60
 
 # =============================================================================
+# Touch ID for sudo
+# =============================================================================
+
+# /etc/pam.d/sudo_local survives macOS updates (unlike /etc/pam.d/sudo).
+if [ ! -f /etc/pam.d/sudo_local ]; then
+  printf "auth       sufficient     pam_tid.so\n" | sudo tee /etc/pam.d/sudo_local >/dev/null
+  sudo chmod 0444 /etc/pam.d/sudo_local
+fi
+
+# =============================================================================
 # Computer Name
 # =============================================================================
 
