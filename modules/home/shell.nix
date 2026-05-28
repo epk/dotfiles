@@ -25,6 +25,30 @@ in
   programs.dircolors.enable = true;
   programs.lsd.enable = true;
 
+  programs.bat = {
+    enable = true;
+    config.style = "plain";
+  };
+
+  programs.fd.enable = true;
+
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+    defaultCommand = "fd --type f --hidden --follow --exclude .git";
+    fileWidgetCommand = "fd --type f --hidden --follow --exclude .git";
+    changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
+  };
+
+  programs.try = {
+    enable = true;
+  };
+
+  programs.zoxide = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
   programs.zsh = {
     enable = true;
     defaultKeymap = "emacs";
@@ -44,6 +68,7 @@ in
       gd = "git diff";
       gp = "git push";
       gpf = "git push --force-with-lease";
+      cat = "bat";
     };
 
     history = {
@@ -52,7 +77,11 @@ in
       save = 10000;
       extended = true;
       ignoreDups = true;
+      ignoreAllDups = true;
       ignoreSpace = true;
+      saveNoDups = true;
+      findNoDups = true;
+      expireDuplicatesFirst = true;
       share = true;
     };
 

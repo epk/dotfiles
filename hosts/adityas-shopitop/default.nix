@@ -1,5 +1,6 @@
 {
   pkgs,
+  try,
   user,
   ...
 }:
@@ -39,6 +40,9 @@
     extraSpecialArgs = {
       inherit user;
     };
+    sharedModules = [
+      try.homeModules.default
+    ];
     users.${user.username} = import ../../modules/home;
   };
 

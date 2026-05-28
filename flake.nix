@@ -15,6 +15,11 @@
     };
 
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+
+    try = {
+      url = "github:tobi/try";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -23,6 +28,7 @@
       nix-darwin,
       home-manager,
       nix-homebrew,
+      try,
       ...
     }:
     let
@@ -41,7 +47,7 @@
       darwinConfigurations.adityas-shopitop = nix-darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
-          inherit user;
+          inherit try user;
         };
         modules = [
           ./hosts/adityas-shopitop
