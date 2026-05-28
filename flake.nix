@@ -39,9 +39,7 @@
     }:
     let
       system = "aarch64-darwin";
-      pkgs = import nixpkgs {
-        inherit system;
-      };
+      pkgs = import nixpkgs { inherit system; };
       user = {
         username = "aditya.sharma";
         name = "Aditya Sharma";

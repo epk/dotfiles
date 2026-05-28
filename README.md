@@ -7,13 +7,13 @@ terminal with host-specific hooks kept explicit in the host/module graph.
 
 ## Package Boundary
 
-Package ownership is intentionally consolidated in
-`modules/darwin/packages.nix`:
+Package ownership is intentionally consolidated in the Darwin and Home Manager
+modules:
 
-- Nix terminal binaries: command-line tools used from the shell, including
-  `kubectl`, `gcloud`, `gh`, `op`, `go`, `node`, `pnpm`, `ripgrep`, `tenv`,
-  and `nano`. Git, zsh, and Starship are managed through their Home Manager
-  program modules.
+- Home Manager: command-line tools used from the shell, including `kubectl`,
+  `gcloud`, `gh`, `op`, `go`, `node`, `pnpm`, `ripgrep`, `tenv`, and `nano`.
+  Prefer native Home Manager `programs.*` modules when they exist; otherwise
+  add tools to `modules/home/packages.nix`.
 - Nix GUI applications: currently empty.
 - Homebrew GUI casks: signed macOS apps where Homebrew is the pragmatic source,
   currently `1password`, `appcleaner`, `ghostty`, `rectangle`, `tuple`, and
@@ -22,6 +22,11 @@ Package ownership is intentionally consolidated in
   is unavailable or unusable from nixpkgs.
 - Homebrew itself: installed and migrated by `nix-homebrew`; packages are still
   declared through nix-darwin's `homebrew.*` options.
+
+Home Manager is intentionally managed through nix-darwin, not as a separate
+standalone activation path. The normal switch command applies system settings,
+Homebrew, fonts, macOS defaults, launchd services, and the Home Manager profile
+together.
 
 ## Shell
 
@@ -47,6 +52,17 @@ GH_TOKEN=$(gh auth token)
 NIX_CONFIG="access-tokens = github.com=$GH_TOKEN" \
   sudo -E nix run nix-darwin -- switch --flake .#adityas-shopitop
 ```
+
+After the first activation, `nh` knows the flake path and becomes the usual
+day-to-day command:
+
+```sh
+nh darwin switch
+```
+
+This repo does not expose a standalone `homeConfigurations` output. Use
+`nh darwin switch` even for Home Manager changes so the machine is always
+evaluated through the same host graph.
 
 During activation, existing files that Home Manager now owns are moved aside
 with the `.before-nix` extension.

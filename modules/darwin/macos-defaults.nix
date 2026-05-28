@@ -18,12 +18,6 @@
       SortDirection = 0;
     };
 
-    controlcenter = {
-      BatteryShowPercentage = true;
-      Bluetooth = true;
-      Sound = true;
-    };
-
     dock = {
       autohide = true;
       autohide-delay = 0.0;

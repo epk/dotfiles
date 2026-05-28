@@ -1,29 +1,6 @@
 { pkgs, user, ... }:
 
 let
-  gcloud = pkgs.google-cloud-sdk.withExtraComponents (
-    with pkgs.google-cloud-sdk.components;
-    [
-      alpha
-      beta
-      gke-gcloud-auth-plugin
-    ]
-  );
-
-  nixTerminalBinaries = with pkgs; [
-    _1password-cli
-    gcloud
-    kubectl
-    nano
-    nixfmt
-    nodejs_24
-    pnpm
-    stern
-    tenv
-    watch
-    wget
-  ];
-
   nixGuiApplications = [ ];
 
   homebrewGuiCasks = [
@@ -45,8 +22,6 @@ in
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
   ];
-
-  home-manager.users.${user.username}.home.packages = nixTerminalBinaries;
 
   nix-homebrew = {
     enable = true;
