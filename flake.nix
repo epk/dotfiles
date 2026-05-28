@@ -39,7 +39,6 @@
     }:
     let
       system = "aarch64-darwin";
-      pkgs = import nixpkgs { inherit system; };
       user = {
         username = "aditya.sharma";
         name = "Aditya Sharma";
@@ -60,6 +59,6 @@
         ];
       };
 
-      formatter.${system} = pkgs.nixfmt;
+      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt;
     };
 }

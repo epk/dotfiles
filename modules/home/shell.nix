@@ -13,10 +13,11 @@ in
   home.sessionVariables = {
     DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K = "false";
     EDITOR = "nano";
+    KUBECONFIG = "${home}/.kube/config:${home}/.kube/config.shopify.cloudplatform";
     PNPM_HOME = "${home}/.local/share/pnpm";
   };
 
-  home.file.".nanorc".text = ''
+  xdg.configFile."nano/nanorc".text = ''
     include ${pkgs.nanorc}/share/*.nanorc
     set linenumbers
   '';
@@ -54,7 +55,6 @@ in
     enable = true;
     enableZshIntegration = true;
     defaultCommand = "fd --type f --hidden --follow --exclude .git";
-    fileWidgetCommand = "fd --type f --hidden --follow --exclude .git";
     changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
   };
 
@@ -64,7 +64,7 @@ in
 
   programs.nh = {
     enable = true;
-    darwinFlake = "${home}/src/github.com/epk/dotfiles";
+    flake = "${home}/src/github.com/epk/dotfiles";
   };
 
   programs.zoxide = {
@@ -74,7 +74,7 @@ in
 
   programs.zsh = {
     enable = true;
-    dotDir = home;
+    dotDir = "${config.xdg.configHome}/zsh";
     defaultKeymap = "emacs";
 
     autosuggestion.enable = true;
@@ -96,11 +96,10 @@ in
     };
 
     history = {
-      path = "${home}/.zsh_history";
+      path = "${config.xdg.stateHome}/zsh/history";
       size = 50000;
       save = 10000;
       extended = true;
-      ignoreDups = true;
       ignoreAllDups = true;
       ignoreSpace = true;
       saveNoDups = true;
@@ -113,8 +112,6 @@ in
       [[ -x "${home}/.local/state/tec/profiles/base/current/global/init" ]] && eval "$("${home}/.local/state/tec/profiles/base/current/global/init" zsh)"
 
       [[ -f /opt/dev/dev.sh ]] && source /opt/dev/dev.sh
-
-      export KUBECONFIG="$HOME/.kube/config:$HOME/.kube/config.shopify.cloudplatform"
 
       update-kubeconfig() {
         gcloud storage cp gs://cluster-info/kubeconfig-dns-endpoints.yml "$HOME/.kube/config.shopify.cloudplatform"

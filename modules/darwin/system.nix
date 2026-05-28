@@ -1,7 +1,12 @@
 { lib, pkgs, ... }:
 
 let
-  tecNixCustomConf = pkgs.writeText "tec-nix-custom.conf" ''
+  # Canonical content tec janitor used to write into /etc/nix/nix.custom.conf.
+  # nix.extraOptions below now includes nix.conf.d/shopify.conf directly,
+  # making nix.custom.conf redundant. The preActivation script removes the
+  # file whenever it still matches this exact form; if tec ever changes
+  # what it writes, cmp will fail and the file will be left alone.
+  tecCanonicalConfContent = pkgs.writeText "tec-nix-custom.conf" ''
     # Shopify Nix configuration (managed by tec janitor).
     # This file is included from nix.conf. Settings here survive
     # determinate-nixd regeneration of nix.conf.
@@ -49,12 +54,13 @@ in
   ];
 
   nix.envVars = {
+    # Shopify-specific: /etc/nix/aws/credentials is provisioned by tec.
     AWS_SHARED_CREDENTIALS_FILE = "/etc/nix/aws/credentials";
     OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES";
   };
 
-  system.activationScripts.checks.text = lib.mkBefore ''
-    if [[ -f /etc/nix/nix.custom.conf ]] && cmp -s /etc/nix/nix.custom.conf ${tecNixCustomConf}; then
+  system.activationScripts.preActivation.text = ''
+    if [[ -f /etc/nix/nix.custom.conf ]] && cmp -s /etc/nix/nix.custom.conf ${tecCanonicalConfContent}; then
       rm /etc/nix/nix.custom.conf
     fi
   '';

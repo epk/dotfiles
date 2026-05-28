@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   user,
   ...
 }:
@@ -36,10 +35,6 @@
         email = user.email;
       };
 
-      core = {
-        editor = "${pkgs.nano}/bin/nano";
-      };
-
       push.autoSetupRemote = true;
 
       fetch.prune = true;
@@ -49,6 +44,4 @@
       pull.rebase = true;
     };
   };
-
-  home.sessionVariables.GIT_CONFIG_GLOBAL = "${config.xdg.configHome}/git/config";
 }

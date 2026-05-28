@@ -12,6 +12,8 @@
   ];
 
   nixpkgs.hostPlatform = "aarch64-darwin";
+  # Keep this allowlist tight. The only consumer today is `_1password-cli`
+  # in modules/home/packages.nix.
   nixpkgs.config.allowUnfreePredicate =
     pkg:
     builtins.elem (pkgs.lib.getName pkg) [
