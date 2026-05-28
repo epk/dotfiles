@@ -67,20 +67,6 @@ in
     darwinFlake = "${home}/src/github.com/epk/dotfiles";
   };
 
-  programs.atuin = {
-    enable = true;
-    enableZshIntegration = true;
-    flags = [
-      "--disable-up-arrow"
-    ];
-    settings = {
-      auto_sync = false;
-      enter_accept = false;
-      search_mode = "prefix";
-      style = "compact";
-    };
-  };
-
   programs.zoxide = {
     enable = true;
     enableZshIntegration = true;
