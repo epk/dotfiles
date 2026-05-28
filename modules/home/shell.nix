@@ -34,7 +34,13 @@ in
   };
 
   programs.dircolors.enable = true;
-  programs.lsd.enable = true;
+
+  programs.eza = {
+    enable = true;
+    enableZshIntegration = true;
+    icons = "auto";
+    git = true;
+  };
 
   programs.bat = {
     enable = true;
@@ -55,6 +61,25 @@ in
     enable = true;
   };
 
+  programs.nh = {
+    enable = true;
+    darwinFlake = "${home}/src/github.com/epk/dotfiles";
+  };
+
+  programs.atuin = {
+    enable = true;
+    enableZshIntegration = true;
+    flags = [
+      "--disable-up-arrow"
+    ];
+    settings = {
+      auto_sync = false;
+      enter_accept = false;
+      search_mode = "prefix";
+      style = "compact";
+    };
+  };
+
   programs.zoxide = {
     enable = true;
     enableZshIntegration = true;
@@ -62,6 +87,7 @@ in
 
   programs.zsh = {
     enable = true;
+    dotDir = home;
     defaultKeymap = "emacs";
 
     autosuggestion.enable = true;

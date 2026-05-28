@@ -20,6 +20,34 @@ in
     !include nix.conf.d/shopify.conf
   '';
 
+  nix.gc = {
+    automatic = true;
+    interval = [
+      {
+        Weekday = 7;
+        Hour = 3;
+        Minute = 15;
+      }
+    ];
+    options = "--delete-older-than 30d";
+  };
+
+  nix.optimise = {
+    automatic = true;
+    interval = [
+      {
+        Weekday = 7;
+        Hour = 4;
+        Minute = 15;
+      }
+    ];
+  };
+
+  nix.settings.trusted-users = lib.mkForce [
+    "root"
+    "@admin"
+  ];
+
   nix.envVars = {
     AWS_SHARED_CREDENTIALS_FILE = "/etc/nix/aws/credentials";
     OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES";

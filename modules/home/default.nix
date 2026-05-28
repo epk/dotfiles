@@ -8,6 +8,8 @@
 
   home.stateVersion = "25.11";
   home.enableNixpkgsReleaseCheck = false;
+  home.preferXdgDirectories = true;
+  xdg.enable = true;
   programs.home-manager.enable = true;
 
   programs.gh.enable = true;
