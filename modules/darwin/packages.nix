@@ -12,10 +12,15 @@ let
     "visual-studio-code"
   ];
 
-  # Keep Homebrew CLI installation visibly empty. Add here only for tools that
-  # are unavailable or unusable from nixpkgs.
+  # Add Homebrew CLI tools here only when they are unavailable or unusable from
+  # nixpkgs.
   homebrewBinaryCasks = [ ];
-  homebrewFormulae = [ ];
+  homebrewFormulae = [
+    "jolt"
+  ];
+  homebrewTaps = [
+    "jordond/tap"
+  ];
 in
 {
   environment.systemPackages = nixGuiApplications;
@@ -31,6 +36,7 @@ in
 
   homebrew = {
     enable = true;
+    taps = homebrewTaps;
     brews = homebrewFormulae;
     casks = homebrewGuiCasks ++ homebrewBinaryCasks;
     caskArgs.appdir = "/Applications";

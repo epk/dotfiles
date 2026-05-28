@@ -10,16 +10,14 @@ terminal with host-specific hooks kept explicit in the host/module graph.
 Package ownership is intentionally consolidated in the Darwin and Home Manager
 modules:
 
-- Home Manager: command-line tools used from the shell, including `kubectl`,
-  `gcloud`, `gh`, `op`, `go`, `node`, `pnpm`, `ripgrep`, `tenv`, and `nano`.
-  Prefer native Home Manager `programs.*` modules when they exist; otherwise
-  add tools to `modules/home/packages.nix`.
-- Nix GUI applications: currently empty.
+- Home Manager: command-line tools used from the shell. Prefer native Home
+  Manager `programs.*` modules when they exist; otherwise add tools to
+  `modules/home/packages.nix`.
+- Nix GUI applications: apps where nixpkgs is the pragmatic source.
 - Homebrew GUI casks: signed macOS apps where Homebrew is the pragmatic source,
-  currently `1password`, `appcleaner`, `ghostty`, `rectangle`, `tuple`, and
-  `visual-studio-code`.
-- Homebrew binary casks/formulae: intentionally empty. Add here only when a CLI
-  is unavailable or unusable from nixpkgs.
+  declared in `modules/darwin/packages.nix`.
+- Homebrew binary casks/formulae: CLI tools that are unavailable or unusable
+  from nixpkgs, declared in `modules/darwin/packages.nix`.
 - Homebrew itself: installed and migrated by `nix-homebrew`; packages are still
   declared through nix-darwin's `homebrew.*` options.
 

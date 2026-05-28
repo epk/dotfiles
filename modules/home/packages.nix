@@ -13,15 +13,27 @@ in
 {
   home.packages = with pkgs; [
     _1password-cli
+    curlFull
+    dnsutils
     gcloud
+    grpcurl
+    hurl
+    iperf3
     kubectl
+    mtr
     nano
     nixfmt
+    nmap
     nodejs_24
     pnpm
+    socat
     stern
+    tcpdump
     tenv
     watch
+    websocat
     wget
+    whois
+    xh
   ];
 }
