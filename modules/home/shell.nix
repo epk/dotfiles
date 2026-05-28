@@ -37,6 +37,8 @@ in
     };
 
     initContent = ''
+      [[ -x "${home}/.local/state/tec/profiles/base/current/global/init" ]] && eval "$("${home}/.local/state/tec/profiles/base/current/global/init" zsh)"
+
       [[ -f /opt/dev/dev.sh ]] && source /opt/dev/dev.sh
 
       export KUBECONFIG="$HOME/.kube/config:$HOME/.kube/config.shopify.cloudplatform"
