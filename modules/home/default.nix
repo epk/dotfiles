@@ -11,5 +11,6 @@
   programs.home-manager.enable = true;
 
   programs.gh.enable = true;
+  programs.nix-index-database.comma.enable = true;
   programs.ripgrep.enable = true;
 }

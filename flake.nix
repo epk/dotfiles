@@ -14,6 +14,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
 
     try = {
@@ -27,6 +32,7 @@
       nixpkgs,
       nix-darwin,
       home-manager,
+      nix-index-database,
       nix-homebrew,
       try,
       ...
@@ -47,7 +53,7 @@
       darwinConfigurations.adityas-shopitop = nix-darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
-          inherit try user;
+          inherit nix-index-database try user;
         };
         modules = [
           ./hosts/adityas-shopitop

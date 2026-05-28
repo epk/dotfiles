@@ -1,4 +1,5 @@
 {
+  nix-index-database,
   pkgs,
   try,
   user,
@@ -41,6 +42,7 @@
       inherit user;
     };
     sharedModules = [
+      nix-index-database.homeModules.default
       try.homeModules.default
     ];
     users.${user.username} = import ../../modules/home;
