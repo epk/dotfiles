@@ -90,6 +90,9 @@ in
       k = "kubectl";
       gst = "git status";
       gd = "git diff";
+      gco = "git checkout";
+      grb = "git rebase";
+      grbi = "git rebase -i";
       gp = "git push";
       gpf = "git push --force-with-lease";
       cat = "bat";
