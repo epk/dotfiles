@@ -20,7 +20,34 @@ in
     env.GOPATH = home;
   };
 
-  programs.starship.enable = true;
+  programs.starship = {
+    enable = true;
+    settings = {
+      add_newline = false;
+      format = "$directory$git_branch$git_status$character";
+
+      directory = {
+        truncation_length = 0;
+        truncate_to_repo = false;
+        style = "blue";
+      };
+
+      git_branch = {
+        format = "[$branch]($style) ";
+        style = "purple";
+      };
+
+      git_status = {
+        format = "[$all_status$ahead_behind]($style) ";
+        style = "red";
+      };
+
+      character = {
+        success_symbol = "> ";
+        error_symbol = "> ";
+      };
+    };
+  };
 
   programs.dircolors.enable = true;
   programs.lsd.enable = true;

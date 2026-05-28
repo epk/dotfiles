@@ -12,6 +12,7 @@ let
 
   nixTerminalBinaries = with pkgs; [
     _1password-cli
+    comma
     gcloud
     kubectl
     nano
