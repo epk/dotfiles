@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   home = config.home.homeDirectory;
@@ -15,6 +15,11 @@ in
     PNPM_HOME = "${home}/.local/share/pnpm";
   };
 
+  home.file.".nanorc".text = ''
+    include ${pkgs.nanorc}/share/*.nanorc
+    set linenumbers
+  '';
+
   programs.go = {
     enable = true;
     env.GOPATH = home;
@@ -24,7 +29,7 @@ in
     enable = true;
     settings = {
       add_newline = true;
-      format = "$directory$git_branch$git_status$character";
+      format = "$directory$git_branch$git_status\n$character";
     };
   };
 

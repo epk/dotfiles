@@ -15,9 +15,13 @@ let
     gcloud
     kubectl
     nano
+    nixfmt
     nodejs_24
     pnpm
+    stern
     tenv
+    watch
+    wget
   ];
 
   nixGuiApplications = [ ];
@@ -38,6 +42,9 @@ let
 in
 {
   environment.systemPackages = nixGuiApplications;
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+  ];
 
   home-manager.users.${user.username}.home.packages = nixTerminalBinaries;
 
