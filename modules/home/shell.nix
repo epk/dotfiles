@@ -11,6 +11,7 @@ in
   ];
 
   home.sessionVariables = {
+    DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K = "false";
     EDITOR = "nano";
     PNPM_HOME = "${home}/.local/share/pnpm";
   };

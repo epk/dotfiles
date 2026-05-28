@@ -18,6 +18,8 @@
       SortDirection = 0;
     };
 
+    controlcenter.BatteryShowPercentage = false;
+
     dock = {
       autohide = true;
       autohide-delay = 0.0;
