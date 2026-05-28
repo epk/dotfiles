@@ -22,9 +22,29 @@ in
 
   programs.starship.enable = true;
 
+  programs.dircolors.enable = true;
+  programs.lsd.enable = true;
+
   programs.zsh = {
     enable = true;
     defaultKeymap = "emacs";
+
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
+
+    historySubstringSearch = {
+      enable = true;
+      searchUpKey = "^[[A";
+      searchDownKey = "^[[B";
+    };
+
+    shellAliases = {
+      k = "kubectl";
+      gst = "git status";
+      gd = "git diff";
+      gp = "git push";
+      gpf = "git push --force-with-lease";
+    };
 
     history = {
       path = "${home}/.zsh_history";
