@@ -1,4 +1,8 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  ...
+}:
 
 let
   home = config.home.homeDirectory;
@@ -31,6 +35,7 @@ in
     enable = true;
     settings = {
       add_newline = true;
+      command_timeout = 5000;
       format = "$directory$git_branch$git_status\n$character";
     };
   };
@@ -76,6 +81,10 @@ in
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";
     defaultKeymap = "emacs";
+    localVariables = {
+      # Match the useful part of the old chezmoi setup: path separators are word boundaries.
+      WORDCHARS = "*?_-.[]~=&;!#$%^(){}<>";
+    };
 
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
