@@ -119,6 +119,10 @@ in
       update-kubeconfig() {
         gcloud storage cp gs://cluster-info/kubeconfig-dns-endpoints.yml "$HOME/.kube/config.shopify.cloudplatform"
       }
+
+      reload!() {
+        nh darwin switch "$@" && exec ${pkgs.zsh}/bin/zsh
+      }
     '';
   };
 }
