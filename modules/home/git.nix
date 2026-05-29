@@ -1,10 +1,30 @@
 {
   config,
+  lib,
   user,
   ...
 }:
 
 {
+  # The home-manager-generated git config (~/.config/git/config) is a read-only
+  # symlink into the Nix store. Tools like Shopify `dev` and `git maintenance
+  # register` need to write to the *global* config (e.g. maintenance.repo), which
+  # fails with "could not lock config file ... Permission denied".
+  #
+  # Redirect the global config to a writable shim that simply includes the
+  # read-only home-manager config. Declarative settings still live in the Nix
+  # config; the shim only captures runtime-written keys.
+  home.sessionVariables.GIT_CONFIG_GLOBAL = "${config.xdg.configHome}/git/config.local";
+
+  home.activation.gitWritableGlobalConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    shim="${config.xdg.configHome}/git/config.local"
+    if [ ! -e "$shim" ]; then
+      verboseEcho "git: creating writable global config $shim (includes the home-manager config)"
+      $DRY_RUN_CMD mkdir -p "$(dirname "$shim")"
+      $DRY_RUN_CMD printf '[include]\n\tpath = %s\n' "${config.xdg.configHome}/git/config" > "$shim"
+    fi
+  '';
+
   programs.diff-so-fancy = {
     enable = true;
     enableGitIntegration = true;
