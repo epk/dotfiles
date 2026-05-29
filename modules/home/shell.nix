@@ -9,6 +9,10 @@ let
 in
 {
   home.sessionPath = [
+    # Keep Tec-provided commands available without running interactive shell hooks from zshenv.
+    "${home}/.local/state/tec/toolchain/user_profile/bin"
+    "${home}/.local/state/tec/profiles/base/current/global/bin"
+    "${home}/.local/state/nix/profiles/tec/bin"
     "$PNPM_HOME"
     "$HOME/bin"
     "/usr/local/sbin"
