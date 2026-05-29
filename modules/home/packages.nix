@@ -16,6 +16,7 @@ in
     curlFull
     dnsutils
     gcloud
+    go
     grpcurl
     hurl
     iperf3
@@ -26,6 +27,9 @@ in
     nmap
     nodejs_24
     pnpm
+    python314
+    ruby_4_0
+    rust-bin.stable.latest.default
     socat
     stern
     tcpdump
