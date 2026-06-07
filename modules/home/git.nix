@@ -37,11 +37,9 @@
       "*.swp"
       "*.swo"
     ];
-    includes = [
-      {
-        path = "${config.home.homeDirectory}/.config/dev/gitconfig";
-      }
-    ];
+    # dev/gitconfig is intentionally NOT included here: Shopify `dev` adds its
+    # own `include.path` for it to the writable global (config.local), so
+    # declaring it again would double-include the same file.
     signing = {
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/Cr+bIMxMzkk8dN7xxRsaJeHRifwlyTuh/ja9Uy9MN";
       format = "ssh";
