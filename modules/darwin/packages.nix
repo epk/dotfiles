@@ -15,12 +15,8 @@ let
   # Add Homebrew CLI tools here only when they are unavailable or unusable from
   # nixpkgs.
   homebrewBinaryCasks = [ ];
-  homebrewFormulae = [
-    "jolt"
-  ];
-  homebrewTaps = [
-    "jordond/tap"
-  ];
+  homebrewFormulae = [ ];
+  homebrewTaps = [ ];
 in
 {
   environment.systemPackages = nixGuiApplications;
