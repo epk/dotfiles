@@ -14,14 +14,17 @@
   # Redirect the global config to a writable shim that simply includes the
   # read-only home-manager config. Declarative settings still live in the Nix
   # config; the shim only captures runtime-written keys.
-  home.sessionVariables.GIT_CONFIG_GLOBAL = "${config.xdg.configHome}/git/config.local";
+  # home-manager's programs.git always writes to ~/.config/git/config, and git
+  # reads that path natively without needing XDG_CONFIG_HOME exported, so the
+  # config lives there regardless of our non-XDG setup.
+  home.sessionVariables.GIT_CONFIG_GLOBAL = "${config.home.homeDirectory}/.config/git/config.local";
 
   home.activation.gitWritableGlobalConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    shim="${config.xdg.configHome}/git/config.local"
+    shim="${config.home.homeDirectory}/.config/git/config.local"
     if [ ! -e "$shim" ]; then
       verboseEcho "git: creating writable global config $shim (includes the home-manager config)"
       $DRY_RUN_CMD mkdir -p "$(dirname "$shim")"
-      $DRY_RUN_CMD printf '[include]\n\tpath = %s\n' "${config.xdg.configHome}/git/config" > "$shim"
+      $DRY_RUN_CMD printf '[include]\n\tpath = %s\n' "${config.home.homeDirectory}/.config/git/config" > "$shim"
     fi
   '';
 

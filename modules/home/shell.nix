@@ -25,7 +25,7 @@ in
     PNPM_HOME = "${home}/.local/share/pnpm";
   };
 
-  xdg.configFile."nano/nanorc".text = ''
+  home.file.".nanorc".text = ''
     include ${pkgs.nanorc}/share/*.nanorc
     set linenumbers
   '';
@@ -83,7 +83,7 @@ in
 
   programs.zsh = {
     enable = true;
-    dotDir = "${config.xdg.configHome}/zsh";
+    dotDir = config.home.homeDirectory;
     defaultKeymap = "emacs";
     localVariables = {
       # Match the useful part of the old chezmoi setup: path separators are word boundaries.
@@ -112,7 +112,7 @@ in
     };
 
     history = {
-      path = "${config.xdg.stateHome}/zsh/history";
+      path = "${config.home.homeDirectory}/.zsh_history";
       size = 50000;
       save = 10000;
       extended = true;
