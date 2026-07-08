@@ -18,16 +18,22 @@
       SortDirection = 0;
     };
 
-    controlcenter.BatteryShowPercentage = false;
+    controlcenter = {
+      BatteryShowPercentage = false;
+      Bluetooth = true;
+      FocusModes = true;
+    };
 
     dock = {
       autohide = true;
       autohide-delay = 0.0;
       autohide-time-modifier = 0.0;
       expose-group-apps = true;
+      largesize = 83;
+      magnification = true;
       minimize-to-application = true;
       showhidden = true;
-      tilesize = 76;
+      tilesize = 56;
       wvous-br-corner = 14;
     };
 
@@ -44,6 +50,8 @@
     };
 
     NSGlobalDomain = {
+      AppleICUForce24HourTime = true;
+      AppleInterfaceStyleSwitchesAutomatically = true;
       ApplePressAndHoldEnabled = false;
       AppleShowAllExtensions = true;
       AppleShowScrollBars = "Automatic";
@@ -77,8 +85,8 @@
       EnableTilingOptionAccelerator = false;
       EnableTopTilingByEdgeDrag = false;
       HideDesktop = true;
-      StandardHideWidgets = true;
-      StageManagerHideWidgets = true;
+      StandardHideWidgets = false;
+      StageManagerHideWidgets = false;
     };
   };
 }
