@@ -28,9 +28,11 @@
     fi
   '';
 
-  programs.diff-so-fancy = {
+  programs.diff-so-fancy.enable = true;
+
+  programs.difftastic = {
     enable = true;
-    enableGitIntegration = true;
+    git.enable = true;
   };
 
   programs.git = {

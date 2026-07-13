@@ -103,9 +103,12 @@ in
       k = "kubectl";
       gst = "git status";
       gd = "git diff";
+      gdd = "git -c 'pager.diff=${pkgs.diff-so-fancy}/bin/diff-so-fancy | ${pkgs.less}/bin/less --tabs=4 -RFX' diff --no-ext-diff";
       gco = "git checkout";
+      gl = "git pull";
       grb = "git rebase";
       grbi = "git rebase -i";
+      grhh = "git reset --hard";
       gp = "git push";
       gpf = "git push --force-with-lease";
       cat = "bat";
