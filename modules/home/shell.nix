@@ -9,19 +9,13 @@ let
 in
 {
   home.sessionPath = [
-    # Keep Tec-provided commands available without running interactive shell hooks from zshenv.
-    "${home}/.local/state/tec/toolchain/user_profile/bin"
-    "${home}/.local/state/tec/profiles/base/current/global/bin"
-    "${home}/.local/state/nix/profiles/tec/bin"
     "$PNPM_HOME"
     "$HOME/bin"
     "/usr/local/sbin"
   ];
 
   home.sessionVariables = {
-    DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K = "false";
     EDITOR = "nano";
-    KUBECONFIG = "${home}/.kube/config:${home}/.kube/config.shopify.cloudplatform";
     PNPM_HOME = "${home}/.local/share/pnpm";
   };
 
@@ -64,7 +58,7 @@ in
     enable = true;
     enableZshIntegration = true;
     defaultCommand = "fd --type f --hidden --follow --exclude .git";
-    changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
+    changeDirWidget.command = "fd --type d --hidden --follow --exclude .git";
   };
 
   programs.try = {
@@ -128,14 +122,6 @@ in
     };
 
     initContent = ''
-      [[ -x "${home}/.local/state/tec/profiles/base/current/global/init" ]] && eval "$("${home}/.local/state/tec/profiles/base/current/global/init" zsh)"
-
-      [[ -f /opt/dev/dev.sh ]] && source /opt/dev/dev.sh
-
-      update-kubeconfig() {
-        gcloud storage cp gs://cluster-info/kubeconfig-dns-endpoints.yml "$HOME/.kube/config.shopify.cloudplatform"
-      }
-
       reload!() {
         nh darwin switch "$@" && exec ${pkgs.zsh}/bin/zsh
       }

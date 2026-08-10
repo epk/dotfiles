@@ -3,5 +3,6 @@
     ./packages.nix
     ./system.nix
     ./macos-defaults.nix
+    ./user.nix
   ];
 }

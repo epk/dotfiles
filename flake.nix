@@ -45,25 +45,46 @@
     }:
     let
       system = "aarch64-darwin";
-      user = {
-        username = "aditya.sharma";
-        name = "Aditya Sharma";
-        email = "aditya.sharma@shopify.com";
-        computerName = "adityas-shopitop";
-      };
+      mkDarwinConfiguration =
+        { hostModule, user }:
+        nix-darwin.lib.darwinSystem {
+          inherit system;
+          specialArgs = {
+            inherit nix-index-database try user;
+          };
+          modules = [
+            hostModule
+            { nixpkgs.overlays = [ rust-overlay.overlays.default ]; }
+            home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
+          ];
+        };
     in
     {
-      darwinConfigurations.adityas-shopitop = nix-darwin.lib.darwinSystem {
-        inherit system;
-        specialArgs = {
-          inherit nix-index-database try user;
+      darwinConfigurations = {
+        adityas-shopitop = mkDarwinConfiguration {
+          hostModule = ./hosts/adityas-shopitop;
+          user = {
+            username = "aditya.sharma";
+            name = "Aditya Sharma";
+            email = "aditya.sharma@shopify.com";
+            computerName = "adityas-shopitop";
+            hostName = "adityas-shopitop";
+            localHostName = "adityas-shopitop";
+          };
         };
-        modules = [
-          ./hosts/adityas-shopitop
-          { nixpkgs.overlays = [ rust-overlay.overlays.default ]; }
-          home-manager.darwinModules.home-manager
-          nix-homebrew.darwinModules.nix-homebrew
-        ];
+
+        adityas-macbook-pro = mkDarwinConfiguration {
+          hostModule = ./hosts/adityas-macbook-pro;
+          user = {
+            username = "aditya.sharma";
+            name = "Aditya Sharma";
+            email = "git@adi.run";
+            computerName = "Aditya’s MacBook Pro";
+            hostName = "Adityas-MacBook-Pro";
+            localHostName = "Adityas-MacBook-Pro";
+          };
+        };
       };
 
       formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt;

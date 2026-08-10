@@ -3,7 +3,7 @@
 {
   imports = [
     ../../modules/darwin
-    ../../profiles/work/darwin.nix
+    ../../profiles/personal/darwin.nix
   ];
 
   networking = {
@@ -15,7 +15,6 @@
   home-manager.users.${user.username} = {
     imports = [
       ../../modules/home
-      ../../profiles/work/home.nix
     ];
   };
 }

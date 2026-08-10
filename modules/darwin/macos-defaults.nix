@@ -1,3 +1,5 @@
+{ lib, ... }:
+
 {
   security.pam.services.sudo_local = {
     touchIdAuth = true;
@@ -8,6 +10,12 @@
     computer = "never";
     display = "never";
   };
+
+  # nix-darwin implements power.sleep with systemsetup, which only updates the
+  # AC profile on MacBooks. Keep the battery profile aligned as well.
+  system.activationScripts.power.text = lib.mkAfter ''
+    pmset -a sleep 0 displaysleep 0
+  '';
 
   system.defaults = {
     ActivityMonitor = {
