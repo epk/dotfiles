@@ -1,0 +1,32 @@
+# Dependabot has no Nix ecosystem, so flake.lock is bumped by this scheduled
+# job instead. .github/dependabot.yml keeps the actions below current.
+name: update-flake-lock
+
+on:
+  schedule:
+    - cron: "37 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: DeterminateSystems/nix-installer-action@v22
+        with:
+          extra-conf: access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - uses: DeterminateSystems/update-flake-lock@v28
+        with:
+          pr-title: "flake.lock: weekly update"
+          pr-labels: dependencies
+          # A PR opened with the default GITHUB_TOKEN does NOT trigger other
+          # workflows, so check.yml will not run on it. To gate these PRs on
+          # CI, create a PAT with `repo` scope, save it as the FLAKE_LOCK_PAT
+          # secret, and uncomment the line below.
+          # token: ${{ secrets.FLAKE_LOCK_PAT }}

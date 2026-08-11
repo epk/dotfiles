@@ -46,8 +46,6 @@
       ...
     }:
     let
-      system = "aarch64-darwin";
-
       # `host` is machine identity, `user` is account identity. Only the fields
       # that actually differ between machines are passed per host.
       mkDarwinConfiguration =
@@ -96,6 +94,10 @@
         };
       };
 
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt;
+      # x86_64-linux is here so the CI eval job can run `nix fmt` with the same
+      # pinned nixfmt the macOS hosts use.
+      formatter = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-linux" ] (
+        s: nixpkgs.legacyPackages.${s}.nixfmt
+      );
     };
 }

@@ -1,0 +1,70 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HOSTS: adityas-macbook-pro adityas-shopitop
+
+jobs:
+  eval:
+    name: eval + format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: DeterminateSystems/nix-installer-action@v22
+        with:
+          # Lets Nix fetch the flake's GitHub inputs without hitting the
+          # anonymous rate limit.
+          extra-conf: access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v14
+
+      - name: Check formatting
+        run: git ls-files -z '*.nix' | xargs -0 nix fmt -- --check
+
+      # The hosts pin nixpkgs.hostPlatform and evaluate without import-from-
+      # derivation, so a Linux runner can compute the whole aarch64-darwin
+      # derivation graph without building or fetching anything from it. This
+      # catches every option rename, type error, and module assertion.
+      - name: Evaluate both hosts
+        run: |
+          for host in $HOSTS; do
+            echo "::group::$host"
+            nix eval --raw --option allow-import-from-derivation false \
+              ".#darwinConfigurations.$host.system.outPath"
+            echo
+            echo "::endgroup::"
+          done
+
+  build:
+    name: build ${{ matrix.host }}
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [adityas-macbook-pro, adityas-shopitop]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: DeterminateSystems/nix-installer-action@v22
+        with:
+          extra-conf: access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v14
+
+      # Realizes the closure. Note this proves the system *builds*, not that
+      # `darwin-rebuild switch` would succeed: activation (Homebrew, mas,
+      # `defaults write`, pmset, scutil, pam) only runs on a real machine.
+      - name: Build system closure
+        run: |
+          nix build --no-link --print-out-paths \
+            ".#darwinConfigurations.${{ matrix.host }}.system"
