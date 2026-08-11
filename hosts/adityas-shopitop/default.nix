@@ -6,16 +6,5 @@
     ../../profiles/work/darwin.nix
   ];
 
-  networking = {
-    computerName = user.computerName;
-    hostName = user.hostName;
-    localHostName = user.localHostName;
-  };
-
-  home-manager.users.${user.username} = {
-    imports = [
-      ../../modules/home
-      ../../profiles/work/home.nix
-    ];
-  };
+  home-manager.users.${user.username}.imports = [ ../../profiles/work/home.nix ];
 }

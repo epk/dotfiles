@@ -10,26 +10,28 @@ The realized hosts are:
 The target is a fast, minimal terminal with profile-specific hooks kept
 explicit in the host/module graph.
 
+## Layout
+
+`flake.nix` supplies each host with `user` (account identity) and `host`
+(machine identity); everything shared between machines lives in `modules/`.
+
+- `modules/darwin` — system settings, the user account, Homebrew, and the
+  Home Manager wiring that pulls in `modules/home`.
+- `modules/home` — the shared user environment.
+- `profiles/{work,personal}` — the employer- or personal-only additions.
+- `hosts/*` — one host per directory, importing `modules/darwin` plus a profile.
+
 ## Package Boundary
 
-Package ownership is intentionally consolidated in the Darwin and Home Manager
-modules:
+- Command-line tools: Home Manager. Prefer a native `programs.*` module when
+  one exists; otherwise add the package to `modules/home/packages.nix`.
+- GUI apps: Homebrew casks in `modules/darwin/packages.nix`. Homebrew is also
+  the fallback for CLI tools that are unavailable or unusable from nixpkgs.
+- App Store apps: `homebrew.masApps`, which needs the `mas` formula.
+- Homebrew itself is installed and migrated by `nix-homebrew`; packages are
+  still declared through nix-darwin's `homebrew.*` options.
 
-- Home Manager: command-line tools used from the shell. Prefer native Home
-  Manager `programs.*` modules when they exist; otherwise add tools to
-  `modules/home/packages.nix`.
-- Nix GUI applications: apps where nixpkgs is the pragmatic source.
-- Homebrew GUI casks: signed macOS apps where Homebrew is the pragmatic source,
-  declared in `modules/darwin/packages.nix`.
-- Homebrew binary casks/formulae: CLI tools that are unavailable or unusable
-  from nixpkgs, declared in `modules/darwin/packages.nix`.
-- Mac App Store apps: apps whose supported distribution path is the App Store,
-  declared through nix-darwin's `homebrew.masApps` option.
-- Homebrew itself: installed and migrated by `nix-homebrew`; packages are still
-  declared through nix-darwin's `homebrew.*` options.
-
-Profile additions live under `profiles/work` and `profiles/personal`. Keep the
-shared modules free of employer-specific or personal-only behavior.
+Keep the shared modules free of employer-specific or personal-only behavior.
 
 Home Manager is intentionally managed through nix-darwin, not as a separate
 standalone activation path. The normal switch command applies system settings,

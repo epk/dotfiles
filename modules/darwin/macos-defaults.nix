@@ -1,19 +1,13 @@
-{ lib, ... }:
-
 {
   security.pam.services.sudo_local = {
     touchIdAuth = true;
     reattach = true;
   };
 
-  power.sleep = {
-    computer = "never";
-    display = "never";
-  };
-
-  # nix-darwin implements power.sleep with systemsetup, which only updates the
-  # AC profile on MacBooks. Keep the battery profile aligned as well.
-  system.activationScripts.power.text = lib.mkAfter ''
+  # `power.sleep` is deliberately unused: nix-darwin implements it with
+  # systemsetup, which only writes the AC profile on MacBooks. `pmset -a`
+  # covers AC and battery, so it fully replaces those options.
+  system.activationScripts.postActivation.text = ''
     pmset -a sleep 0 displaysleep 0
   '';
 

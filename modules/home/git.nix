@@ -5,29 +5,34 @@
   ...
 }:
 
+let
+  # home-manager always writes programs.git to ~/.config/git/config, and git
+  # reads that path natively without XDG_CONFIG_HOME, so it lives there
+  # regardless of this repo's non-XDG setup.
+  managed = "${config.home.homeDirectory}/.config/git/config";
+  shim = "${config.home.homeDirectory}/.config/git/config.local";
+in
 {
-  # The home-manager-generated git config (~/.config/git/config) is a read-only
-  # symlink into the Nix store. Tools like Shopify `dev` and `git maintenance
-  # register` need to write to the *global* config (e.g. maintenance.repo), which
-  # fails with "could not lock config file ... Permission denied".
-  #
-  # Redirect the global config to a writable shim that simply includes the
-  # read-only home-manager config. Declarative settings still live in the Nix
-  # config; the shim only captures runtime-written keys.
-  # home-manager's programs.git always writes to ~/.config/git/config, and git
-  # reads that path natively without needing XDG_CONFIG_HOME exported, so the
-  # config lives there regardless of our non-XDG setup.
-  home.sessionVariables.GIT_CONFIG_GLOBAL = "${config.home.homeDirectory}/.config/git/config.local";
+  # The home-manager-generated config is a read-only symlink into the Nix store.
+  # Tools like Shopify `dev` and `git maintenance register` write to the *global*
+  # config (e.g. maintenance.repo) and fail with "could not lock config file ...
+  # Permission denied". Point the global config at a writable shim that includes
+  # the store one: declarative settings stay in Nix, the shim only captures keys
+  # written at runtime.
+  home.sessionVariables.GIT_CONFIG_GLOBAL = shim;
 
   home.activation.gitWritableGlobalConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    shim="${config.home.homeDirectory}/.config/git/config.local"
-    if [ ! -e "$shim" ]; then
-      verboseEcho "git: creating writable global config $shim (includes the home-manager config)"
-      $DRY_RUN_CMD mkdir -p "$(dirname "$shim")"
-      $DRY_RUN_CMD printf '[include]\n\tpath = %s\n' "${config.home.homeDirectory}/.config/git/config" > "$shim"
+    if [ ! -e ${lib.escapeShellArg shim} ]; then
+      verboseEcho "git: creating writable global config ${shim} (includes the home-manager config)"
+      $DRY_RUN_CMD mkdir -p ${lib.escapeShellArg (builtins.dirOf shim)}
+      $DRY_RUN_CMD printf '[include]\n\tpath = %s\n' ${lib.escapeShellArg managed} > ${lib.escapeShellArg shim}
     fi
   '';
 
+  # home-manager asserts that at most one git diff integration is enabled, and
+  # difftastic holds it (below). diff-so-fancy is therefore installed as a plain
+  # binary and wired up by hand in the `gdd` alias in modules/home/shell.nix;
+  # setting `enableGitIntegration` here would fail the assertion.
   programs.diff-so-fancy.enable = true;
 
   programs.difftastic = {
@@ -53,17 +58,10 @@
     };
 
     settings = {
-      user = {
-        name = user.name;
-        email = user.email;
-      };
-
+      user = { inherit (user) name email; };
       push.autoSetupRemote = true;
-
       fetch.prune = true;
-
       merge.conflictstyle = "zdiff3";
-
       pull.rebase = true;
     };
   };

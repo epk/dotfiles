@@ -1,26 +1,8 @@
 { pkgs, user, ... }:
 
-let
-  nixGuiApplications = [ ];
-
-  homebrewGuiCasks = [
-    "1password"
-    "appcleaner"
-    "ghostty"
-    "rectangle"
-    "visual-studio-code"
-  ];
-
-  # Add Homebrew CLI tools here only when they are unavailable or unusable from
-  # nixpkgs.
-  homebrewBinaryCasks = [ ];
-  homebrewFormulae = [ ];
-  homebrewTaps = [ ];
-in
 {
-  environment.systemPackages = nixGuiApplications;
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
+  fonts.packages = [
+    pkgs.nerd-fonts.jetbrains-mono
   ];
 
   nix-homebrew = {
@@ -31,9 +13,18 @@ in
 
   homebrew = {
     enable = true;
-    taps = homebrewTaps;
-    brews = homebrewFormulae;
-    casks = homebrewGuiCasks ++ homebrewBinaryCasks;
+
+    # Signed macOS apps where Homebrew is the pragmatic source. Reach for a
+    # Homebrew formula or binary cask only when a tool is unavailable or
+    # unusable from nixpkgs; everything else belongs in modules/home.
+    casks = [
+      "1password"
+      "appcleaner"
+      "ghostty"
+      "rectangle"
+      "visual-studio-code"
+    ];
+
     caskArgs.appdir = "/Applications";
 
     onActivation = {

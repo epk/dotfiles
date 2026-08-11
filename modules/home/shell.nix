@@ -6,17 +6,26 @@
 
 let
   home = config.home.homeDirectory;
+  pnpmHome = "${home}/.local/share/pnpm";
+
+  # difftastic owns git's `diff.external` and home-manager permits only one git
+  # diff integration, so diff-so-fancy has to be wired up by hand. See the
+  # comment on programs.diff-so-fancy in modules/home/git.nix.
+  diffSoFancyPager = "${pkgs.diff-so-fancy}/bin/diff-so-fancy | ${pkgs.less}/bin/less --tabs=4 -RFX";
 in
 {
   home.sessionPath = [
-    "$PNPM_HOME"
-    "$HOME/bin"
+    pnpmHome
+    # `uv tool install` and `uv python install` shim here.
+    "${home}/.local/bin"
+    # GOPATH is $HOME, so `go install` lands here too.
+    "${home}/bin"
     "/usr/local/sbin"
   ];
 
   home.sessionVariables = {
     EDITOR = "nano";
-    PNPM_HOME = "${home}/.local/share/pnpm";
+    PNPM_HOME = pnpmHome;
   };
 
   home.file.".nanorc".text = ''
@@ -61,9 +70,7 @@ in
     changeDirWidget.command = "fd --type d --hidden --follow --exclude .git";
   };
 
-  programs.try = {
-    enable = true;
-  };
+  programs.try.enable = true;
 
   programs.nh = {
     enable = true;
@@ -77,10 +84,10 @@ in
 
   programs.zsh = {
     enable = true;
-    dotDir = config.home.homeDirectory;
+    dotDir = home;
     defaultKeymap = "emacs";
     localVariables = {
-      # Match the useful part of the old chezmoi setup: path separators are word boundaries.
+      # Drop `/` from the default set so ^W deletes one path segment at a time.
       WORDCHARS = "*?_-.[]~=&;!#$%^(){}<>";
     };
 
@@ -97,7 +104,8 @@ in
       k = "kubectl";
       gst = "git status";
       gd = "git diff";
-      gdd = "git -c 'pager.diff=${pkgs.diff-so-fancy}/bin/diff-so-fancy | ${pkgs.less}/bin/less --tabs=4 -RFX' diff --no-ext-diff";
+      # Bypass difftastic and page through diff-so-fancy instead.
+      gdd = "git -c 'pager.diff=${diffSoFancyPager}' diff --no-ext-diff";
       gco = "git checkout";
       gl = "git pull";
       grb = "git rebase";
@@ -109,7 +117,7 @@ in
     };
 
     history = {
-      path = "${config.home.homeDirectory}/.zsh_history";
+      path = "${home}/.zsh_history";
       size = 50000;
       save = 10000;
       extended = true;

@@ -1,6 +1,7 @@
 {
   programs.ghostty = {
     enable = true;
+    # The app itself comes from the Homebrew cask; only manage its config here.
     package = null;
     enableZshIntegration = true;
     settings = {

@@ -19,6 +19,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nix-homebrew has no nixpkgs input to follow; brew-src is its only input.
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
 
     rust-overlay = {
@@ -29,6 +30,7 @@
     try = {
       url = "github:tobi/try";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     };
   };
 
@@ -45,12 +47,23 @@
     }:
     let
       system = "aarch64-darwin";
+
+      # `host` is machine identity, `user` is account identity. Only the fields
+      # that actually differ between machines are passed per host.
       mkDarwinConfiguration =
-        { hostModule, user }:
+        {
+          hostModule,
+          host,
+          email,
+        }:
         nix-darwin.lib.darwinSystem {
-          inherit system;
           specialArgs = {
-            inherit nix-index-database try user;
+            inherit nix-index-database try host;
+            user = {
+              username = "aditya.sharma";
+              name = "Aditya Sharma";
+              inherit email;
+            };
           };
           modules = [
             hostModule
@@ -64,10 +77,8 @@
       darwinConfigurations = {
         adityas-shopitop = mkDarwinConfiguration {
           hostModule = ./hosts/adityas-shopitop;
-          user = {
-            username = "aditya.sharma";
-            name = "Aditya Sharma";
-            email = "aditya.sharma@shopify.com";
+          email = "aditya.sharma@shopify.com";
+          host = {
             computerName = "adityas-shopitop";
             hostName = "adityas-shopitop";
             localHostName = "adityas-shopitop";
@@ -76,10 +87,8 @@
 
         adityas-macbook-pro = mkDarwinConfiguration {
           hostModule = ./hosts/adityas-macbook-pro;
-          user = {
-            username = "aditya.sharma";
-            name = "Aditya Sharma";
-            email = "git@adi.run";
+          email = "git@adi.run";
+          host = {
             computerName = "Aditya’s MacBook Pro";
             hostName = "Adityas-MacBook-Pro";
             localHostName = "Adityas-MacBook-Pro";

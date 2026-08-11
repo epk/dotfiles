@@ -7,15 +7,6 @@
 }:
 
 {
-  nixpkgs.hostPlatform = "aarch64-darwin";
-  # Keep this allowlist tight. The only consumer today is `_1password-cli`
-  # in modules/home/packages.nix.
-  nixpkgs.config.allowUnfreePredicate =
-    pkg:
-    builtins.elem (pkgs.lib.getName pkg) [
-      "1password-cli"
-    ];
-
   users.users.${user.username} = {
     home = "/Users/${user.username}";
     uid = 501;
@@ -38,7 +29,7 @@
       nix-index-database.homeModules.default
       try.homeModules.default
     ];
+    # Hosts add their profile's home module to this same list.
+    users.${user.username}.imports = [ ../home ];
   };
-
-  system.stateVersion = 6;
 }

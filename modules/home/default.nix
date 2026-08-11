@@ -1,7 +1,7 @@
 {
   imports = [
-    ./git.nix
     ./ghostty.nix
+    ./git.nix
     ./packages.nix
     ./shell.nix
     ./ssh.nix
