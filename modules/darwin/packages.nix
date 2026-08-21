@@ -20,6 +20,9 @@
     casks = [
       "1password"
       "appcleaner"
+      # The agent CLIs ship as casks and release faster than pinned nixpkgs.
+      "claude-code"
+      "codex"
       "ghostty"
       "rectangle"
       "visual-studio-code"

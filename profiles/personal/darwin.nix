@@ -1,7 +1,7 @@
 {
   homebrew = {
-    # `mas` is required by Homebrew Bundle to realize `masApps`. Codex and uv
-    # intentionally use Homebrew because they move faster than the pinned
+    # `mas` is required by Homebrew Bundle to realize `masApps`. `uv`
+    # intentionally uses Homebrew because it moves faster than the pinned
     # nixpkgs revision.
     brews = [
       "mas"
@@ -9,7 +9,6 @@
     ];
 
     casks = [
-      "codex"
       "slack"
       "tailscale-app"
     ];
