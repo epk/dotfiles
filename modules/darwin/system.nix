@@ -25,6 +25,10 @@
   # /etc/nix/nix.custom.conf chain, not nix-darwin.
   nix.enable = false;
 
+  # Option manual generation drops the nixpkgs source string context, producing
+  # an unreliable options.json and a Nix warning on every rebuild.
+  documentation.enable = false;
+
   networking = {
     inherit (host) computerName hostName localHostName;
   };

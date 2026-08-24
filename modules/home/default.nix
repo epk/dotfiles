@@ -9,6 +9,7 @@
 
   home.stateVersion = "25.11";
   home.enableNixpkgsReleaseCheck = false;
+  manual.manpages.enable = false;
   # XDG has no OS-level precedent on macOS (Apple uses ~/Library); exporting the
   # XDG_* vars only flips half-XDG CLIs (e.g. the `devx codex` wrapper) onto the
   # wrong code path. Keep them unexported and use classic $HOME dotfile locations.
