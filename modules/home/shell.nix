@@ -20,6 +20,8 @@ in
     "${home}/.local/bin"
     # GOPATH is $HOME, so `go install` lands here too.
     "${home}/bin"
+    # `cargo install` lands here; the nix rust-bin toolchain doesn't add it.
+    "${home}/.cargo/bin"
     "/usr/local/sbin"
   ];
 
