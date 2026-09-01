@@ -7,7 +7,7 @@
     ./ssh.nix
   ];
 
-  home.stateVersion = "25.11";
+  home.stateVersion = "26.11";
   home.enableNixpkgsReleaseCheck = false;
   manual.manpages.enable = false;
   # XDG has no OS-level precedent on macOS (Apple uses ~/Library); exporting the

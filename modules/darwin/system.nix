@@ -39,5 +39,5 @@
     pkgs.zsh
   ];
 
-  system.stateVersion = 6;
+  system.stateVersion = 7;
 }

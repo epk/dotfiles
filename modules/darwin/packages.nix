@@ -7,7 +7,6 @@
 
   nix-homebrew = {
     enable = true;
-    autoMigrate = true;
     user = user.username;
   };
 

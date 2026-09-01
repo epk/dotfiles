@@ -70,11 +70,6 @@
 
     screencapture.type = "jpg";
 
-    screensaver = {
-      askForPassword = true;
-      askForPasswordDelay = 0;
-    };
-
     trackpad = {
       Clicking = true;
       TrackpadRightClick = true;
