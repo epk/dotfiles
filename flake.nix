@@ -72,7 +72,7 @@
         };
     in
     {
-      darwinConfigurations = {
+      darwinConfigurations = rec {
         adityas-shopitop = mkDarwinConfiguration {
           hostModule = ./hosts/adityas-shopitop;
           email = "aditya.sharma@shopify.com";
@@ -92,6 +92,11 @@
             localHostName = "Adityas-MacBook-Pro";
           };
         };
+
+        # nh selects a Darwin configuration using the current macOS hostname
+        # when no installable is supplied. Keep the lowercase name canonical
+        # for scripts, while allowing `nh darwin switch` to resolve this host.
+        "Adityas-MacBook-Pro" = adityas-macbook-pro;
       };
 
       # x86_64-linux is here so the CI eval job can run `nix fmt` with the same
