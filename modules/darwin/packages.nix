@@ -20,7 +20,7 @@
       "1password"
       "appcleaner"
       # The agent CLIs ship as casks and release faster than pinned nixpkgs.
-      "claude-code"
+      "claude-code@latest"
       "codex"
       "ghostty"
       "rectangle"
