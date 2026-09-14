@@ -20,7 +20,15 @@
     };
 
     # nix-homebrew has no nixpkgs input to follow; brew-src is its only input.
-    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    # Override brew-src to pin the Homebrew version ourselves.
+    brew-src = {
+      url = "github:Homebrew/brew/7.0.0";
+      flake = false;
+    };
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+      inputs.brew-src.follows = "brew-src";
+    };
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
