@@ -20,9 +20,11 @@
     };
 
     # nix-homebrew has no nixpkgs input to follow; brew-src is its only input.
-    # Override brew-src to pin the Homebrew version ourselves.
+    # The Homebrew version is pinned here; nix-homebrew follows it, so the
+    # lock holds a single brew revision. A direct override of the transitive
+    # input does not work: Nix drops `flake = false` on transitive overrides.
     brew-src = {
-      url = "github:Homebrew/brew/7.0.0";
+      url = "github:Homebrew/brew/7.0.1";
       flake = false;
     };
     nix-homebrew = {
