@@ -25,7 +25,7 @@ in
     nano
     nixfmt
     nmap
-    nodejs_24
+    nodejs_26
     pnpm
     python314
     ruby_4_0
