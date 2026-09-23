@@ -33,7 +33,11 @@
     inherit (host) computerName hostName localHostName;
   };
 
-  programs.zsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    # Home Manager's ~/.zshrc runs compinit.
+    enableGlobalCompInit = false;
+  };
 
   environment.shells = [
     pkgs.zsh
