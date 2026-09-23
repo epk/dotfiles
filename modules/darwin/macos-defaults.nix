@@ -40,7 +40,6 @@
     };
 
     finder = {
-      AppleShowAllExtensions = true;
       FXDefaultSearchScope = "SCcf";
       FXEnableExtensionChangeWarning = false;
       FXPreferredViewStyle = "Nlsv";
