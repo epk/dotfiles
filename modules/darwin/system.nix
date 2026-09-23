@@ -25,6 +25,22 @@
   # /etc/nix/nix.custom.conf chain, not nix-darwin.
   nix.enable = false;
 
+  # Without `nix.gc`, cap the system profile after each switch and collect
+  # garbage weekly on nix.gc's default schedule.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    /nix/var/nix/profiles/default/bin/nix-env --profile /nix/var/nix/profiles/system --delete-generations +5
+  '';
+  launchd.daemons.nix-gc = {
+    command = "/nix/var/nix/profiles/default/bin/nix-collect-garbage";
+    serviceConfig.StartCalendarInterval = [
+      {
+        Weekday = 7;
+        Hour = 3;
+        Minute = 15;
+      }
+    ];
+  };
+
   # Option manual generation drops the nixpkgs source string context, producing
   # an unreliable options.json and a Nix warning on every rebuild.
   documentation.enable = false;
