@@ -1,5 +1,6 @@
 {
   config,
+  options,
   pkgs,
   ...
 }:
@@ -72,7 +73,17 @@ in
     changeDirWidget.command = "fd --type d --hidden --follow --exclude .git";
   };
 
-  programs.try.enable = true;
+  programs.try = {
+    enable = true;
+    # The function from `try init` runs the unwrapped script. Its `env ruby`
+    # shebang finds tec's Ruby first, which loads stale user gems.
+    package = options.programs.try.package.default.overrideAttrs {
+      postFixup = ''
+        substituteInPlace $out/bin/.try-wrapped \
+          --replace-fail '#!/usr/bin/env ruby' '#!${pkgs.ruby}/bin/ruby --disable-gems'
+      '';
+    };
+  };
 
   programs.nh = {
     enable = true;
