@@ -16,7 +16,6 @@ in
     curlFull
     dnsutils
     gcloud
-    go
     grpcurl
     hurl
     iperf3

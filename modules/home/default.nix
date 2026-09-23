@@ -14,7 +14,6 @@
   # XDG_* vars only flips half-XDG CLIs (e.g. the `devx codex` wrapper) onto the
   # wrong code path. Keep them unexported and use classic $HOME dotfile locations.
   xdg.enable = false;
-  programs.home-manager.enable = true;
 
   programs.gh.enable = true;
   programs.jq.enable = true;
