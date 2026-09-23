@@ -24,7 +24,7 @@
     # lock holds a single brew revision. A direct override of the transitive
     # input does not work: Nix drops `flake = false` on transitive overrides.
     brew-src = {
-      url = "github:Homebrew/brew/7.0.1";
+      url = "github:Homebrew/brew/7.0.6";
       flake = false;
     };
     nix-homebrew = {
