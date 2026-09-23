@@ -96,7 +96,6 @@ in
 
   programs.zsh = {
     enable = true;
-    dotDir = home;
     defaultKeymap = "emacs";
     localVariables = {
       # Drop `/` from the default set so ^W deletes one path segment at a time.
@@ -106,11 +105,7 @@ in
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
-    historySubstringSearch = {
-      enable = true;
-      searchUpKey = "^[[A";
-      searchDownKey = "^[[B";
-    };
+    historySubstringSearch.enable = true;
 
     shellAliases = {
       k = "kubectl";
@@ -129,7 +124,6 @@ in
     };
 
     history = {
-      path = "${home}/.zsh_history";
       size = 50000;
       save = 10000;
       extended = true;
