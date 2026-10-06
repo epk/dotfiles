@@ -54,7 +54,6 @@ in
 
   programs.eza = {
     enable = true;
-    enableZshIntegration = true;
     icons = "auto";
     git = true;
   };
@@ -68,7 +67,6 @@ in
 
   programs.fzf = {
     enable = true;
-    enableZshIntegration = true;
     defaultCommand = "fd --type f --hidden --follow --exclude .git";
     changeDirWidget.command = "fd --type d --hidden --follow --exclude .git";
   };
@@ -90,10 +88,7 @@ in
     flake = "${home}/src/github.com/epk/dotfiles";
   };
 
-  programs.zoxide = {
-    enable = true;
-    enableZshIntegration = true;
-  };
+  programs.zoxide.enable = true;
 
   programs.zsh = {
     enable = true;
@@ -129,11 +124,9 @@ in
       save = 10000;
       extended = true;
       ignoreAllDups = true;
-      ignoreSpace = true;
       saveNoDups = true;
       findNoDups = true;
       expireDuplicatesFirst = true;
-      share = true;
     };
 
     initContent = ''
