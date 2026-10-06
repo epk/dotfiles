@@ -7,7 +7,6 @@
 
 let
   home = config.home.homeDirectory;
-  pnpmHome = "${home}/.local/share/pnpm";
 
   # difftastic owns git's `diff.external` and home-manager permits only one git
   # diff integration, so diff-so-fancy has to be wired up by hand. See the
@@ -16,7 +15,6 @@ let
 in
 {
   home.sessionPath = [
-    pnpmHome
     # `uv tool install` and `uv python install` shim here.
     "${home}/.local/bin"
     # GOPATH is $HOME, so `go install` lands here too.
@@ -25,15 +23,18 @@ in
     "${home}/.cargo/bin"
   ];
 
-  home.sessionVariables = {
-    EDITOR = "nano";
-    PNPM_HOME = pnpmHome;
-  };
+  home.sessionVariables.EDITOR = "nano";
 
   home.file.".nanorc".text = ''
     include ${pkgs.nanorc}/share/*.nanorc
     set linenumbers
   '';
+
+  programs.pnpm = {
+    enable = true;
+    # Keep the existing store and global installs, not the ~/Library/pnpm default.
+    pnpmHome = "${home}/.local/share/pnpm";
+  };
 
   programs.go = {
     enable = true;

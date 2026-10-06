@@ -17,6 +17,8 @@ in
     "${tec}/toolchain/user_profile/bin"
     "${tecGlobal}/bin"
     "${home}/.local/state/nix/profiles/tec/bin"
+    # Tec's pnpm 10 links global bins into PNPM_HOME, not PNPM_HOME/bin.
+    config.programs.pnpm.pnpmHome
   ];
 
   home.sessionVariables = {
