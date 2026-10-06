@@ -73,7 +73,7 @@ To activate the personal host:
 ```sh
 GH_TOKEN=$(gh auth token)
 NIX_CONFIG="access-tokens = github.com=$GH_TOKEN" \
-  sudo -E nix run nix-darwin -- switch --flake .#adityas-macbook-pro
+  sudo -E nix run nix-darwin/master#darwin-rebuild -- switch --flake .#adityas-macbook-pro
 ```
 
 Replace `adityas-macbook-pro` with `adityas-shopitop` for the work host.
