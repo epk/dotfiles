@@ -131,7 +131,8 @@ in
 
     initContent = ''
       reload!() {
-        nh darwin switch "$@" && exec ${pkgs.zsh}/bin/zsh
+        # nom aborts on Determinate Nix logs: nix-output-monitor#320
+        nh darwin switch --no-nom "$@" && exec ${pkgs.zsh}/bin/zsh
       }
     '';
   };
