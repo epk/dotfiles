@@ -24,11 +24,11 @@
     # lock holds a single brew revision. A direct override of the transitive
     # input does not work: Nix drops `flake = false` on transitive overrides.
     brew-src = {
-      url = "github:Homebrew/brew/7.0.6";
+      url = "github:Homebrew/brew/7.0.8";
       flake = false;
     };
     nix-homebrew = {
-      url = "github:zhaofengli-wip/nix-homebrew";
+      url = "github:zhaofengli/nix-homebrew";
       inputs.brew-src.follows = "brew-src";
     };
 
