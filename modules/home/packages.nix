@@ -25,7 +25,6 @@ in
     nixfmt
     nmap
     nodejs_26
-    pnpm
     python314
     ruby_4_0
     rust-bin.stable.latest.default
