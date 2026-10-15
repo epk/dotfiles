@@ -1,0 +1,97 @@
+name: check
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Let a dispatched run wait for an existing push run.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    name: eval + format
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+
+      # Each host pins nixpkgs.hostPlatform, so Linux also evaluates the Mac hosts.
+      - name: Evaluate all outputs
+        run: nix flake check --all-systems --no-build --abort-on-warn --option allow-import-from-derivation false
+
+      - name: Check format, lint, policy and recipients
+        run: nix build --no-link .#checks.x86_64-linux.{format,lint,policy,recipients}
+
+      - name: Check the live variants against the deployed hosts
+        env:
+          DOTFILES_PRIVATE_CONFIG: ${{ github.workspace }}/lib/example-metadata.json
+        run: |
+          nix eval --impure --raw --file .github/check-live.nix
+          # The server evaluates new code with the metadata of the deployed revision.
+          deployed=$(nix flake prefetch --json github:epk/dotfiles | jq -r .storePath)
+          DOTFILES_PRIVATE_CONFIG=$deployed/lib/example-metadata.json \
+            nix eval --impure --raw .#nixosConfigurations.server.config.system.build.toplevel.drvPath
+
+  server:
+    name: build server
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # nixos-upgrade builds with the private metadata. CI uses the example values.
+      DOTFILES_PRIVATE_CONFIG: ${{ github.workspace }}/lib/example-metadata.json
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+
+      # cache.nixos.org does not have the overridden Paseo build, which takes about 7 minutes.
+      - id: paseo
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/paseo-cache
+          key: paseo-${{ hashFiles('flake.lock', 'packages/paseo.nix', 'packages/shared-browser.nix', 'modules/nixos/guests/workshop.nix') }}
+
+      - name: Build system closure and VM test
+        run: |
+          # Create the cache as the runner user. The root daemon would create it read-only for nix copy.
+          mkdir -p ~/paseo-cache
+          nix store info --store "file://$HOME/paseo-cache"
+          nix build --impure --no-link --print-out-paths \
+            --option extra-substituters "file://$HOME/paseo-cache?trusted=1" \
+            .#nixosConfigurations.server.config.system.build.toplevel \
+            .#checks.x86_64-linux.workshop-guest | tee "$RUNNER_TEMP/outputs"
+
+      - name: Store the Paseo build
+        if: steps.paseo.outputs.cache-hit != 'true'
+        run: |
+          xargs nix path-info -r <"$RUNNER_TEMP/outputs" | grep -E '/[a-z0-9]{32}-paseo(-shared-browser)?-[0-9]' |
+            xargs nix copy --to "file://$HOME/paseo-cache"
+
+      - if: steps.paseo.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/paseo-cache
+          key: ${{ steps.paseo.outputs.cache-primary-key }}
+
+  build:
+    name: build ${{ matrix.host }}
+    runs-on: macos-26
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [macos-personal, macos-work]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+
+      # Activation is the only step that CI does not run. Test defaults, pmset, PAM and mas on the Macs.
+      - name: Run setup.sh, reload! and the deployed reload!
+        run: .github/test-mac.sh ${{ matrix.host }}
+

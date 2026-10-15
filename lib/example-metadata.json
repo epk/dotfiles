@@ -1,0 +1,29 @@
+{
+  "server": {
+    "hostName": "server",
+    "username": "operator",
+    "authorizedKeys": [
+      "ssh-ed25519 AAAA-example-placeholder operator@example.invalid"
+    ],
+    "systemDisk": "/dev/nvme0n1",
+    "dataDisk": "/dev/sda",
+    "labelPrefix": "host"
+  },
+  "workstations": {
+    "username": "operator",
+    "name": "Operator",
+    "signingPublicKey": "ssh-ed25519 AAAA-example-placeholder operator@example.invalid",
+    "personal": {
+      "email": "operator@example.invalid",
+      "computerName": "Personal workstation",
+      "hostName": "personal",
+      "localHostName": "personal"
+    },
+    "work": {
+      "email": "operator@example.invalid",
+      "computerName": "Work workstation",
+      "hostName": "work",
+      "localHostName": "work"
+    }
+  }
+}

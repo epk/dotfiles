@@ -1,0 +1,153 @@
+{
+  config,
+  lib,
+  metadata,
+  ...
+}:
+let
+  mountOptions = [
+    "noatime"
+    "compress=zstd:1"
+    "discard=async"
+  ];
+  dataOptions = mountOptions ++ [
+    "nodev"
+    "nosuid"
+    "nofail"
+    "x-systemd.device-timeout=10s"
+  ];
+  vmSubvolumes = lib.genAttrs (map (name: "@vms/${name}") (builtins.attrNames config.microvm.vms)) (
+    _: { }
+  );
+in
+{
+  # Root and Nix share the physical 32 GiB host partition.
+  disko.devices.disk = {
+    system = {
+      type = "disk";
+      device = metadata.server.systemDisk;
+      content = {
+        type = "gpt";
+        partitions = {
+          esp = {
+            priority = 1;
+            label = "${metadata.server.labelPrefix}-esp";
+            type = "EF00";
+            start = "2048";
+            end = "1050623";
+            content = {
+              type = "filesystem";
+              format = "vfat";
+              mountpoint = "/boot";
+              mountOptions = [ "umask=0077" ];
+            };
+          };
+          fast = {
+            priority = 2;
+            label = "${metadata.server.labelPrefix}-fast";
+            start = "1050624";
+            end = "433008639";
+            content = {
+              type = "btrfs";
+              extraArgs = [
+                "-L"
+                "${metadata.server.labelPrefix}-fast"
+              ];
+              subvolumes = {
+                "@fast" = {
+                  mountpoint = "/storage/nvme";
+                  mountOptions = dataOptions;
+                };
+                "@artifacts" = {
+                  mountpoint = "/storage/nvme/artifacts";
+                  mountOptions = dataOptions;
+                };
+                "@vms" = {
+                  mountpoint = "/storage/nvme/vms";
+                  mountOptions = dataOptions;
+                };
+              }
+              // vmSubvolumes;
+            };
+          };
+          root = {
+            priority = 3;
+            label = "${metadata.server.labelPrefix}-root";
+            start = "433008640";
+            size = "100%";
+            content = {
+              type = "btrfs";
+              extraArgs = [
+                "-L"
+                "${metadata.server.labelPrefix}-root"
+              ];
+              subvolumes = {
+                "@root" = {
+                  mountpoint = "/";
+                  inherit mountOptions;
+                };
+                "@nix" = {
+                  mountpoint = "/nix";
+                  inherit mountOptions;
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    data = {
+      type = "disk";
+      device = metadata.server.dataDisk;
+      content = {
+        type = "gpt";
+        partitions.data = {
+          label = "${metadata.server.labelPrefix}-data";
+          size = "100%";
+          content = {
+            type = "btrfs";
+            extraArgs = [
+              "-L"
+              "${metadata.server.labelPrefix}-data"
+            ];
+            subvolumes = {
+              "@data" = {
+                mountpoint = "/storage/sata";
+                mountOptions = dataOptions;
+              };
+              "@artifacts" = {
+                mountpoint = "/storage/sata/artifacts";
+                mountOptions = dataOptions;
+              };
+              "@shares" = {
+                mountpoint = "/storage/sata/shares";
+                mountOptions = dataOptions;
+              };
+              "@vms" = {
+                mountpoint = "/storage/sata/vms";
+                mountOptions = dataOptions;
+              };
+            }
+            // vmSubvolumes;
+          };
+        };
+      };
+    };
+  };
+  fileSystems."/nix".neededForBoot = true;
+  services.btrfs.autoScrub = {
+    enable = true;
+    fileSystems = [
+      "/"
+      "/storage/nvme"
+      "/storage/sata"
+    ];
+  };
+  systemd.tmpfiles.rules = [
+    "d /storage/nvme/vms 0711 root root -"
+    "d /storage/nvme/artifacts 0750 root root -"
+    "d /storage/sata/vms 0711 root root -"
+    "d /storage/sata/shares 0750 root root -"
+    "d /storage/sata/artifacts 0750 root root -"
+  ];
+}
