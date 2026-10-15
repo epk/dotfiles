@@ -44,11 +44,13 @@ sudo nixos-rebuild switch --rollback
 
 Then open a revert PR. The next hourly run applies `main` again until the revert merges.
 
-Pushes with `GITHUB_TOKEN` do not start push CI. `automation/open-bot-pr.sh` dispatches CI for the bot branch.
-GitHub does not count dispatched runs as PR checks. A bot PR merges only after a push run passes.
-To start a push run, select "Update branch" on the PR. A push with an app token also starts it.
+The update workflows push and merge with a GitHub App token. Pushes with `GITHUB_TOKEN` do not start CI, and GitHub does not count dispatched runs as PR checks.
 The check workflow does not use pull_request events, which require approval for bot-created PRs.
-The bot job fails after 30 minutes without a merge, or at once when a required check fails.
+`automation/open-bot-pr.sh` fails the bot job when a required check fails, or after 30 minutes without a merge.
+
+The app has read and write access to contents and pull requests on this repository only. It has no webhook.
+The repository variable `BOT_CLIENT_ID` holds its client ID. The secret `BOT_PRIVATE_KEY` holds its private key.
+To replace the key, generate a new key in the app settings, update the secret and delete the old key.
 If CI fails or a PR cannot merge, the workflow stops without deployment.
 The repository must remain public. Private repositories require a separate read credential.
 

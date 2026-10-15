@@ -10,26 +10,35 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+  contents: read
 
 jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
+      # An app token, unlike GITHUB_TOKEN, starts CI for the bot pushes and the merge.
+      - id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.BOT_CLIENT_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
+          token: ${{ steps.token.outputs.token }}
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
-      - name: Update pinned dependencies
-        run: |
-          nix flake update
-          python3 automation/update-antigravity.py
+      - name: Update pinned inputs
+        run: nix flake update
+      # A manifest outage must not stop the input update.
+      - name: Update the Antigravity release
+        continue-on-error: true
+        run: python3 automation/update-antigravity.py
       - name: Open update PR, run CI and wait for the merge
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.token.outputs.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           if git diff --quiet -- flake.lock packages/antigravity-release.json; then exit 0; fi
