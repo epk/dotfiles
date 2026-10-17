@@ -30,6 +30,10 @@
       try.homeModules.default
     ];
     # Each host adds its Home Manager profile to this list.
-    users.${user.username}.imports = [ ../home ];
+    users.${user.username}.imports = [
+      ../home
+      ../home/dev.nix
+      ../home/darwin.nix
+    ];
   };
 }

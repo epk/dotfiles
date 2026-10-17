@@ -7,6 +7,7 @@ pkgs.testers.runNixOSTest {
     storageDirectory = "/var/lib/workshop";
     administratorKeys = [ ];
   };
+  node.specialArgs.inputs = self.inputs;
   nodes.guest =
     { lib, ... }:
     {
@@ -33,5 +34,8 @@ pkgs.testers.runNixOSTest {
     guest.succeed("getent group agent")
     guest.succeed('test "$(stat -c %U:%G /home/agent)" = agent:agent')
     guest.succeed("systemctl show -p Environment paseo | grep -q procps")
+    guest.wait_for_unit("home-manager-operator.service")
+    guest.succeed("getent passwd operator | grep -q '/bin/zsh$'")
+    guest.succeed("test -L /home/operator/.zshrc")
   '';
 }

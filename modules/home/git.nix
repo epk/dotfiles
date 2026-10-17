@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  user,
-  ...
-}:
+{ config, lib, ... }:
 
 let
   # Home Manager writes programs.git to ~/.config/git/config.
@@ -13,7 +8,7 @@ let
 in
 {
   # The Home Manager configuration links to a read-only Nix store file.
-  # Shopify dev and git maintenance register must write to the global configuration.
+  # Shopify dev, gh and git maintenance register must write to the global configuration.
   # Use a writable file that includes the Home Manager configuration.
   # Keep runtime changes in that writable file.
   home.sessionVariables.GIT_CONFIG_GLOBAL = shim;
@@ -43,24 +38,12 @@ in
       "*.swp"
       "*.swo"
     ];
-    signing = {
-      key = user.signingPublicKey;
-      format = "ssh";
-      signer = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
-      signByDefault = true;
-    };
-
-    # Shopify dev adds dev/gitconfig to config.local. Do not add a second include for it here.
-    # Commits in this public repository show their email. Use the GitHub noreply address.
-    includes = [
-      {
-        condition = "gitdir:${config.programs.nh.flake}/";
-        contents.user.email = "9075816+epk@users.noreply.github.com";
-      }
-    ];
-
     settings = {
-      user = { inherit (user) name email; };
+      # The Macs set the private identity. Elsewhere, commit as the public GitHub account.
+      user = {
+        name = lib.mkDefault "epk";
+        email = lib.mkDefault "9075816+epk@users.noreply.github.com";
+      };
       push.autoSetupRemote = true;
       fetch.prune = true;
       merge.conflictstyle = "zdiff3";

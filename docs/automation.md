@@ -94,10 +94,8 @@ Dependency flakes can have separate package inputs.
 `system.stateVersion` controls compatibility defaults. It does not select package updates.
 The host uses `linuxPackages_latest` from the pinned package set.
 
-Home Manager is not required on this minimal host.
-NixOS declares the administrator account, shell, SSH access and system packages.
-Home Manager remains part of the Mac configurations.
-Add it to a development guest when that guest needs shared shell, Git or editor settings.
+The administrator accounts on the host and the workshop guest use zsh and the shared Home Manager configuration.
+`modules/nixos/home.nix` applies it. NixOS declares the accounts, SSH access and system packages.
 
 ## Private metadata
 

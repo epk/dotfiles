@@ -61,7 +61,7 @@
   };
 
   outputs =
-    {
+    inputs@{
       self,
       nixpkgs,
       nix-darwin,
@@ -118,7 +118,7 @@
       nixosConfigurations.server = lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {
-          inherit nixpkgs metadata;
+          inherit nixpkgs metadata inputs;
         };
         modules = [
           ./hosts/server

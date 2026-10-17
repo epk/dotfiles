@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  inputs,
   pkgs,
   workshop,
   ...
@@ -83,7 +84,14 @@ let
   };
 in
 {
-  imports = [ ../microvm-guest.nix ];
+  imports = [
+    ../microvm-guest.nix
+    ../home.nix
+  ];
+  dotfiles.homeUser = "operator";
+  # The guest is the coding workspace, so its administrator also gets the language toolchains.
+  home-manager.users.operator.imports = [ ../../home/dev.nix ];
+  nixpkgs.overlays = [ inputs.rust-overlay.overlays.default ];
   # nixpkgs plans to remove Gemini CLI. Keep it for API-key access until then.
   nixpkgs.config.problems.handlers.gemini-cli.removal = "ignore";
   nixpkgs.config.allowUnfreePredicate =

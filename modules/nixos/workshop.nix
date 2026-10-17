@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -33,7 +34,10 @@ in
     microvm.vms.workshop = {
       # The guest evaluates its own nixpkgs, so its unfree and problem settings apply.
       pkgs = null;
-      specialArgs.workshop = cfg;
+      specialArgs = {
+        workshop = cfg;
+        inherit inputs;
+      };
       config = ./guests/workshop.nix;
     };
     systemd.services."microvm@workshop" = {
