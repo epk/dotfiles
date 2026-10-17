@@ -30,6 +30,11 @@
   "packageRules": [
     { "matchManagers": ["github-actions"], "minimumReleaseAge": "7 days" },
     { "matchManagers": ["github-actions"], "matchUpdateTypes": ["major"], "automerge": false },
-    { "matchDatasources": ["github-runners"], "enabled": false }
+    { "matchDatasources": ["github-runners"], "enabled": false },
+    {
+      "description": "Lock file maintenance updates every input. This lookup maps nixpkgs to the wrong lock node.",
+      "matchPackageNames": ["/^https://flakehub\\.com//"],
+      "enabled": false
+    }
   ]
 }
