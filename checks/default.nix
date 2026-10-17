@@ -19,7 +19,7 @@ in
         cd ${self}
         # actionlint also runs shellcheck on each workflow script.
         actionlint .github/workflows/*.yml
-        shellcheck setup.sh .github/*.sh automation/*.sh
+        shellcheck setup.sh .github/*.sh
         ruff check --no-cache --select E,F,W,I,B .
         deadnix --fail .
         if grep -rIlE 'BEGIN [A-Z ]*PRIVATE KEY|AGE-SECRET-KEY-1[0-9A-Z]{50}|tskey-(auth|client)-[0-9A-Za-z]' .; then

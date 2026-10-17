@@ -37,7 +37,6 @@ Keep access details and deployment status in the private inventory.
 - `lib/`: the private metadata loader and the neutral example values.
 - `secrets/`: public keys, agenix rules and encrypted files.
 - `packages/`: packages for the workshop guest.
-- `automation/`: scripts for the scheduled workflows.
 - `checks/`: the flake checks that CI runs.
 
 On macOS, use Home Manager for CLI tools. Use Homebrew for GUI applications.
@@ -52,7 +51,7 @@ Linux builds `server` as `nixos-upgrade` builds it. A VM test starts the worksho
 On macOS, CI runs `setup.sh`, `reload!` and the deployed `reload!` for each Mac with a throwaway key.
 CI does not activate hosts or test physical boot.
 Run the same evaluation and checks on a Mac with `nix flake check --all-systems --no-build` and `nix flake check`.
-Weekly flake updates open a PR. CI must pass before automatic merge.
+Renovate opens update PRs for the flake inputs, the GitHub Actions and the Antigravity release. CI must pass before automatic merge.
 The server applies `main` each hour. Strict branch protection keeps only tested trees on `main`. See [server automation](docs/automation.md).
 
 Use [ASD-STE100](https://www.asd-ste100.org/STE_faq.html) for repository text. See the [writing rules](docs/writing.md).

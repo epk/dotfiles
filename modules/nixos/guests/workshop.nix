@@ -14,7 +14,7 @@ let
     direct = false;
     autoCreate = false;
   };
-  paseo = pkgs.callPackage ../../../packages/paseo.nix { };
+  inherit (pkgs) paseo;
   sharedBrowser = pkgs.callPackage ../../../packages/shared-browser.nix { };
   antigravity = pkgs.callPackage ../../../packages/antigravity-cli.nix { };
   # Paseo starts agents with the service PATH. Give them the same tools as a shell.
