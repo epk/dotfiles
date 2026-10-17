@@ -71,14 +71,16 @@ run_reload() {
     echo "$1 does not define reload!." >&2
     exit 1
   }
-  nh=$(home "$1" programs.nh.package.outPath)
+  # Home Manager wraps nh locally, so no cache has it. Build it from its derivation.
+  nh=$(nix build --no-link --print-out-paths --impure --expr \
+    "(builtins.head (builtins.attrValues (builtins.getFlake \"$2\").darwinConfigurations.$host.config.home-manager.users)).programs.nh.package")
   # reload! calls programs by store path. Fetch them.
-  grep -o '/nix/store/[^/ ]*' <<<"$fn"$'\n'"$nh" | sort -u | xargs nix build --no-link
+  grep -o '/nix/store/[^/ ]*' <<<"$fn" | sort -u | xargs nix build --no-link
   REAL_NH=$nh NH_FLAKE=$PWD PATH="$tmp/bin:$PATH" zsh -fc "$fn; reload!" </dev/null
 }
-run_reload .
+run_reload . "$PWD"
 # Each Mac runs the reload! that it already has. It must work with this revision.
 deployed=$(nix eval github:epk/dotfiles#darwinConfigurations --apply "c: c ? $host")
 if [ "$deployed" = true ]; then
-  run_reload github:epk/dotfiles
+  run_reload github:epk/dotfiles github:epk/dotfiles
 fi
