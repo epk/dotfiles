@@ -1,7 +1,7 @@
 # zsh and the shared Home Manager configuration for one account.
 {
   config,
-  homeManager,
+  inputs,
   lib,
   pkgs,
   ...
@@ -10,7 +10,7 @@ let
   user = config.dotfiles.homeUser;
 in
 {
-  imports = [ homeManager ];
+  imports = [ inputs.home-manager.nixosModules.home-manager ];
 
   options.dotfiles.homeUser = lib.mkOption {
     type = lib.types.str;
@@ -24,10 +24,16 @@ in
       enableGlobalCompInit = false;
     };
     users.users.${user}.shell = pkgs.zsh;
+    # SSH sessions from Ghostty need its terminal description.
+    environment.systemPackages = [ pkgs.ghostty.terminfo ];
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
       backupFileExtension = "before-nix";
+      sharedModules = [
+        inputs.nix-index-database.homeModules.default
+        inputs.try.homeModules.default
+      ];
       users.${user}.imports = [ ../home ];
     };
   };

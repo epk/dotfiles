@@ -1,6 +1,6 @@
 {
   config,
-  homeManager,
+  inputs,
   lib,
   pkgs,
   ...
@@ -36,7 +36,7 @@ in
       pkgs = null;
       specialArgs = {
         workshop = cfg;
-        inherit homeManager;
+        inherit inputs;
       };
       config = ./guests/workshop.nix;
     };

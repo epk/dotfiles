@@ -32,7 +32,7 @@ Keep access details and deployment status in the private inventory.
 
 - `hosts/`: machine definitions.
 - `modules/darwin`: shared Mac configuration.
-- `modules/home`: the shell and Git configuration for every host. `darwin.nix` adds the Mac-only parts.
+- `modules/home`: the shell, Git and CLI tools for every host. `dev.nix` adds the language toolchains for the Macs and the workshop guest. `darwin.nix` adds the GUI and macOS parts.
 - `modules/nixos`: host and guest configuration.
 - `profiles/`: work and personal configuration.
 - `lib/`: the private metadata loader and the neutral example values.

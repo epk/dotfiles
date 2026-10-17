@@ -7,7 +7,7 @@ pkgs.testers.runNixOSTest {
     storageDirectory = "/var/lib/workshop";
     administratorKeys = [ ];
   };
-  node.specialArgs.homeManager = self.inputs.home-manager.nixosModules.home-manager;
+  node.specialArgs.inputs = self.inputs;
   nodes.guest =
     { lib, ... }:
     {
