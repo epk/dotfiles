@@ -52,10 +52,16 @@
     cores = 2;
     # Only root can change daemon trust or select privileged builders.
     trusted-users = [ "root" ];
+    # The 32 GiB root also holds builds. Collect garbage before it fills.
+    min-free = 4 * 1024 * 1024 * 1024;
+    max-free = 8 * 1024 * 1024 * 1024;
   };
-  # Keep a GC root for each guest system closure that uses the shared store.
-  # Run store collection manually until the configuration defines guest retention.
-  nix.gc.automatic = false;
+  # The current system references every guest closure. Old generations are the rollback window.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
   # microvm.nix enables KSM. Shared pages across guests leak memory timing between them.
   hardware.ksm.enable = false;
   services.fstrim.enable = true;

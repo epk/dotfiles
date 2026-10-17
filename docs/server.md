@@ -135,6 +135,7 @@ That guest uses a read-only EROFS system image instead of the default virtio-fs 
 The host uses `truncate` to create sparse raw images.
 It formats ext4 inside each image without fallocate preallocation.
 The default guest disk is 4096 MiB and mounts at `/var`.
+The size applies only when the host creates the image. A later change does not resize an existing disk.
 
 The upstream disk creator sets `chattr +C`.
 The guest profile disables upstream `autoCreate` to keep CoW, data checksums and compression.

@@ -84,6 +84,8 @@ in
         ExecStopPost = lib.mkForce [ "" ];
       };
     };
+    # The guest uses the host as its IPv4 router.
+    boot.kernel.sysctl."net.ipv4.conf.all.forwarding" = true;
     # Apply rules only to the guest interface. Keep host access rules unchanged.
     systemd.services.workshop-network = {
       description = "Private routed network for the agent VM";
@@ -108,6 +110,9 @@ in
       script = ''
         set -euo pipefail
         ip address replace 10.77.0.1/30 dev workshop-tap
+        # Route guest traffic with the main table, before the Tailscale rules, so it cannot reach the tailnet.
+        ip rule show | grep -q 'iif workshop-tap lookup main' ||
+          ip rule add iif workshop-tap priority 5200 lookup main
         for chain in workshop-input workshop-forward workshop-return; do
           iptables -N "$chain" 2>/dev/null || true
           iptables -F "$chain"
@@ -134,6 +139,7 @@ in
         ip6tables -C FORWARD -o workshop-tap -j DROP 2>/dev/null || ip6tables -I FORWARD -o workshop-tap -j DROP
       '';
       preStop = ''
+        ip rule del iif workshop-tap priority 5200 lookup main 2>/dev/null || true
         iptables -D INPUT -i workshop-tap -j workshop-input 2>/dev/null || true
         iptables -D FORWARD -i workshop-tap -j workshop-forward 2>/dev/null || true
         iptables -D FORWARD -o workshop-tap -j workshop-return 2>/dev/null || true
