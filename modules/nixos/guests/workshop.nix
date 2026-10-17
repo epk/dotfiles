@@ -83,7 +83,11 @@ let
   };
 in
 {
-  imports = [ ../microvm-guest.nix ];
+  imports = [
+    ../microvm-guest.nix
+    ../home.nix
+  ];
+  dotfiles.homeUser = "operator";
   # nixpkgs plans to remove Gemini CLI. Keep it for API-key access until then.
   nixpkgs.config.problems.handlers.gemini-cli.removal = "ignore";
   nixpkgs.config.allowUnfreePredicate =

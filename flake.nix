@@ -119,6 +119,7 @@
         system = "x86_64-linux";
         specialArgs = {
           inherit nixpkgs metadata;
+          homeManager = home-manager.nixosModules.home-manager;
         };
         modules = [
           ./hosts/server

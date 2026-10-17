@@ -28,7 +28,6 @@
     uid = 1000;
     home = "/home/${metadata.server.username}";
     extraGroups = [ "wheel" ];
-    shell = pkgs.bashInteractive;
     openssh.authorizedKeys.keys = metadata.server.authorizedKeys;
   };
   security.sudo.wheelNeedsPassword = false;
