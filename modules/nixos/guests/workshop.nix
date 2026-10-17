@@ -148,6 +148,8 @@ in
     # Upstream gives the TAP device to the user microvm. This VM runs as its own host user.
     binScripts.tap-up = lib.mkForce ''
       set -eu
+      # A crashed VM can leave its TAP device behind.
+      ${pkgs.iproute2}/bin/ip link delete ${tap} 2>/dev/null || true
       ${pkgs.iproute2}/bin/ip tuntap add dev ${tap} mode tap user vm-${config.networking.hostName}
       ${pkgs.iproute2}/bin/ip link set ${tap} up
     '';

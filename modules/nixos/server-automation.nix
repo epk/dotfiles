@@ -20,10 +20,9 @@
     group = "root";
     mode = "0400";
   };
-  systemd.services.nixos-upgrade = {
-    environment.DOTFILES_PRIVATE_CONFIG = config.age.secrets.private-metadata.path;
-    unitConfig.ConditionPathExists = config.age.secrets.private-metadata.path;
-  };
+  # Without the metadata file the evaluation fails, and systemctl --failed shows the unit.
+  systemd.services.nixos-upgrade.environment.DOTFILES_PRIVATE_CONFIG =
+    config.age.secrets.private-metadata.path;
   age.secrets.tailscale-auth = {
     file = ../../secrets/tailscale/server.age;
     owner = "root";
@@ -39,5 +38,11 @@
       "--advertise-tags=tag:exit-node"
       "--ssh"
     ];
+  };
+
+  # Upstream logs in once at boot. Retry a failed login.
+  systemd.services.tailscaled-autoconnect.serviceConfig = {
+    Restart = "on-failure";
+    RestartSec = "30s";
   };
 }

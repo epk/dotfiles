@@ -16,6 +16,5 @@
     "sd_mod"
   ];
   boot.kernelModules = [ "kvm-intel" ];
-  powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
