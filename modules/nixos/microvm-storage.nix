@@ -19,7 +19,7 @@ in
   microvm.host.installCommand = false;
   assertions = lib.concatMap (name: [
     {
-      assertion = builtins.match "[a-z][a-z0-9-]{0,30}" name != null;
+      assertion = builtins.match "[a-z][a-z0-9-]{0,27}" name != null;
       message = "Use short VM names with lowercase letters, digits and hyphens.";
     }
     {
@@ -87,11 +87,14 @@ in
             chown vm-${name}:kvm "$directory"
             chmod 0700 "$directory"
             image=${lib.escapeShellArg volume.image}
+            # Create the image under a temporary name, so an interrupted run leaves no half-made disk.
             if [ ! -e "$image" ]; then
-              truncate -s ${toString volume.size}M "$image"
-              mkfs.ext4 -q -m 0 -E nodiscard "$image"
+              truncate -s ${toString volume.size}M "$image.tmp"
+              mkfs.ext4 -q -m 0 -E nodiscard "$image.tmp"
+              mv "$image.tmp" "$image"
             fi
             flags=$(lsattr -d "$image")
+            flags=''${flags%% *}
             case "$flags" in *C*) echo "Cannot use NOCOW disk $image" >&2; exit 1 ;; esac
             chown vm-${name}:kvm "$image"
             chmod 0600 "$image"

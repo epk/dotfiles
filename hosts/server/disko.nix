@@ -1,6 +1,4 @@
 {
-  config,
-  lib,
   metadata,
   ...
 }:
@@ -16,9 +14,6 @@ let
     "nofail"
     "x-systemd.device-timeout=10s"
   ];
-  vmSubvolumes = lib.genAttrs (map (name: "@vms/${name}") (builtins.attrNames config.microvm.vms)) (
-    _: { }
-  );
 in
 {
   # Root and Nix share the physical 32 GiB host partition.
@@ -66,8 +61,7 @@ in
                   mountpoint = "/storage/nvme/vms";
                   mountOptions = dataOptions;
                 };
-              }
-              // vmSubvolumes;
+              };
             };
           };
           root = {
@@ -127,14 +121,19 @@ in
                 mountpoint = "/storage/sata/vms";
                 mountOptions = dataOptions;
               };
-            }
-            // vmSubvolumes;
+            };
           };
         };
       };
     };
   };
   fileSystems."/nix".neededForBoot = true;
+  # A wrong label prefix in the metadata would break the next boot. Refuse to switch to it.
+  system.preSwitchChecks.partitionLabels = ''
+    for part in esp root; do
+      test -e "/dev/disk/by-partlabel/${metadata.server.labelPrefix}-$part"
+    done
+  '';
   services.btrfs.autoScrub = {
     enable = true;
     fileSystems = [
