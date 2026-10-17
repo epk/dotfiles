@@ -71,9 +71,9 @@ It provides browser streaming, not a full VNC desktop.
 
 ## Packages and isolation
 
-The flake pins Paseo. The guest uses Node.js 24 for its daemon and plugin.
+The guest uses the nixpkgs Paseo build and its Node.js runtime for the daemon and the plugin.
 The repository pins Google's versioned Antigravity download URL and archive checksum.
-Weekly update PRs refresh `packages/antigravity-release.json`. CI must pass before deployment.
+Renovate updates `packages/antigravity-release.json` to each new release. CI must pass before deployment.
 `packages/shared-browser.nix` pins the plugin archive and its npm dependency hash.
 Nix builds the supervisor and MCP bundles. Startup does not install packages or download Chromium.
 The guest uses the source-built `agent-browser` package and the stock Nix Chromium package.

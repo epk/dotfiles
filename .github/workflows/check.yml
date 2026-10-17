@@ -50,34 +50,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
-      # cache.nixos.org does not have the overridden Paseo build, which takes about 7 minutes.
-      - id: paseo
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/paseo-cache
-          key: paseo-${{ hashFiles('flake.lock', 'packages/paseo.nix', 'packages/shared-browser.nix', 'modules/nixos/guests/workshop.nix') }}
-
       - name: Build system closure and VM test
         run: |
-          # Create the cache as the runner user. The root daemon would create it read-only for nix copy.
-          mkdir -p ~/paseo-cache
-          nix store info --store "file://$HOME/paseo-cache"
-          nix build --impure --no-link --print-out-paths \
-            --option extra-substituters "file://$HOME/paseo-cache?trusted=1" \
+          nix build --impure --no-link \
             .#nixosConfigurations.server.config.system.build.toplevel \
-            .#checks.x86_64-linux.workshop-guest | tee "$RUNNER_TEMP/outputs"
-
-      - name: Store the Paseo build
-        if: steps.paseo.outputs.cache-hit != 'true'
-        run: |
-          xargs nix path-info -r <"$RUNNER_TEMP/outputs" | grep -E '/[a-z0-9]{32}-paseo(-shared-browser)?-[0-9]' |
-            xargs nix copy --to "file://$HOME/paseo-cache"
-
-      - if: steps.paseo.outputs.cache-hit != 'true'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/paseo-cache
-          key: ${{ steps.paseo.outputs.cache-primary-key }}
+            .#checks.x86_64-linux.workshop-guest
 
   build:
     name: build ${{ matrix.host }}

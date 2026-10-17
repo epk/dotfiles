@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "nix": { "enabled": true },
+  "automerge": true,
+  "automergeStrategy": "squash",
+  "rebaseWhen": "behind-base-branch",
+  "lockFileMaintenance": { "enabled": true, "automerge": true },
+  "customDatasources": {
+    "antigravity": {
+      "defaultRegistryUrlTemplate": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$match(url,/antigravity-cli\\/([0-9.]+-[0-9]+)\\/linux-x64\\//).groups[0],\"digest\":sha512}]}"
+      ]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^packages/antigravity-release\\.json$/"],
+      "matchStrings": [
+        "\"version\": \"[0-9.]+\",\\s+\"url\": \"https://storage\\.googleapis\\.com/antigravity-public/antigravity-cli/(?<currentValue>[0-9.]+-[0-9]+)/linux-x64/cli_linux_x64\\.tar\\.gz\",\\s+\"sha512\": \"(?<currentDigest>[0-9a-f]{128})\""
+      ],
+      "autoReplaceStringTemplate": "\"version\": \"{{lookup (split newValue '-') 0}}\",\n  \"url\": \"https://storage.googleapis.com/antigravity-public/antigravity-cli/{{{newValue}}}/linux-x64/cli_linux_x64.tar.gz\",\n  \"sha512\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "antigravity-cli",
+      "datasourceTemplate": "custom.antigravity",
+      "versioningTemplate": "loose"
+    }
+  ],
+  "packageRules": [
+    { "matchManagers": ["github-actions"], "minimumReleaseAge": "7 days" },
+    { "matchManagers": ["github-actions"], "matchUpdateTypes": ["major"], "automerge": false },
+    { "matchDatasources": ["github-runners"], "enabled": false }
+  ]
+}

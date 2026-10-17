@@ -7,7 +7,6 @@ let
   homeOf = c: c.config.home-manager.users.${c.config.system.primaryUser};
   recipients = import ../secrets/recipients.nix;
   rules = import ../secrets/agenix-rules.nix;
-  tailscaleTargets = lib.importJSON ../automation/tailscale-targets.json;
   workshop = config.microvm.vms.workshop.config.config;
   workshopUnit = config.systemd.services."microvm@workshop".serviceConfig;
   workshopNetwork = config.systemd.services.workshop-network.script;
@@ -123,10 +122,12 @@ assert lib.elem "--impure" config.system.autoUpgrade.flags;
 assert
   config.systemd.services.nixos-upgrade.environment.DOTFILES_PRIVATE_CONFIG
   == config.age.secrets.private-metadata.path;
-# Rotation encrypts new enrollment keys for the same recipients as the rules.
-assert lib.all (n: tailscaleTargets.${n}.publicKeys == rules."tailscale/${n}.age".publicKeys) (
-  lib.attrNames tailscaleTargets
-);
+# The upstream autoconnect reads the key through the file: reference, not as a process argument.
+# A store file holds no secret, so its content in the arguments is public.
+assert lib.hasPrefix builtins.storeDir config.services.tailscale.authKeyFile;
+assert lib.hasInfix
+  (builtins.unsafeDiscardStringContext ''--auth-key "$(cat ${config.services.tailscale.authKeyFile})"'')
+  (builtins.unsafeDiscardStringContext config.systemd.services.tailscaled-autoconnect.script);
 # The workshop guest keeps its isolation. Builds cannot detect a change to these values.
 assert workshop.microvm.hypervisor == "firecracker";
 # The guest mounts disks by position: the store disk, then the volumes in order.

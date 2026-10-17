@@ -60,7 +60,7 @@ Systemd supplies a private credential file to the service.
 Do not put secret values in Nix expressions, derivations, command arguments, prompts or logs.
 
 The declared secrets are the Tailscale enrollment key and the private metadata.
-See [server automation](automation.md) for their rotation and delivery.
+See [server automation](automation.md) for the Tailscale secret and its replacement.
 Declare each application secret only when its consumer exists.
 The host does not need a live 1Password connection for boot or Tailscale access.
 
@@ -92,7 +92,6 @@ After a public key change, re-encrypt affected files with the command below.
 AGENIX_RULES=secrets/agenix-rules.nix nix run .#agenix -- -r -i <recovery-private-key-file>
 ```
 
-Update `publicKeys` in `automation/tailscale-targets.json` to the same keys. CI fails when they differ from the rule.
 Verify delivery before removing the previous key.
 If a private key was exposed, rotate the actual credentials at their issuers.
 Re-encryption does not revoke access to credentials recovered from old encrypted files.

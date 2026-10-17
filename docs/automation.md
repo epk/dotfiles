@@ -2,11 +2,16 @@
 
 ## Workflows
 
-- `check.yml` runs on pushes to all branches and on dispatch.
-- `rotate-tailscale.yml` runs each week, on dispatch and on pushes to `main` that change its files.
-- `update-flake-lock.yml` runs each week and on dispatch.
+`check.yml` runs on pushes to all branches and on dispatch. It is the only workflow.
 
-Its files are `automation/tailscale-targets.json`, `automation/rotate-tailscale.py`, `automation/open-bot-pr.sh` and `.github/workflows/rotate-tailscale.yml`.
+Renovate, the hosted Mend app, opens the update PRs. Its configuration is `.github/renovate.json`.
+
+- It updates `flake.lock` each Monday.
+- It updates the GitHub Actions pins 7 days after each release. A major version needs a manual merge.
+- It updates `packages/antigravity-release.json` to the latest Antigravity release and its checksum.
+
+Renovate pushes as an app, so its pushes start CI. Its PRs merge automatically after the required checks pass.
+Renovate rebases a PR that falls behind `main`. The Dependency Dashboard issue lists pending updates.
 
 ## Required checks
 
@@ -44,41 +49,28 @@ sudo nixos-rebuild switch --rollback
 
 Then open a revert PR. The next hourly run applies `main` again until the revert merges.
 
-Pushes with `GITHUB_TOKEN` do not start push CI. `automation/open-bot-pr.sh` dispatches CI for the bot branch.
-GitHub does not count dispatched runs as PR checks. A bot PR merges only after a push run passes.
-To start a push run, select "Update branch" on the PR. A push with an app token also starts it.
-The check workflow does not use pull_request events, which require approval for bot-created PRs.
-The bot job fails after 30 minutes without a merge, or at once when a required check fails.
-If CI fails or a PR cannot merge, the workflow stops without deployment.
+If CI fails, the PR does not merge and the host does not change.
 The repository must remain public. Private repositories require a separate read credential.
 
 ## Tailscale enrollment
 
-The weekly rotation workflow uses GitHub OIDC to request enrollment keys from Tailscale.
-The trust rule permits only `rotate-tailscale.yml` on protected `main` in `epk/dotfiles`.
-Keys are pre-approved and reusable.
-Each rotation creates a new key. Earlier keys stay valid until they expire after 30 days.
-The workflow encrypts each key for its machine public key and the recovery public key.
-It opens a PR with the encrypted files under `secrets/tailscale`.
-Required CI checks control the merge. The deployment process applies the merged files.
-Resolve a failed rotation before the current enrollment key expires.
-Do not put plaintext keys in Git, workflow output, artifacts or the Nix store.
+The host logs in to Tailscale only when it has no login. The upstream `tailscaled-autoconnect` service runs `tailscale up` in that case.
+A connected host does not log in again. Keep `/var/lib/tailscale` across rebuilds. Host device expiry is disabled.
 
-Agenix decrypts the host enrollment key to `/run/agenix/tailscale-auth` with root-only access.
-NixOS `services.tailscale.authKeyFile` selects that file.
-A small service override passes the file path instead of the plaintext key to Tailscale.
-It authenticates only when Tailscale reports `NeedsLogin`.
-A connected host does not authenticate again when the enrollment key changes.
-Keep `/var/lib/tailscale` across rebuilds. Current host device expiry is disabled.
-Enrollment key expiry does not remove an enrolled device.
-Do not force reauthentication or delete device state during deployment.
+`secrets/tailscale/server.age` holds a Tailscale OAuth client secret, followed by `?ephemeral=false&preauthorized=true`.
+The client has only the `auth_keys` scope and the tag `tag:exit-node`. The secret does not expire.
+Agenix decrypts it to `/run/agenix/tailscale-auth` with root-only access.
+`services.tailscale.authKeyFile` contains only `file:` and that path, so the secret does not appear in process arguments.
+CI checks that the upstream service still reads the key this way.
 
-GitHub variables contain `TS_CLIENT_ID` and `TS_AUDIENCE`. Neither value is a secret.
-The trust rule grants enrollment key access for `tag:exit-node`. It grants no device or policy write access.
-Its subject is `repo:epk/dotfiles:ref:refs/heads/main`.
-Its `workflow_ref` is `epk/dotfiles/.github/workflows/rotate-tailscale.yml@refs/heads/main`.
-Its audience is `https://tailscale.com/epk/dotfiles/enrollment`.
-Keep decrypted keys outside application agent access.
+To replace the secret, do these steps:
+
+1. Create a new OAuth client in the Tailscale admin console with the same scope and tag.
+2. Run `rm secrets/tailscale/server.age`.
+3. Run `AGENIX_RULES=secrets/agenix-rules.nix nix run .#agenix -- -e tailscale/server.age` and enter the new secret.
+4. Merge the change. After the host applies it, revoke the old client.
+
+If the host private key or the recovery private key is exposed, revoke the client at once.
 
 ## New machines and guests
 
@@ -86,11 +78,9 @@ Each new machine requires a separate private key and public key.
 Store its private key recovery copy in the operations vault.
 Provision that private key through the trusted installer or VM provisioning process.
 Do not give a guest the host or recovery private key.
-Add the machine name, tags and public keys to `automation/tailscale-targets.json`.
-Add a `tailscale/<name>.age` rule with the same `publicKeys` to `secrets/agenix-rules.nix`. CI checks that they are equal.
-Extend the Tailscale trust rule only when the new machine requires another tag.
-Merge these changes. The rotation workflow then opens a PR that adds the encrypted file.
-After that PR merges, declare the file with `age.secrets` and select its path with `services.tailscale.authKeyFile`.
+Add a `tailscale/<name>.age` rule with the machine and recovery public keys to `secrets/agenix-rules.nix`.
+Create the file with the agenix command above and an OAuth client secret for the tags of the machine.
+Declare the file with `age.secrets` and set `services.tailscale.authKeyFile` as `modules/nixos/server-automation.nix` does.
 Declare its hostname and public options with `services.tailscale.extraUpFlags`.
 Preserve its private key and Tailscale state on persistent storage.
 The public repository alone cannot authenticate unknown hardware. Private key provisioning remains part of installation.
@@ -98,7 +88,7 @@ The public repository alone cannot authenticate unknown hardware. Private key pr
 ## Nix inputs and user configuration
 
 The main package input is `nixpkgs-unstable`. `flake.lock` pins its exact revision.
-Weekly lock updates open a PR. Required CI checks control the merge.
+Renovate opens a lock update PR each week. Required CI checks control the merge.
 Channels are disabled. The Nix registry selects the pinned main nixpkgs input.
 Dependency flakes can have separate package inputs.
 `system.stateVersion` controls compatibility defaults. It does not select package updates.
@@ -129,4 +119,4 @@ CI cannot check the private metadata.
 See [credentials](credentials.md) to edit the encrypted file.
 If the server metadata is stale, see [recover the private metadata](server.md#recover-the-private-metadata).
 
-Sources: [GitHub bot PR approval](https://github.blog/changelog/2026-06-11-bot-created-pull-requests-can-run-workflows-if-approved/), [Tailscale OIDC](https://tailscale.com/docs/features/workload-identity-federation), [enrollment keys](https://tailscale.com/docs/features/access-control/auth-keys).
+Sources: [Renovate Nix manager](https://docs.renovatebot.com/modules/manager/nix/), [Renovate automerge](https://docs.renovatebot.com/key-concepts/automerge/), [Tailscale OAuth clients](https://tailscale.com/docs/features/oauth-clients), [enrollment keys](https://tailscale.com/docs/features/access-control/auth-keys).

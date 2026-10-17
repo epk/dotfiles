@@ -19,7 +19,7 @@ def tag(public_key):
 files = sorted(str(path.relative_to(secrets)) for path in secrets.rglob("*.age"))
 if unruled := sorted(set(files) - set(rules)):
     sys.exit(f"These encrypted files have no rule: {unruled}.")
-# A new rule has no file until the first rotation or edit creates it.
+# A new rule has no file until agenix creates it.
 for name in files:
     rule = rules[name]
     header = (secrets / name).read_bytes().split(b"\n---", 1)[0].decode().splitlines()
