@@ -2,7 +2,7 @@
 
 ## Workflows
 
-`check.yml` runs on pushes to all branches and on dispatch. It is the only workflow.
+`check.yml` runs on pushes to all branches. It is the only workflow.
 
 Renovate, the hosted Mend app, opens the update PRs. Its configuration is `.github/renovate.json`.
 
@@ -17,15 +17,26 @@ Renovate rebases a PR that falls behind `main`. The Dependency Dashboard issue l
 
 A PR merges only after these checks pass:
 
-- `eval + format`
-- `build server`
-- `build macos-personal`
-- `build macos-work`
+- `linux`: evaluates all outputs, builds the `x86_64-linux` checks and checks the deployed output names.
+- `darwin`: builds the `aarch64-darwin` checks.
+
+The checks include `server`, `macos-personal` and `macos-work`.
+
+## Binary cache
+
+CI uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
+The repository secret `CACHIX_AUTH_TOKEN` grants write access.
+`nix-fast-build --skip-cached` builds only the checks that neither cache holds. An unchanged check costs no build and no download.
+The server uses the cache as an extra substituter. Nix accepts a path from it only with the signature of the cache key.
+Only pushes to this repository run CI with the token. You and Renovate can push.
+The free plan holds 5 GiB. At the limit, Cachix removes the least recently used paths.
+
+The server also runs the Cachix Deploy agent of the workspace `epk`. `secrets/cachix/agent.age` holds its token.
+CI does not deploy to the agent yet. `system.autoUpgrade` applies `main` until a deploy job replaces it.
 
 ## Deployment
 
-`check.yml` evaluates all outputs, builds `server` and runs the flake checks.
-Its Mac jobs run `setup.sh` and `reload!`.
+`check.yml` evaluates all outputs and builds the flake checks.
 The host uses NixOS `system.autoUpgrade` to fetch `github:epk/dotfiles#server` each hour.
 Branch protection on `main` is strict. A PR merges only when it is up to date with `main` and its required checks pass.
 So `main` holds only trees that CI tested.

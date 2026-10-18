@@ -45,12 +45,11 @@ Keep employer settings in the work profile. Apply Home Manager through nix-darwi
 
 ## CI
 
-CI evaluates all outputs and runs the flake checks: format, lint, policy and encrypted-file recipients.
+CI runs the flake checks on Linux and on macOS. The checks are the host outputs, the workshop guest VM test, format, lint, policy and encrypted-file recipients.
 CI builds the same outputs that the hosts apply. It does not decrypt secrets.
-Linux builds `server` as `nixos-upgrade` builds it. A VM test starts the workshop guest services.
-On macOS, CI runs `setup.sh`, `reload!` and the deployed `reload!` for each Mac.
+It builds only the checks that no cache holds. See [server automation](docs/automation.md#binary-cache).
 CI does not activate hosts or test physical boot.
-Run the same evaluation and checks on a Mac with `nix flake check --all-systems --no-build` and `nix flake check`.
+On a Mac, `nix flake check` runs the macOS checks. `nix flake check --all-systems --no-build` evaluates all outputs.
 Renovate opens update PRs for the flake inputs, the GitHub Actions and the Antigravity release. CI must pass before automatic merge.
 The server applies `main` each hour. Strict branch protection keeps only tested trees on `main`. See [server automation](docs/automation.md).
 

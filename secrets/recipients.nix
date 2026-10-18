@@ -1,6 +1,4 @@
 {
   server = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEC2GNgR+dm+/yBYBz6j/91BCM+l6e16oRqa7EVO2vO2";
-  macos-personal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINb+FuiMrgo/DvtcInlnqDlfbyJATO0uAVPwlY/9fOlv";
-  macos-work = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAPvJ/0Zz16YSlBzYBrBBrVlLue3FgX+jffZ9syIrAVH";
   recovery = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwaSQZpCARlBqMsSgH0IKhRaF3TK/mdDaUJKRQgOZYs";
 }
