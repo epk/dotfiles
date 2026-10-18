@@ -38,11 +38,6 @@ sudo install -d -m 0700 /var/lib/agenix
 sudo install -m 0600 "$tmp/key" /var/lib/agenix/identity
 echo '{}' | "$(nix build --no-link --print-out-paths .#age)/bin/age" -R "$tmp/key.pub" -o secrets/private/metadata.age
 
-# reload! uses the checkout at the flake path of the user.
-flake=$(home . programs.nh.flake)
-sudo mkdir -p "$(dirname "$flake")"
-sudo ln -sfn "$PWD" "$flake"
-
 mkdir "$tmp/bin"
 cat >"$tmp/bin/sudo" <<'EOF'
 #!/bin/sh
@@ -62,7 +57,11 @@ chmod +x "$tmp/bin/"*
 PATH="$tmp/bin:$PATH" ./setup.sh "${host#macos-}"
 
 run_reload() {
-  local fn nh
+  local fn nh flake
+  # reload! uses the checkout at the flake path of its user.
+  flake=$(home "$1" programs.nh.flake)
+  sudo mkdir -p "$(dirname "$flake")"
+  sudo ln -sfn "$PWD" "$flake"
   fn=$(home "$1" programs.zsh.initContent | sed -n '/^reload!() {/,/^}/p')
   [ -n "$fn" ] || {
     echo "$1 does not define reload!." >&2
