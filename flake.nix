@@ -85,7 +85,7 @@
         role:
         nix-darwin.lib.darwinSystem {
           specialArgs = {
-            inherit nix-index-database try;
+            inherit determinate nix-index-database try;
             user = {
               username = "aditya.sharma";
               name = "Aditya Sharma";

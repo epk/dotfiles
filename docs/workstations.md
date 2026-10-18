@@ -11,6 +11,8 @@ curl -fsSL https://install.determinate.systems/nix | sh -s -- install
 
 Before the first activation of `macos-personal`, sign in to the Mac App Store.
 Homebrew Bundle uses `mas` to install the declared App Store applications.
+The configuration of `macos-personal` replaces the `/etc/nix/nix.custom.conf` of the installer.
+Before its first activation, run `sudo mv /etc/nix/nix.custom.conf /etc/nix/nix.custom.conf.before-nix-darwin`.
 
 ## Apply the configuration
 
@@ -26,9 +28,7 @@ The command applies the system settings and Home Manager configuration together.
 This flake does not define a separate `homeConfigurations` output.
 If a file already exists, Home Manager moves it to a file with the `.before-nix` suffix.
 
-The installed `reload!` of a Mac selects its output by name. CI refuses a PR that removes a deployed Mac output.
-To rename or remove an output, add the old name to `retired` in `.github/check-live.nix`.
-After the merge, run `./setup.sh <role>` again on that Mac.
+The installed `reload!` of a Mac selects its output by name. After a rename of an output, run `./setup.sh <role>` on that Mac.
 
 ## Check a build
 

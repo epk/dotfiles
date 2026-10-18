@@ -51,6 +51,6 @@ It builds only the checks that no cache holds. See [server automation](docs/auto
 CI does not activate hosts or test physical boot.
 On a Mac, `nix flake check` runs the macOS checks. `nix flake check --all-systems --no-build` evaluates all outputs.
 Renovate opens update PRs for the flake inputs, the GitHub Actions and the Antigravity release. CI must pass before automatic merge.
-The server applies `main` each hour. Strict branch protection keeps only tested trees on `main`. See [server automation](docs/automation.md).
+CI deploys `main` to the server through Cachix Deploy. Strict branch protection keeps only tested trees on `main`. See [server automation](docs/automation.md).
 
 Use [ASD-STE100](https://www.asd-ste100.org/STE_faq.html) for repository text. See the [writing rules](docs/writing.md).

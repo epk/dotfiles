@@ -44,6 +44,27 @@ jobs:
           nix run --inputs-from . nixpkgs#nix-fast-build --
           --skip-cached --no-nom --max-jobs 1 --cachix-cache epk --flake .#checks.${{ matrix.system }}
 
-      - name: Check that the deployed hosts find their outputs
-        if: matrix.name == 'linux'
-        run: nix eval --impure --raw --file .github/check-live.nix
+  # The agent downloads the server closure that the check job pushed, then activates it.
+  # It rolls back if it cannot reach Cachix after the activation.
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: deploy
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: epk
+          skipPush: true
+      - name: Deploy the server
+        env:
+          CACHIX_ACTIVATE_TOKEN: ${{ secrets.CACHIX_ACTIVATE_TOKEN }}
+        run: |
+          server=.#nixosConfigurations.server.config
+          jq -n --arg agent "$(nix eval --raw $server.services.cachix-agent.name)" \
+            --arg path "$(nix eval --raw $server.system.build.toplevel)" \
+            '{agents: {($agent): $path}}' >deploy.json
+          cachix deploy activate deploy.json

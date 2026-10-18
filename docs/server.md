@@ -69,8 +69,11 @@ This configuration does not define a backup destination.
 
 ## Apply the configuration
 
+CI deploys `main` to the host. See [server automation](automation.md#deployment).
+To apply a configuration by hand, run this command:
+
 ```sh
-sudo nixos-rebuild switch --flake /etc/nixos#server
+sudo nixos-rebuild switch --flake github:epk/dotfiles#server
 ```
 
 SSH listens on all interfaces and accepts key login only. Use Tailscale to connect from outside the local network.
@@ -80,9 +83,6 @@ Keep `/var/lib/tailscale` and the SSH host keys.
 Do not put enrollment keys or private credentials in Git, command arguments or the Nix store.
 See [server automation](automation.md) for deployment, Tailscale enrollment and Nix input updates.
 
-A rename of `nixosConfigurations.server` needs a manual switch on the host.
-`nixos-upgrade` builds the name that `main` sets. CI refuses a PR that removes this name.
-Add the old name to `retired` in `.github/check-live.nix` for the rename PR.
 
 ## Nix guests
 

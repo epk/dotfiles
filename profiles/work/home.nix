@@ -5,6 +5,7 @@
 }:
 
 let
+  cachix = import ../../lib/cachix.nix;
   home = config.home.homeDirectory;
   tec = "${home}/.local/state/tec";
   tecGlobal = "${tec}/profiles/base/current/global";
@@ -37,6 +38,13 @@ in
       }
     ];
   };
+
+  # Shopify's nix.conf.d/shopify.conf makes this user trusted, so a user setting can add a cache.
+  # The Shopify include owns /etc/nix/nix.custom.conf on this Mac.
+  home.file.".config/nix/nix.conf".text = ''
+    extra-substituters = ${cachix.url}
+    extra-trusted-public-keys = ${cachix.publicKey}
+  '';
 
   programs.ssh.includes = [
     "~/.config/dev/ssh/include"

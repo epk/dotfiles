@@ -18,13 +18,6 @@
     enable = true;
     administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
   };
-  # Apply main now instead of at the next hourly upgrade.
-  home-manager.users.${config.dotfiles.homeUser}.programs.zsh.initContent = ''
-    reload!() {
-      sudo nixos-rebuild switch --refresh --flake ${config.system.autoUpgrade.flake} "$@" &&
-        exec ${pkgs.zsh}/bin/zsh
-    }
-  '';
   networking.hostName = "servnerr";
   # Use the wired interface for host access.
   networking.useDHCP = false;

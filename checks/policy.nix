@@ -101,8 +101,6 @@ assert lib.all (n: lib.hasInfix "--hostname ${n} " (homeOf darwin.${n}).programs
   lib.attrNames darwin
 );
 assert lib.all (c: (homeOf c).programs.nh.flake != null) (lib.attrValues darwin);
-# The upgrade service builds an existing output.
-assert self.nixosConfigurations ? ${lib.last (lib.splitString "#" config.system.autoUpgrade.flake)};
 # The upstream autoconnect reads the key through the file: reference, not as a process argument.
 # A store file holds no secret, so its content in the arguments is public.
 assert lib.hasPrefix builtins.storeDir config.services.tailscale.authKeyFile;

@@ -17,7 +17,7 @@ Renovate rebases a PR that falls behind `main`. The Dependency Dashboard issue l
 
 A PR merges only after these checks pass:
 
-- `linux`: evaluates all outputs, builds the `x86_64-linux` checks and checks the deployed output names.
+- `linux`: evaluates all outputs and builds the `x86_64-linux` checks.
 - `darwin`: builds the `aarch64-darwin` checks.
 
 The checks include `server`, `macos-personal` and `macos-work`.
@@ -25,43 +25,39 @@ The checks include `server`, `macos-personal` and `macos-work`.
 ## Binary cache
 
 CI uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
+`lib/cachix.nix` holds the cache address and public key.
 The repository secret `CACHIX_AUTH_TOKEN` grants write access.
 `nix-fast-build --skip-cached` builds only the checks that neither cache holds. An unchanged check costs no build and no download.
-The server uses the cache as an extra substituter. Nix accepts a path from it only with the signature of the cache key.
+The server and the Macs use the cache as an extra substituter. Nix accepts a path from it only with the signature of the cache key.
+The work Mac adds it in `~/.config/nix/nix.conf`, because Shopify's `/etc/nix/nix.conf.d/shopify.conf` makes the user trusted.
+The personal Mac adds it in `/etc/nix/nix.custom.conf` through the Determinate nix-darwin module.
 Only pushes to this repository run CI with the token. You and Renovate can push.
 The free plan holds 5 GiB. At the limit, Cachix removes the least recently used paths.
 
-The server also runs the Cachix Deploy agent of the workspace `epk`. `secrets/cachix/agent.age` holds its token.
-CI does not deploy to the agent yet. `system.autoUpgrade` applies `main` until a deploy job replaces it.
-
 ## Deployment
 
-`check.yml` evaluates all outputs and builds the flake checks.
-The host uses NixOS `system.autoUpgrade` to fetch `github:epk/dotfiles#server` each hour.
 Branch protection on `main` is strict. A PR merges only when it is up to date with `main` and its required checks pass.
 So `main` holds only trees that CI tested.
-NixOS rebuilds and applies that configuration. It uses the committed `flake.lock`.
-Automatic deployment does not update inputs, collect system generations, reboot or format disks.
+After the checks pass on `main`, the `deploy` job sends the server closure to the Cachix Deploy agent of the server.
+The agent is in the workspace `epk`. `secrets/cachix/agent.age` holds its token.
+The `deploy` GitHub environment holds `CACHIX_ACTIVATE_TOKEN`. Only protected branches can use it, and `main` is the only one.
+The agent downloads the closure, activates it and then must reach Cachix within 10 seconds. If it cannot, it rolls back.
+The job waits for the result. A failed or rolled-back deployment makes the `main` run fail.
+
+The server does not evaluate or build its configuration. Deployment does not update inputs, collect system generations, reboot or format disks.
 The boot loader selects the new kernel at the next reboot.
 The host preserves the running Tailscale service during activation.
 GitHub receives no administrator SSH key or host private key.
+See the deployment history at `https://app.cachix.org/deploy/workspace/epk`. On the host, use `systemctl status cachix-agent`.
 
-Automatic deployment does not use the checkout at `/etc/nixos`.
-Keep that checkout for manual inspection. Its revision can differ from the applied configuration.
-Use `systemctl status nixos-upgrade.service` to inspect deployment.
-Use `systemctl list-timers nixos-upgrade.timer` to inspect the schedule.
-
-The host applies a merged weekly update within about one hour.
-To roll back, run this command on the host:
+To roll back, run this command on the host. Then open a revert PR.
 
 ```sh
 sudo nixos-rebuild switch --rollback
 ```
 
-Then open a revert PR. The next hourly run applies `main` again until the revert merges.
-
 If CI fails, the PR does not merge and the host does not change.
-The repository must remain public. Private repositories require a separate read credential.
+If Cachix is not available, the host keeps its configuration. To apply `main` by hand, run `sudo nixos-rebuild switch --flake github:epk/dotfiles#server`.
 
 ## Tailscale enrollment
 
@@ -111,7 +107,7 @@ The administrator accounts on the host and the workshop guest use zsh and the sh
 ## Public values and secrets
 
 The flake evaluates without `--impure`. Machine names, usernames, email addresses, public keys and disk IDs are plain Nix values.
-CI builds the same server closure that `nixos-upgrade` applies.
-Agenix holds only the Tailscale secret. See [credentials](credentials.md).
+CI builds the same server closure that it deploys.
+Agenix holds the Tailscale secret and the Cachix agent token. See [credentials](credentials.md).
 
 Sources: [Renovate Nix manager](https://docs.renovatebot.com/modules/manager/nix/), [Renovate automerge](https://docs.renovatebot.com/key-concepts/automerge/), [Tailscale OAuth clients](https://tailscale.com/docs/features/oauth-clients), [enrollment keys](https://tailscale.com/docs/features/access-control/auth-keys).
