@@ -29,30 +29,20 @@ jobs:
       - name: Check format, lint, policy and recipients
         run: nix build --no-link .#checks.x86_64-linux.{format,lint,policy,recipients}
 
-      - name: Check the live variants against the deployed hosts
-        env:
-          DOTFILES_PRIVATE_CONFIG: ${{ github.workspace }}/lib/example-metadata.json
-        run: |
-          nix eval --impure --raw --file .github/check-live.nix
-          # The server evaluates new code with the metadata of the deployed revision.
-          deployed=$(nix flake prefetch --json github:epk/dotfiles | jq -r .storePath)
-          DOTFILES_PRIVATE_CONFIG=$deployed/lib/example-metadata.json \
-            nix eval --impure --raw .#nixosConfigurations.server.config.system.build.toplevel.drvPath
+      - name: Check that the deployed hosts find their outputs
+        run: nix eval --impure --raw --file .github/check-live.nix
 
   server:
     name: build server
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      # nixos-upgrade builds with the private metadata. CI uses the example values.
-      DOTFILES_PRIVATE_CONFIG: ${{ github.workspace }}/lib/example-metadata.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
       - name: Build system closure and VM test
         run: |
-          nix build --impure --no-link \
+          nix build --no-link \
             .#nixosConfigurations.server.config.system.build.toplevel \
             .#checks.x86_64-linux.workshop-guest
 

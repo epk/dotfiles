@@ -9,13 +9,13 @@ The Shared Browser plugin gives connected clients the same browser session and e
 Use the existing administrator SSH key. Do not forward the SSH agent.
 
 ```sh
-ssh -J <host-user>@<host-address> operator@<guest-address>
+ssh -J <host-user>@<host-address> aditya.sharma@<guest-address>
 ```
 
 Forward Paseo through both SSH connections:
 
 ```sh
-ssh -N -J <host-user>@<host-address> -L 6767:127.0.0.1:6767 operator@<guest-address>
+ssh -N -J <host-user>@<host-address> -L 6767:127.0.0.1:6767 aditya.sharma@<guest-address>
 ```
 
 Open `http://127.0.0.1:6767` in your browser.
@@ -28,7 +28,7 @@ The guest has no Tailscale client. From outside the local network, connect throu
 
 ## Accounts and credentials
 
-`operator` administers the guest. `agent` runs Paseo, Codex and Chromium without administrator privileges.
+`aditya.sharma` administers the guest. `agent` runs Paseo, Codex and Chromium without administrator privileges.
 Paseo clients can control programs with the `agent` user's file and network access.
 Do not supply host private keys, recovery private keys, operations vault access or personal browser profiles.
 
@@ -110,7 +110,7 @@ The host runs `linuxPackages_latest`, which can be a different version.
 
 Import `modules/nixos/workshop.nix` on the host. Set `services.workshop.enable` to `true`.
 The module defines the guest, private disks, resource limits and guest network rules.
-Set `administratorKeys` from private host metadata. Set `uplink` and `storageDirectory` when the defaults do not apply.
+Set `administratorKeys` to the SSH public keys of the administrator. Set `uplink` and `storageDirectory` when the defaults do not apply.
 The module uses the pinned Antigravity release from the repository.
 The guest definition is `modules/nixos/guests/workshop.nix`.
 A deployment that changes the guest system or restarts the host firewall restarts the workshop VM.

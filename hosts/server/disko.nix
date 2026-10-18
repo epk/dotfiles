@@ -1,8 +1,5 @@
-{
-  metadata,
-  ...
-}:
 let
+  labelPrefix = "servnerr";
   mountOptions = [
     "noatime"
     "compress=zstd:1"
@@ -20,13 +17,13 @@ in
   disko.devices.disk = {
     system = {
       type = "disk";
-      device = metadata.server.systemDisk;
+      device = "/dev/disk/by-id/nvme-eui.001b448b46826616";
       content = {
         type = "gpt";
         partitions = {
           esp = {
             priority = 1;
-            label = "${metadata.server.labelPrefix}-esp";
+            label = "${labelPrefix}-esp";
             type = "EF00";
             start = "2048";
             end = "1050623";
@@ -39,14 +36,14 @@ in
           };
           fast = {
             priority = 2;
-            label = "${metadata.server.labelPrefix}-fast";
+            label = "${labelPrefix}-fast";
             start = "1050624";
             end = "433008639";
             content = {
               type = "btrfs";
               extraArgs = [
                 "-L"
-                "${metadata.server.labelPrefix}-fast"
+                "${labelPrefix}-fast"
               ];
               subvolumes = {
                 "@fast" = {
@@ -66,14 +63,14 @@ in
           };
           root = {
             priority = 3;
-            label = "${metadata.server.labelPrefix}-root";
+            label = "${labelPrefix}-root";
             start = "433008640";
             size = "100%";
             content = {
               type = "btrfs";
               extraArgs = [
                 "-L"
-                "${metadata.server.labelPrefix}-root"
+                "${labelPrefix}-root"
               ];
               subvolumes = {
                 "@root" = {
@@ -92,17 +89,17 @@ in
     };
     data = {
       type = "disk";
-      device = metadata.server.dataDisk;
+      device = "/dev/disk/by-id/wwn-0x5001b448bcff9484";
       content = {
         type = "gpt";
         partitions.data = {
-          label = "${metadata.server.labelPrefix}-data";
+          label = "${labelPrefix}-data";
           size = "100%";
           content = {
             type = "btrfs";
             extraArgs = [
               "-L"
-              "${metadata.server.labelPrefix}-data"
+              "${labelPrefix}-data"
             ];
             subvolumes = {
               "@data" = {
@@ -128,10 +125,10 @@ in
     };
   };
   fileSystems."/nix".neededForBoot = true;
-  # A wrong label prefix in the metadata would break the next boot. Refuse to switch to it.
+  # A wrong label prefix would break the next boot. Refuse to switch to it.
   system.preSwitchChecks.partitionLabels = ''
     for part in esp root; do
-      test -e "/dev/disk/by-partlabel/${metadata.server.labelPrefix}-$part"
+      test -e "/dev/disk/by-partlabel/${labelPrefix}-$part"
     done
   '';
   services.btrfs.autoScrub = {

@@ -1,5 +1,4 @@
 {
-  host,
   lib,
   pkgs,
   ...
@@ -39,10 +38,6 @@
   # Manual generation removes the nixpkgs source context.
   # This causes an options.json error and a Nix warning.
   documentation.enable = false;
-
-  networking = {
-    inherit (host) computerName hostName localHostName;
-  };
 
   programs.zsh = {
     enable = true;

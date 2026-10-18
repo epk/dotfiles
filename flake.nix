@@ -78,31 +78,23 @@
     }:
     let
       inherit (nixpkgs) lib;
-      metadata = import ./lib/private-metadata.nix;
       forAllSystems =
         f: lib.genAttrs [ "aarch64-darwin" "x86_64-linux" ] (system: f nixpkgs.legacyPackages.${system});
 
-      # `host` and `user` come from private metadata. CI uses lib/example-metadata.json.
       mkDarwinConfiguration =
         role:
         nix-darwin.lib.darwinSystem {
           specialArgs = {
             inherit nix-index-database try;
-            host = metadata.workstations.${role};
             user = {
-              inherit (metadata.workstations) username name signingPublicKey;
-              inherit (metadata.workstations.${role}) email;
+              username = "aditya.sharma";
+              name = "Aditya Sharma";
+              signingPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/Cr+bIMxMzkk8dN7xxRsaJeHRifwlyTuh/ja9Uy9MN";
               inherit role;
             };
           };
           modules = [
             ./hosts/macos-${role}
-            {
-              system.activationScripts.preActivation.text = lib.optionalString (!metadata.private) ''
-                echo 'This build used the example metadata. Use reload! or ./setup.sh, which set DOTFILES_PRIVATE_CONFIG.' >&2
-                exit 1
-              '';
-            }
             { nixpkgs.overlays = [ rust-overlay.overlays.default ]; }
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
@@ -118,7 +110,7 @@
       nixosConfigurations.server = lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {
-          inherit nixpkgs metadata inputs;
+          inherit nixpkgs inputs;
         };
         modules = [
           ./hosts/server

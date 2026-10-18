@@ -39,7 +39,7 @@ in
       "*.swo"
     ];
     settings = {
-      # The Macs set the private identity. Elsewhere, commit as the public GitHub account.
+      # The work profile sets the work email. Elsewhere, commit as the public GitHub account.
       user = {
         name = lib.mkDefault "epk";
         email = lib.mkDefault "9075816+epk@users.noreply.github.com";

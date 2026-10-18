@@ -5,8 +5,6 @@ let
   config = host.config;
   darwin = self.darwinConfigurations;
   homeOf = c: c.config.home-manager.users.${c.config.system.primaryUser};
-  recipients = import ../secrets/recipients.nix;
-  rules = import ../secrets/agenix-rules.nix;
   workshop = config.microvm.vms.workshop.config.config;
   workshopUnit = config.systemd.services."microvm@workshop".serviceConfig;
   workshopNetwork = config.systemd.services.workshop-network.script;
@@ -99,10 +97,6 @@ assert builtins.elem "/storage/sata/vms/policy-check"
   checked.systemd.services."prepare-microvm-storage-policy-check".unitConfig.RequiresMountsFor;
 assert checked.systemd.services."microvm@policy-check".serviceConfig.User == "vm-policy-check";
 assert builtins.stringLength checked.system.build.toplevel.drvPath > 0;
-# reload! and setup.sh need a Mac output, a key that decrypts the metadata and a CI build for each Mac.
-assert lib.all (
-  n: recipients ? ${n} && lib.elem recipients.${n} rules."private/metadata.age".publicKeys
-) (lib.attrNames darwin);
 assert lib.all (n: lib.hasInfix "--hostname ${n} " (homeOf darwin.${n}).programs.zsh.initContent) (
   lib.attrNames darwin
 );
@@ -111,17 +105,8 @@ assert lib.hasInfix "host: [${lib.concatStringsSep ", " (lib.attrNames darwin)}]
   builtins.readFile ../.github/workflows/check.yml
 );
 assert self.packages.aarch64-darwin ? age;
-# Without private metadata, no host may activate.
-assert lib.all (
-  c: lib.hasInfix "DOTFILES_PRIVATE_CONFIG" c.config.system.activationScripts.preActivation.text
-) (lib.attrValues darwin);
-assert !config.system.switch.enable;
-# The upgrade service builds an existing output with the private metadata.
+# The upgrade service builds an existing output.
 assert self.nixosConfigurations ? ${lib.last (lib.splitString "#" config.system.autoUpgrade.flake)};
-assert lib.elem "--impure" config.system.autoUpgrade.flags;
-assert
-  config.systemd.services.nixos-upgrade.environment.DOTFILES_PRIVATE_CONFIG
-  == config.age.secrets.private-metadata.path;
 # The upstream autoconnect reads the key through the file: reference, not as a process argument.
 # A store file holds no secret, so its content in the arguments is public.
 assert lib.hasPrefix builtins.storeDir config.services.tailscale.authKeyFile;

@@ -34,6 +34,7 @@ let
     pkgs.ripgrep
   ];
   tap = (lib.head config.microvm.interfaces).id;
+  user = config.dotfiles.homeUser;
   codexConfig = pkgs.writeText "agent-codex.toml" ''
     approval_policy = "on-request"
     sandbox_mode = "workspace-write"
@@ -88,9 +89,8 @@ in
     ../microvm-guest.nix
     ../home.nix
   ];
-  dotfiles.homeUser = "operator";
   # The guest is the coding workspace, so its administrator also gets the language toolchains.
-  home-manager.users.operator.imports = [ ../../home/dev.nix ];
+  home-manager.users.${user}.imports = [ ../../home/dev.nix ];
   nixpkgs.overlays = [ inputs.rust-overlay.overlays.default ];
   # nixpkgs plans to remove Gemini CLI. Keep it for API-key access until then.
   nixpkgs.config.problems.handlers.gemini-cli.removal = "ignore";
@@ -176,12 +176,12 @@ in
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
       PermitRootLogin = "no";
-      AllowUsers = [ "operator" ];
+      AllowUsers = [ user ];
     };
   };
   networking.firewall.allowedTCPPorts = [ 22 ];
   fileSystems."/home".neededForBoot = true;
-  users.users.operator = {
+  users.users.${user} = {
     isNormalUser = true;
     openssh.authorizedKeys.keys = workshop.administratorKeys;
     uid = 1000;
@@ -196,7 +196,7 @@ in
   users.groups.agent.gid = 1001;
   security.sudo.wheelNeedsPassword = false;
   systemd.tmpfiles.rules = [
-    "d /home/operator 0700 operator users -"
+    "d /home/${user} 0700 ${user} users -"
     "d /home/agent 0700 agent agent -"
     "d /home/agent/workspace 0700 agent agent -"
     "d /home/agent/.codex 0700 agent agent -"

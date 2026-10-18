@@ -26,6 +26,18 @@ in
     KUBECONFIG = "${home}/.kube/config:${shopifyKubeconfig}";
   };
 
+  # Shopify dev adds dev/gitconfig to config.local. Do not add a second include for it here.
+  programs.git = {
+    settings.user.email = "aditya.sharma@shopify.com";
+    # Commits in this public repository use the GitHub noreply address.
+    includes = [
+      {
+        condition = "gitdir:${config.programs.nh.flake}/";
+        contents.user.email = "9075816+epk@users.noreply.github.com";
+      }
+    ];
+  };
+
   programs.ssh.includes = [
     "~/.config/dev/ssh/include"
   ];

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run setup.sh, reload! and the deployed reload! for one Mac on a macOS runner.
-# A throwaway key and the example metadata replace the private values. Activation does not run.
+# Activation does not run.
 set -euo pipefail
 [ -n "${CI:-}" ] || {
   echo "Run this only in CI. It changes secrets/ in the checkout." >&2
@@ -32,18 +32,11 @@ for id in $apps; do
   curl -fsS --retry 3 "https://itunes.apple.com/lookup?id=$id" | jq -e '.resultCount > 0' >/dev/null
 done
 
-# Give this Mac a throwaway key, as 1Password gives the real one.
+# The deployed reload! decrypts this file with the Mac key. The current flake does not read it.
 ssh-keygen -q -t ed25519 -N '' -f "$tmp/key"
-public=$(cut -d' ' -f1,2 "$tmp/key.pub")
-sed -i '' "s|^  $host = \".*\";|  $host = \"$public\";|" secrets/recipients.nix
-grep -qF "$public" secrets/recipients.nix
-"$(nix build --no-link --print-out-paths .#age)/bin/age" -R "$tmp/key.pub" \
-  -o secrets/private/metadata.age lib/example-metadata.json
-
-# reload! decrypts the checkout at the flake path of the example user.
-flake=$(home . programs.nh.flake)
-sudo mkdir -p "$(dirname "$flake")"
-sudo ln -sfn "$PWD" "$flake"
+sudo install -d -m 0700 /var/lib/agenix
+sudo install -m 0600 "$tmp/key" /var/lib/agenix/identity
+echo '{}' | "$(nix build --no-link --print-out-paths .#age)/bin/age" -R "$tmp/key.pub" -o secrets/private/metadata.age
 
 mkdir "$tmp/bin"
 cat >"$tmp/bin/sudo" <<'EOF'
@@ -61,11 +54,14 @@ exec "$REAL_NH/bin/nh" "$@"
 EOF
 chmod +x "$tmp/bin/"*
 
-pbcopy <"$tmp/key"
-PATH="$tmp/bin:$PATH" ./setup.sh
+PATH="$tmp/bin:$PATH" ./setup.sh "${host#macos-}"
 
 run_reload() {
-  local fn nh
+  local fn nh flake
+  # reload! uses the checkout at the flake path of its user.
+  flake=$(home "$1" programs.nh.flake)
+  sudo mkdir -p "$(dirname "$flake")"
+  sudo ln -sfn "$PWD" "$flake"
   fn=$(home "$1" programs.zsh.initContent | sed -n '/^reload!() {/,/^}/p')
   [ -n "$fn" ] || {
     echo "$1 does not define reload!." >&2

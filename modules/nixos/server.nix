@@ -1,7 +1,7 @@
 {
+  config,
   pkgs,
   nixpkgs,
-  metadata,
   ...
 }:
 
@@ -23,12 +23,13 @@
   # Boot starts the daemon from the new system closure.
   systemd.services.tailscaled.restartIfChanged = false;
 
-  users.users.${metadata.server.username} = {
+  users.users.${config.dotfiles.homeUser} = {
     isNormalUser = true;
     uid = 1000;
-    home = "/home/${metadata.server.username}";
     extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = metadata.server.authorizedKeys;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/Cr+bIMxMzkk8dN7xxRsaJeHRifwlyTuh/ja9Uy9MN"
+    ];
   };
   security.sudo.wheelNeedsPassword = false;
 
