@@ -1,6 +1,5 @@
 {
   pkgs,
-  metadata,
   config,
   ...
 }:
@@ -17,19 +16,16 @@
   ];
   services.workshop = {
     enable = true;
-    administratorKeys = config.users.users.${metadata.server.username}.openssh.authorizedKeys.keys;
+    administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
   };
-  system.switch.enable = metadata.private;
-  dotfiles.homeUser = metadata.server.username;
   # Apply main now instead of at the next hourly upgrade.
-  home-manager.users.${metadata.server.username}.programs.zsh.initContent = ''
+  home-manager.users.${config.dotfiles.homeUser}.programs.zsh.initContent = ''
     reload!() {
-      sudo env DOTFILES_PRIVATE_CONFIG=${config.age.secrets.private-metadata.path} \
-        nixos-rebuild switch --impure --refresh --flake ${config.system.autoUpgrade.flake} "$@" &&
+      sudo nixos-rebuild switch --refresh --flake ${config.system.autoUpgrade.flake} "$@" &&
         exec ${pkgs.zsh}/bin/zsh
     }
   '';
-  networking.hostName = metadata.server.hostName;
+  networking.hostName = "servnerr";
   # Use the wired interface for host access.
   networking.useDHCP = false;
   networking.interfaces.eno1.useDHCP = true;

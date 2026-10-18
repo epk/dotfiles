@@ -7,7 +7,7 @@ Define each application in a guest or an explicit host module.
 
 ## Storage
 
-`hosts/server/disko.nix` defines both SSDs. The private metadata supplies the machine-specific values.
+`hosts/server/disko.nix` defines both SSDs by their disk IDs.
 `/storage/nvme` and `/storage/sata` identify the two storage areas.
 Each area contains `vms` and `artifacts`. SATA also contains `shares`.
 These are local mount paths. [FHS defines `/srv` for served data](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s17.html).
@@ -70,10 +70,9 @@ This configuration does not define a backup destination.
 ## Apply the configuration
 
 ```sh
-sudo env DOTFILES_PRIVATE_CONFIG=/run/agenix/private-metadata nixos-rebuild switch --impure --flake /etc/nixos#server
+sudo nixos-rebuild switch --flake /etc/nixos#server
 ```
 
-A build without `DOTFILES_PRIVATE_CONFIG` uses the example metadata and cannot switch.
 SSH listens on all interfaces and accepts key login only. Use Tailscale to connect from outside the local network.
 Activation keeps the current Tailscale and DHCP connections.
 Deployment does not reboot the host. Reboot the host by hand after a kernel update.
@@ -84,28 +83,6 @@ See [server automation](automation.md) for deployment, Tailscale enrollment and 
 A rename of `nixosConfigurations.server` needs a manual switch on the host.
 `nixos-upgrade` builds the name that `main` sets. CI refuses a PR that removes this name.
 Add the old name to `retired` in `.github/check-live.nix` for the rename PR.
-
-## Recover the private metadata
-
-`nixos-upgrade` evaluates new code with `/run/agenix/private-metadata`.
-Activation writes this file from the metadata of the activated revision.
-If the file is missing, `nixos-upgrade.service` does not run.
-If the file is stale, new code that reads a new key fails to evaluate.
-
-1. Decrypt the `main` metadata to a root-only file:
-
-   ```sh
-   revision=$(nix flake prefetch --json github:epk/dotfiles | jq -r .storePath)
-   sudo sh -c 'umask 077 && age -d -i /var/lib/agenix/identity "$1" > /root/metadata.json' sh "$revision/secrets/private/metadata.age"
-   ```
-
-2. Switch with this file:
-
-   ```sh
-   sudo env DOTFILES_PRIVATE_CONFIG=/root/metadata.json nixos-rebuild switch --impure --flake github:epk/dotfiles#server
-   ```
-
-3. Delete the file: `sudo rm /root/metadata.json`.
 
 ## Nix guests
 

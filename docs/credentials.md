@@ -2,7 +2,7 @@
 
 ## What each key does
 
-Agenix uses a dedicated key pair for each host, guest and Mac.
+Agenix uses a dedicated key pair for each host and guest. The Macs use no agenix key.
 These keys decrypt encrypted repository files. They do not grant SSH login access.
 Do not add their public keys to `authorized_keys`.
 
@@ -15,26 +15,19 @@ Recovery does not work for files that omit the recovery public key.
 Keep one record for each key in the operator-only 1Password operations vault.
 Each record holds the key pair and notes for installation, use, recovery and rotation.
 
-The host and each Mac store the private key at `/var/lib/agenix/identity`.
+The host stores its private key at `/var/lib/agenix/identity`.
 The file uses root ownership and mode 0600. Its directory uses mode 0700.
 The host SSH key and Tailscale state remain separate.
 Keep the recovery private key in the operations vault. Do not install it on hosts or application guests.
 
 `secrets/recipients.nix` contains public keys only.
-On the server, the option `age.identityPaths` selects the private key file. On a Mac, `reload!` passes this file to `age`.
+On the server, the option `age.identityPaths` selects the private key file.
 Do not commit private keys or plaintext secrets.
 
-## Private metadata
+## Earlier metadata
 
-`secrets/private/metadata.age` is encrypted for the `server`, `macos-personal`, `macos-work` and `recovery` keys.
-The server decrypts it at activation to `/run/agenix/private-metadata`. Each Mac decrypts it in `reload!`.
-Edit it with the recovery private key:
-
-```sh
-AGENIX_RULES=secrets/agenix-rules.nix nix run .#agenix -- -e private/metadata.age -i <recovery-private-key-file>
-```
-
-Agenix encrypts the file again for the recipients in its rule.
+No configuration reads `secrets/private/metadata.age`. The `reload!` of an earlier revision decrypts it with the Mac key.
+After each Mac runs the current `reload!`, delete the file, its rule and the `macos-*` public keys.
 
 ## How services receive secrets
 
@@ -59,7 +52,7 @@ For `LoadCredential`, keep the source root-owned with mode 0400.
 Systemd supplies a private credential file to the service.
 Do not put secret values in Nix expressions, derivations, command arguments, prompts or logs.
 
-The declared secrets are the Tailscale enrollment key and the private metadata.
+The declared secret is the Tailscale enrollment key.
 See [server automation](automation.md) for the Tailscale secret and its replacement.
 Declare each application secret only when its consumer exists.
 The host does not need a live 1Password connection for boot or Tailscale access.

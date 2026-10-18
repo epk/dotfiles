@@ -10,10 +10,10 @@ This repository defines two macOS hosts and one NixOS host.
 
 ## Apply the configuration
 
-For the first setup of a Mac, copy the agenix private key of the Mac from 1Password. Then run this command:
+For the first setup of a Mac, run this command with the role `personal` or `work`:
 
 ```sh
-./setup.sh
+./setup.sh work
 ```
 
 After the first setup, use `reload!`.
@@ -21,7 +21,7 @@ After the first setup, use `reload!`.
 On the installed NixOS host, use this command:
 
 ```sh
-sudo env DOTFILES_PRIVATE_CONFIG=/run/agenix/private-metadata nixos-rebuild switch --impure --flake /etc/nixos#server
+sudo nixos-rebuild switch --flake /etc/nixos#server
 ```
 
 See the [workstation instructions](docs/workstations.md) and [server instructions](docs/server.md).
@@ -35,7 +35,6 @@ Keep access details and deployment status in the private inventory.
 - `modules/home`: the shell, Git and CLI tools for every host. `dev.nix` adds the language toolchains for the Macs and the workshop guest. `darwin.nix` adds the GUI and macOS parts.
 - `modules/nixos`: host and guest configuration.
 - `profiles/`: work and personal configuration.
-- `lib/`: the private metadata loader and the neutral example values.
 - `secrets/`: public keys, agenix rules and encrypted files.
 - `packages/`: packages for the workshop guest.
 - `checks/`: the flake checks that CI runs.
@@ -47,9 +46,9 @@ Keep employer settings in the work profile. Apply Home Manager through nix-darwi
 ## CI
 
 CI evaluates all outputs and runs the flake checks: format, lint, policy and encrypted-file recipients.
-CI uses the neutral values in `lib/example-metadata.json`. It does not decrypt the private metadata.
+CI builds the same outputs that the hosts apply. It does not decrypt secrets.
 Linux builds `server` as `nixos-upgrade` builds it. A VM test starts the workshop guest services.
-On macOS, CI runs `setup.sh`, `reload!` and the deployed `reload!` for each Mac with a throwaway key.
+On macOS, CI runs `setup.sh`, `reload!` and the deployed `reload!` for each Mac.
 CI does not activate hosts or test physical boot.
 Run the same evaluation and checks on a Mac with `nix flake check --all-systems --no-build` and `nix flake check`.
 Renovate opens update PRs for the flake inputs, the GitHub Actions and the Antigravity release. CI must pass before automatic merge.

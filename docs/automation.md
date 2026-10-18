@@ -97,24 +97,10 @@ The host uses `linuxPackages_latest` from the pinned package set.
 The administrator accounts on the host and the workshop guest use zsh and the shared Home Manager configuration.
 `modules/nixos/home.nix` applies it. NixOS declares the accounts, SSH access and system packages.
 
-## Private metadata
+## Public values and secrets
 
-The public flake uses `lib/example-metadata.json` for CI builds. The server example cannot switch a live system.
-Agenix decrypts the private metadata to a root-only runtime file.
-The native upgrade service passes this path through `DOTFILES_PRIVATE_CONFIG` and enables impure evaluation.
-The service evaluates new code with the metadata of the previous activation.
-CI does not decrypt metadata or receive private keys.
-Keep machine-specific values outside public documentation.
-Do not push a closure built with the private metadata to a cache.
-
-To add a metadata key, use two PRs:
-
-1. In the first PR, add the key to `secrets/private/metadata.age` and `lib/example-metadata.json`. Do not read the key in code.
-2. After the server applies the first PR, merge a second PR with the code that reads the key.
-
-CI evaluates the new server code with the example metadata of the current `main`.
-CI cannot check the private metadata.
-See [credentials](credentials.md) to edit the encrypted file.
-If the server metadata is stale, see [recover the private metadata](server.md#recover-the-private-metadata).
+The flake evaluates without `--impure`. Machine names, usernames, email addresses, public keys and disk IDs are plain Nix values.
+CI builds the same server closure that `nixos-upgrade` applies.
+Agenix holds only the Tailscale secret. See [credentials](credentials.md).
 
 Sources: [Renovate Nix manager](https://docs.renovatebot.com/modules/manager/nix/), [Renovate automerge](https://docs.renovatebot.com/key-concepts/automerge/), [Tailscale OAuth clients](https://tailscale.com/docs/features/oauth-clients), [enrollment keys](https://tailscale.com/docs/features/access-control/auth-keys).

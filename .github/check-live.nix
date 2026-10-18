@@ -1,4 +1,4 @@
-# Evaluate as reload!, setup.sh and nixos-upgrade do: --impure, with DOTFILES_PRIVATE_CONFIG set.
+# Each host runs its deployed reload! or upgrade service against this revision.
 let
   self = builtins.getFlake (toString ../.);
   deployed = builtins.getFlake "github:epk/dotfiles";
@@ -8,11 +8,6 @@ let
   retired = [ ];
   exists = outputs: name: outputs ? ${name} || lib.elem name retired;
 in
-assert lib.all (
-  c: !lib.hasInfix "DOTFILES_PRIVATE_CONFIG" c.config.system.activationScripts.preActivation.text
-) (lib.attrValues self.darwinConfigurations);
-assert self.nixosConfigurations.server.config.system.switch.enable;
-# Each host runs its deployed reload! or upgrade service against this revision.
 assert lib.all (exists self.darwinConfigurations) (lib.attrNames deployed.darwinConfigurations);
 assert exists self.nixosConfigurations (lib.last (lib.splitString "#" upgrade.flake));
-"The live variants activate, and the deployed hosts find their outputs.\n"
+"The deployed hosts find their outputs.\n"

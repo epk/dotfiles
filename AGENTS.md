@@ -6,6 +6,6 @@ Read docs/writing.md for the rules and project technical terms.
 Keep code identifiers, product names, paths, commands and API fields unchanged.
 Do not change configuration behavior during a text-only edit.
 
-This repository is public. Use neutral names and placeholders in public text.
-Keep machine names, account metadata, hardware identifiers and access endpoints in encrypted metadata or the private inventory.
+This repository is public. Machine names, usernames, the owner's email addresses, public keys and disk IDs can be public.
+Do not publish the email addresses of other people. Keep access endpoints in the private inventory.
 Do not commit plaintext credentials or private keys. Public age encryption keys are permitted.
