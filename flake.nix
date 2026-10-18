@@ -122,7 +122,6 @@
       };
 
       packages = forAllSystems (pkgs: {
-        inherit (pkgs) age;
         agenix = agenix.packages.${pkgs.stdenv.hostPlatform.system}.default;
       });
 

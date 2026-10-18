@@ -12,6 +12,13 @@
     randomizedDelaySec = "5min";
   };
 
+  # The agent registers as the host name in the Cachix Deploy workspace epk.
+  age.secrets.cachix-agent.file = ../../secrets/cachix/agent.age;
+  services.cachix-agent = {
+    enable = true;
+    credentialsFile = config.age.secrets.cachix-agent.path;
+  };
+
   age.secrets.tailscale-auth = {
     file = ../../secrets/tailscale/server.age;
     owner = "root";

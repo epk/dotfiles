@@ -24,11 +24,6 @@ Keep the recovery private key in the operations vault. Do not install it on host
 On the server, the option `age.identityPaths` selects the private key file.
 Do not commit private keys or plaintext secrets.
 
-## Earlier metadata
-
-No configuration reads `secrets/private/metadata.age`. The `reload!` of an earlier revision decrypts it with the Mac key.
-After each Mac runs the current `reload!`, delete the file, its rule and the `macos-*` public keys.
-
 ## How services receive secrets
 
 Create each credential with only the permissions its consumer needs.

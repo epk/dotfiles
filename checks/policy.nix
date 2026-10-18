@@ -101,10 +101,6 @@ assert lib.all (n: lib.hasInfix "--hostname ${n} " (homeOf darwin.${n}).programs
   lib.attrNames darwin
 );
 assert lib.all (c: (homeOf c).programs.nh.flake != null) (lib.attrValues darwin);
-assert lib.hasInfix "host: [${lib.concatStringsSep ", " (lib.attrNames darwin)}]" (
-  builtins.readFile ../.github/workflows/check.yml
-);
-assert self.packages.aarch64-darwin ? age;
 # The upgrade service builds an existing output.
 assert self.nixosConfigurations ? ${lib.last (lib.splitString "#" config.system.autoUpgrade.flake)};
 # The upstream autoconnect reads the key through the file: reference, not as a process argument.

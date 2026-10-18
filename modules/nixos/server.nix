@@ -52,6 +52,9 @@
     cores = 2;
     # Only root can change daemon trust or select privileged builders.
     trusted-users = [ "root" ];
+    # CI pushes each build that cache.nixos.org does not hold. The hourly upgrade downloads it.
+    substituters = [ "https://epk.cachix.org" ];
+    trusted-public-keys = [ "epk.cachix.org-1:qmEB4bwoUpFURWwQ3RsCyWU6SHKIq135q/YZx7alcV8=" ];
     # The 32 GiB root also holds builds. Collect garbage before it fills.
     min-free = 4 * 1024 * 1024 * 1024;
     max-free = 8 * 1024 * 1024 * 1024;

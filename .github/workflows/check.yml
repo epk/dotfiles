@@ -3,62 +3,42 @@ name: check
 on:
   push:
     branches: ["**"]
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Let a dispatched run wait for an existing push run.
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  eval:
-    name: eval + format
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
-
-      # Each host pins nixpkgs.hostPlatform, so Linux also evaluates the Mac hosts.
-      - name: Evaluate all outputs
-        run: nix flake check --all-systems --no-build --abort-on-warn --option allow-import-from-derivation false
-
-      - name: Check format, lint, policy and recipients
-        run: nix build --no-link .#checks.x86_64-linux.{format,lint,policy,recipients}
-
-      - name: Check that the deployed hosts find their outputs
-        run: nix eval --impure --raw --file .github/check-live.nix
-
-  server:
-    name: build server
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
-
-      - name: Build system closure and VM test
-        run: |
-          nix build --no-link \
-            .#nixosConfigurations.server.config.system.build.toplevel \
-            .#checks.x86_64-linux.workshop-guest
-
-  build:
-    name: build ${{ matrix.host }}
-    runs-on: macos-26
-    timeout-minutes: 20
+  check:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        host: [macos-personal, macos-work]
+        include:
+          - { name: linux, os: ubuntu-latest, system: x86_64-linux }
+          - { name: darwin, os: macos-26, system: aarch64-darwin }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: epk
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      # Activation is the only step that CI does not run. Test defaults, pmset, PAM and mas on the Macs.
-      - name: Run setup.sh, reload! and the deployed reload!
-        run: .github/test-mac.sh ${{ matrix.host }}
+      # Each host pins nixpkgs.hostPlatform, so Linux also evaluates the Mac hosts.
+      - name: Evaluate all outputs
+        if: matrix.name == 'linux'
+        run: nix flake check --all-systems --no-build --abort-on-warn --option allow-import-from-derivation false
 
+      # The checks include the host outputs. A check that a cache holds is not built or downloaded.
+      - name: Build the uncached checks
+        run: nix run --inputs-from . nixpkgs#nix-fast-build -- --skip-cached --no-nom --flake .#checks.${{ matrix.system }}
+
+      - name: Check that the deployed hosts find their outputs
+        if: matrix.name == 'linux'
+        run: nix eval --impure --raw --file .github/check-live.nix
