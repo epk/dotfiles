@@ -28,7 +28,7 @@ jobs:
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: epk
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipPush: true
 
       # Each host pins nixpkgs.hostPlatform, so Linux also evaluates the Mac hosts.
       - name: Evaluate all outputs
@@ -36,8 +36,13 @@ jobs:
         run: nix flake check --all-systems --no-build --abort-on-warn --option allow-import-from-derivation false
 
       # The checks include the host outputs. A check that a cache holds is not built or downloaded.
+      # One build at a time: the VM test fails when other builds take its CPU.
       - name: Build the uncached checks
-        run: nix run --inputs-from . nixpkgs#nix-fast-build -- --skip-cached --no-nom --flake .#checks.${{ matrix.system }}
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: >-
+          nix run --inputs-from . nixpkgs#nix-fast-build --
+          --skip-cached --no-nom --max-jobs 1 --cachix-cache epk --flake .#checks.${{ matrix.system }}
 
       - name: Check that the deployed hosts find their outputs
         if: matrix.name == 'linux'
