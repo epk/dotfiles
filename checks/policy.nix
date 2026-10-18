@@ -111,10 +111,16 @@ assert lib.hasInfix
   (builtins.unsafeDiscardStringContext config.systemd.services.tailscaled-autoconnect.script);
 # The workshop guest keeps its isolation. Builds cannot detect a change to these values.
 assert workshop.microvm.hypervisor == "firecracker";
-# The guest mounts disks by position: the store disk, then the volumes in order.
+# The guest mounts disks by position: the store image, then the volumes in order.
 assert
   map (d: d.path_on_host) workshop.microvm.firecracker.extraConfig.drives
-  == [ workshop.microvm.storeDisk ] ++ map (v: v.image) workshop.microvm.volumes;
+  == [ "${config.services.workshop.storageDirectory}/store.erofs" ]
+  ++ map (v: v.image) workshop.microvm.volumes;
+# The host builds the store image. The server closure must not contain the microvm.nix image.
+assert
+  !lib.hasInfix "microvm-store-disk" (
+    builtins.unsafeDiscardStringContext (builtins.toJSON workshop.microvm.firecracker.extraConfig)
+  );
 assert lib.hasInfix "user vm-workshop" workshop.microvm.binScripts.tap-up;
 assert workshopUnit.User == "vm-workshop" && workshopUnit.CapabilityBoundingSet == "";
 assert workshopUnit.RootDirectory == "/run/workshop-jail" && workshopUnit.IPAddressDeny == "any";

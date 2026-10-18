@@ -38,10 +38,7 @@ in
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
   workshop-guest = import ./workshop-guest.nix { inherit self pkgs; };
-  # Build the server closure, but keep no reference to it. CI uploads check outputs, and the guest store image is 3.6 GB.
-  server = pkgs.runCommand "server" {
-    toplevel = self.nixosConfigurations.server.config.system.build.toplevel;
-  } "touch $out";
+  server = self.nixosConfigurations.server.config.system.build.toplevel;
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
   lib.mapAttrs (_: c: c.system) self.darwinConfigurations

@@ -93,7 +93,9 @@ CPU use is limited to two cores, with a lower scheduling weight than host servic
 These values are limits, not performance measurements.
 
 The read-only EROFS image contains the guest system closure.
-Firecracker does not support the configured virtio-fs store export.
+Firecracker does not support a virtio-fs store export.
+The host service `workshop-store-disk` builds the image from the local store before the VM starts.
+It skips the build when the guest closure did not change. A deployment carries only store paths.
 Sparse raw ext4 disks provide 8 GiB for `/var` and 32 GiB for `/home`.
 The host stores both disks in `/storage/nvme/vms/workshop`, a private Btrfs subvolume.
 Host CoW, Zstd compression and checksums remain enabled.

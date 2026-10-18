@@ -136,10 +136,11 @@ in
       (disk "home" "/home" 32768)
     ];
     # extraConfig replaces the upstream drive list. Writeback caching passes guest flushes to the host.
+    # The host builds the store image from its own store. See modules/nixos/workshop.nix.
     firecracker.extraConfig.drives = [
       {
         drive_id = "store";
-        path_on_host = config.microvm.storeDisk;
+        path_on_host = "${workshop.storageDirectory}/store.erofs";
         is_root_device = false;
         is_read_only = true;
         io_engine = "Sync";

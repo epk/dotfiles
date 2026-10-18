@@ -27,7 +27,6 @@ The checks include `server`, `macos-personal` and `macos-work`.
 CI uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
 The repository secret `CACHIX_AUTH_TOKEN` grants write access.
 `nix-fast-build --skip-cached` builds only the checks that neither cache holds. An unchanged check costs no build and no download.
-The `server` check builds the server closure but keeps no reference to it, so CI does not upload the 3.6 GB guest store image.
 The server uses the cache as an extra substituter. Nix accepts a path from it only with the signature of the cache key.
 Only pushes to this repository run CI with the token. You and Renovate can push.
 The free plan holds 5 GiB. At the limit, Cachix removes the least recently used paths.
