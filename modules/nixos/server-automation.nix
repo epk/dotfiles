@@ -4,15 +4,7 @@
   ...
 }:
 {
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:epk/dotfiles#server";
-    upgrade = false;
-    dates = "hourly";
-    randomizedDelaySec = "5min";
-  };
-
-  # The agent registers as the host name in the Cachix Deploy workspace epk.
+  # CI deploys main to this agent. The agent registers as the host name in the workspace epk.
   age.secrets.cachix-agent.file = ../../secrets/cachix/agent.age;
   services.cachix-agent = {
     enable = true;
