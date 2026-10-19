@@ -100,6 +100,7 @@ in
       # Guest TAP devices must not delay the host network-online target. Each guest has its own readiness unit.
       wait-online.enable = lib.mkDefault config.networking.useNetworkd;
       config.networkConfig = {
+        IPv4Forwarding = true;
         ManageForeignRoutes = false;
         ManageForeignRoutingPolicyRules = false;
         ManageForeignNextHops = false;
