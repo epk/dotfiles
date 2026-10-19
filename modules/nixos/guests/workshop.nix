@@ -196,12 +196,13 @@ in
   };
   users.groups.agent.gid = 1001;
   security.sudo.wheelNeedsPassword = false;
+  # Codex writes trust and notices to ~/.codex/config.toml. It reads this system layer below that file.
+  environment.etc."codex/config.toml".source = codexConfig;
   systemd.tmpfiles.rules = [
     "d /home/${user} 0700 ${user} users -"
     "d /home/agent 0700 agent agent -"
     "d /home/agent/workspace 0700 agent agent -"
     "d /home/agent/.codex 0700 agent agent -"
-    "L+ /home/agent/.codex/config.toml - agent agent - ${codexConfig}"
     "d /home/agent/.paseo 0700 agent agent -"
     "d /home/agent/.paseo/plugin-data 0700 agent agent -"
     "d /home/agent/.paseo/plugin-data/shared-browser 0700 agent agent -"
@@ -220,8 +221,6 @@ in
     environment = {
       HOME = "/home/agent";
       PASEO_HOME = "/home/agent/.paseo";
-      PASEO_LISTEN = "127.0.0.1:6767";
-      PASEO_WEB_UI_ENABLED = "true";
       PASEO_SHARED_BROWSER_CHROMIUM_EXECUTABLE = "${pkgs.chromium}/bin/chromium";
       PASEO_SHARED_BROWSER_AGENT_BROWSER_BINARY = "${pkgs.agent-browser}/bin/agent-browser";
       PASEO_SHARED_BROWSER_XVFB = "1";

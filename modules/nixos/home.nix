@@ -14,7 +14,7 @@ in
 
   options.dotfiles.homeUser = lib.mkOption {
     type = lib.types.str;
-    default = "aditya.sharma";
+    default = (import ../../lib/user.nix).username;
     description = "Account that gets zsh and the shared Home Manager configuration.";
   };
 

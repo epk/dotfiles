@@ -24,12 +24,16 @@ pkgs.testers.runNixOSTest {
       virtualisation.cores = 2;
     };
   testScript = ''
+    from datetime import timedelta
+
     guest.wait_for_unit("paseo.service")
     guest.wait_until_succeeds("curl -sf http://127.0.0.1:6767 >/dev/null")
     # A failed plugin does not stop the daemon. Check that Shared Browser runs.
+    # It runs within 15 seconds in CI. A hung plugin otherwise waits for the 15-minute default.
     guest.wait_until_succeeds(
       "sudo -u agent -H paseo plugin ls --host 127.0.0.1:6767 --json"
-      " | jq -e 'any(.[]; .id == \"shared-browser\" and .status == \"running\")'"
+      " | jq -e 'any(.[]; .id == \"shared-browser\" and .status == \"running\")'",
+      timeout=timedelta(minutes=3),
     )
     guest.succeed("getent group agent")
     guest.succeed('test "$(stat -c %U:%G /home/agent)" = agent:agent')

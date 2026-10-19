@@ -38,14 +38,13 @@ jobs:
 
       # The checks include the host outputs. A check that a cache holds is not built or downloaded.
       # One build at a time: the VM test fails when other builds take its CPU.
-      # Only main runs get the cache write token. Code from an unmerged lock update must not read it.
+      # nix-fast-build comes from the lock of main. Code from an unmerged lock update must not run with the token.
       - name: Build the uncached checks
         env:
-          CACHIX_AUTH_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.CACHIX_AUTH_TOKEN || '' }}
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: >-
-          nix run --inputs-from . nixpkgs#nix-fast-build --
-          --skip-cached --no-nom --max-jobs 1 ${{ github.ref == 'refs/heads/main' && '--cachix-cache epk' || '' }}
-          --flake .#checks.${{ matrix.system }}
+          nix run --inputs-from github:epk/dotfiles/main nixpkgs#nix-fast-build --
+          --skip-cached --no-nom --max-jobs 1 --cachix-cache epk --flake .#checks.${{ matrix.system }}
 
   # The agent downloads the server closure, then activates it.
   # It rolls back if it cannot reach Cachix after the activation.

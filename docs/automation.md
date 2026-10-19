@@ -24,18 +24,17 @@ The checks include `server`, `macos-personal` and `macos-work`.
 
 ## Binary cache
 
-Only the CI run on `main` uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
+CI uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
 `lib/cachix.nix` holds the cache address and public key.
 The repository secret `CACHIX_AUTH_TOKEN` grants write access.
 `nix-fast-build --skip-cached` builds only the checks that neither cache holds. An unchanged check costs no build and no download.
 The server and the Macs use the cache as an extra substituter. Nix accepts a path from it only with the signature of the cache key.
 The work Mac adds it in `~/.config/nix/nix.conf`, because Shopify's `/etc/nix/nix.conf.d/shopify.conf` makes the user trusted.
 The personal Mac adds it in `/etc/nix/nix.custom.conf` through the Determinate nix-darwin module.
-Only a run on `main` passes `--cachix-cache epk` to `nix-fast-build` and gets the token.
-A run on any other branch, such as a Renovate lock update, reads the cache but does not upload. The workflow gives it no token.
-A run on a branch executes `nix-fast-build` from the `flake.lock` of that branch. Unmerged code must not read the token for a cache that the hosts trust.
+Each run, also on a branch, takes `nix-fast-build` from the `flake.lock` of `main`.
+So code from an unmerged lock update, such as a Renovate PR, does not run with the token for a cache that the hosts trust.
+Evaluation is pure and builds run in the sandbox, so the branch code cannot read the token.
 A push that changes the workflow can read the repository secret. Only you and Renovate can push, and both can merge to `main`.
-The run on `main` builds the changed checks again, because the run on the branch did not upload.
 The free plan holds 5 GiB. At the limit, Cachix removes the least recently used paths.
 `--skip-cached` checks only the output path of each check, not its closure. So Cachix can remove a dependency of a check after the check.
 
