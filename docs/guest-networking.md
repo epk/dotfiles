@@ -27,6 +27,8 @@ Tailscale manages its own firewall rules. This module does not select or change 
 A routing policy selects the main table for guest ingress before the Tailscale policy rules.
 The nftables rules also require the declared output interface. A different route cannot bypass the guest policy.
 The VM starts only after nftables and its TAP address are ready.
+A networkd restart does not restart the VM.
+A stop or restart of nftables also stops or restarts the VM, so the VM never runs without its rules.
 
 ## Add a guest
 

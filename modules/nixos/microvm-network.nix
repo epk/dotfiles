@@ -204,14 +204,16 @@ in
     };
 
     # Start the guest only after its firewall and address are ready, including without a TAP carrier.
+    # A stop of nftables removes the guest rules, so it also stops the guest.
+    # A networkd restart must not restart the guest. Without networkd, wait-online fails and the guest does not start.
     systemd.services = lib.mapAttrs' (
       name: guest:
       lib.nameValuePair "microvm-network-${name}" {
         requires = [
           "microvm-tap-interfaces@${name}.service"
           "nftables.service"
-          "systemd-networkd.service"
         ];
+        wants = [ "systemd-networkd.service" ];
         after = [
           "microvm-tap-interfaces@${name}.service"
           "nftables.service"
