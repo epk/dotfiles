@@ -7,7 +7,7 @@ let
   homeOf = c: c.config.home-manager.users.${c.config.system.primaryUser};
   workshop = config.microvm.vms.workshop.config.config;
   workshopUnit = config.systemd.services."microvm@workshop".serviceConfig;
-  workshopNetwork = config.systemd.services.workshop-network.script;
+  workshopNetwork = config.networking.nftables.tables.microvm-filter.content;
   checked =
     (host.extendModules {
       modules = [
@@ -125,6 +125,6 @@ assert workshopUnit.RootDirectory == "/run/workshop-jail" && workshopUnit.IPAddr
 assert lib.all (net: lib.hasInfix net workshopNetwork) [
   "100.64.0.0/10"
   "192.168.0.0/16"
-  "--dst-type LOCAL -j REJECT"
+  "fib daddr type local counter drop"
 ];
 pkgs.runCommand "policy" { } "touch $out"
