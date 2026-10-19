@@ -24,25 +24,39 @@ The checks include `server`, `macos-personal` and `macos-work`.
 
 ## Binary cache
 
-CI uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
+Only the CI run on `main` uploads the output of each check that it builds to the public Cachix cache `epk`. Cachix does not store paths that cache.nixos.org holds.
 `lib/cachix.nix` holds the cache address and public key.
 The repository secret `CACHIX_AUTH_TOKEN` grants write access.
 `nix-fast-build --skip-cached` builds only the checks that neither cache holds. An unchanged check costs no build and no download.
 The server and the Macs use the cache as an extra substituter. Nix accepts a path from it only with the signature of the cache key.
 The work Mac adds it in `~/.config/nix/nix.conf`, because Shopify's `/etc/nix/nix.conf.d/shopify.conf` makes the user trusted.
 The personal Mac adds it in `/etc/nix/nix.custom.conf` through the Determinate nix-darwin module.
-Only pushes to this repository run CI with the token. You and Renovate can push.
+Only a run on `main` passes `--cachix-cache epk` to `nix-fast-build` and gets the token.
+A run on any other branch, such as a Renovate lock update, reads the cache but does not upload. The workflow gives it no token.
+A run on a branch executes `nix-fast-build` from the `flake.lock` of that branch. Unmerged code must not read the token for a cache that the hosts trust.
+A push that changes the workflow can read the repository secret. Only you and Renovate can push, and both can merge to `main`.
+The run on `main` builds the changed checks again, because the run on the branch did not upload.
 The free plan holds 5 GiB. At the limit, Cachix removes the least recently used paths.
+`--skip-cached` checks only the output path of each check, not its closure. So Cachix can remove a dependency of a check after the check.
 
 ## Deployment
 
 Branch protection on `main` is strict. A PR merges only when it is up to date with `main` and its required checks pass.
 So `main` holds only trees that CI tested.
-After the checks pass on `main`, the `deploy` job sends the server closure to the Cachix Deploy agent of the server.
+After the checks pass on `main`, the `deploy` job does these steps:
+
+1. `nix build` builds the server closure. It downloads the paths that a cache holds and builds the other paths.
+2. `cachix push epk` uploads the paths that neither `epk` nor cache.nixos.org holds. It waits for the upload. An upload error fails the job.
+3. `cachix deploy activate` sends the closure to the Cachix Deploy agent of the server.
+
+Steps 1 and 2 give `epk` the full closure, because the cache can remove a dependency after the check.
 The agent is in the workspace `epk`. `secrets/cachix/agent.age` holds its token.
 The `deploy` GitHub environment holds `CACHIX_ACTIVATE_TOKEN`. Only protected branches can use it, and `main` is the only one.
 The agent downloads the closure, activates it and then must reach Cachix within 10 seconds. If it cannot, it rolls back.
 The job waits for the result. A failed or rolled-back deployment makes the `main` run fail.
+A new `main` run waits for the active `main` run. It does not cancel that run. The agent continues an accepted deployment, and cancellation would hide its result.
+A newer waiting run replaces an older waiting run.
+A new push to any other branch cancels the older run of that branch.
 
 The server does not evaluate or build its configuration. Deployment does not update inputs, collect system generations, reboot or format disks.
 The boot loader selects the new kernel at the next reboot.
@@ -59,6 +73,36 @@ sudo nixos-rebuild switch --rollback
 If CI fails, the PR does not merge and the host does not change.
 If Cachix is not available, the host keeps its configuration. To apply `main` by hand, run `sudo nixos-rebuild switch --flake github:epk/dotfiles#server`.
 
+## Replace a Cachix token
+
+`secrets/cachix/agent.age` must contain one line in the format `CACHIX_AGENT_TOKEN=<token>`.
+systemd reads the file with `EnvironmentFile=`, which ignores a line without `=`.
+The agent reads the token only when it starts. The host restarts `cachix-agent` when the encrypted file changes.
+The deployment that delivers a new token starts with the old token.
+So the old token must stay valid until that deployment succeeds.
+
+To replace the agent token, do these steps:
+
+1. Create a new agent token for the agent `servnerr` in the Cachix workspace `epk`.
+2. Run `rm secrets/cachix/agent.age`.
+3. Run `AGENIX_RULES=secrets/agenix-rules.nix nix run .#agenix -- -e cachix/agent.age`. Then enter `CACHIX_AGENT_TOKEN=<token>`.
+4. Merge the change. Do not revoke the old token yet.
+5. After the deployment succeeds and `systemctl status cachix-agent` on the host shows a connection, revoke the old token.
+
+To replace `CACHIX_AUTH_TOKEN`, do these steps:
+
+1. Create a new token with write access to the cache `epk`.
+2. Run `gh secret set CACHIX_AUTH_TOKEN`. Then enter the new token.
+3. Check that the next `main` run uploads and deploys.
+4. Revoke the old token.
+
+To replace `CACHIX_ACTIVATE_TOKEN`, do these steps:
+
+1. Create a new deploy token in the workspace `epk`.
+2. Run `gh secret set CACHIX_ACTIVATE_TOKEN --env deploy`. Then enter the new token.
+3. Check the next deployment.
+4. Revoke the old token.
+
 ## Tailscale enrollment
 
 The host logs in to Tailscale only when it has no login. The upstream `tailscaled-autoconnect` service runs `tailscale up` in that case.
@@ -68,7 +112,7 @@ A connected host does not log in again. Keep `/var/lib/tailscale` across rebuild
 The client has only the `auth_keys` scope and the tag `tag:exit-node`. The secret does not expire.
 Agenix decrypts it to `/run/agenix/tailscale-auth` with root-only access.
 `services.tailscale.authKeyFile` contains only `file:` and that path, so the secret does not appear in process arguments.
-CI checks that the upstream service still reads the key this way.
+CI checks only that `services.tailscale.authKeyFile` is a store file, which contains only the `file:` reference.
 
 To replace the secret, do these steps:
 

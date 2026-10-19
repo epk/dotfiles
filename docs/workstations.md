@@ -48,7 +48,7 @@ On the work Mac, commits in this repository also use the noreply address.
 
 ## Add a Mac
 
-1. Add the role in `flake.nix` and a `hosts/macos-<role>` module with the `networking` names of the Mac.
-2. Add `macos-<role>` to the `host` list in the CI matrix in `.github/workflows/check.yml`. Keep the list in alphabetical order.
+Add the role in `flake.nix` and a `hosts/macos-<role>` module with the `networking` names of the Mac.
+CI checks each `darwinConfigurations` output. The workflow needs no change.
 
 Then run `./setup.sh <role>` on the Mac from a checkout that has these changes.
