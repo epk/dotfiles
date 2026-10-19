@@ -38,6 +38,7 @@ in
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
   workshop-guest = import ./workshop-guest.nix { inherit self pkgs; };
+  networkd-restart = import ./networkd-restart.nix { inherit pkgs; };
   server = self.nixosConfigurations.server.config.system.build.toplevel;
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin (
