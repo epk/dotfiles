@@ -43,7 +43,8 @@ networking.microvm.guests.vpn = {
 
 Define the VM as `microvm.vms.vpn` with the same TAP interface.
 Give the guest `10.77.0.6/30` and the gateway `10.77.0.5`.
-Use a separate subnet for each VM. Workshop uses `10.77.0.0/30`.
+Use a separate subnet for each VM. Prefix lengths must be between 24 and 30.
+Workshop uses `10.77.0.0/30`.
 No guest can use another guest TAP as its uplink.
 This example does not create a VM or a WireGuard service.
 

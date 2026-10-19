@@ -48,7 +48,7 @@ in
             description = "Only source IPv4 address permitted from this guest.";
           };
           prefixLength = lib.mkOption {
-            type = lib.types.ints.between 1 30;
+            type = lib.types.ints.between 24 30;
             default = 30;
             description = "Prefix length of the private guest network.";
           };
