@@ -13,7 +13,7 @@ let
   ];
 in
 {
-  # Root and Nix share the physical 32 GiB host partition.
+  # Root and Nix share the physical 64 GiB host partition.
   disko.devices.disk = {
     system = {
       type = "disk";
@@ -38,7 +38,7 @@ in
             priority = 2;
             label = "${labelPrefix}-fast";
             start = "1050624";
-            end = "433008639";
+            end = "365897727";
             content = {
               type = "btrfs";
               extraArgs = [
@@ -63,9 +63,10 @@ in
           };
           root = {
             priority = 3;
+            _index = 4;
             label = "${labelPrefix}-root";
-            start = "433008640";
-            size = "100%";
+            start = "365897728";
+            size = "64G";
             content = {
               type = "btrfs";
               extraArgs = [
