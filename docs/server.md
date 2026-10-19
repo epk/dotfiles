@@ -86,40 +86,33 @@ See [server automation](automation.md) for deployment, Tailscale enrollment and 
 
 ## Nix guests
 
-`modules/nixos/microvm-guest.nix` defines the default guest configuration.
-It selects Cloud Hypervisor with direct kernel boot, one vCPU, 512 MiB RAM and a memory balloon.
-Guests can override these defaults.
-
-The guest receives the host `/nix/store` through a read-only virtio-fs export.
-The guest mounts the export at `/nix/.ro-store`.
-Microvm.nix adds this export to the guest store without a complete disk copy of the host closure.
+`modules/nixos/microvm-guest.nix` defines the shared guest settings.
+These settings are the latest kernel, no NixOS manual and the state version.
+Each guest selects its hypervisor, resources, store access and disks.
 
 Define each guest through `microvm.vms`.
 Keep GC roots for all guest closures that remain in use.
-Do not export `/nix/var/nix`, the Nix daemon socket, private keys or the complete data disk.
-Guests can read the shared store. Do not put secrets in the store.
-The default configuration disables writable store overlays.
-If a guest needs an overlay, use a private guest block volume.
+The storage module rejects `microvm.shares`, so the host exports no directory to a guest.
+A guest gets its store from a disk image. Do not put secrets in the store.
+If a guest needs a writable store overlay, use a private guest block volume.
 Treat the overlay as temporary build state unless its Nix database has an explicit persistence policy.
 
 Before you deploy an application guest, define its identity, network policy, resource limits and credentials.
 The host enables the persistent Firecracker agent guest. See [workshop access and storage](workshop.md).
-That guest uses a read-only EROFS system image instead of the default virtio-fs export.
+That guest uses a read-only EROFS system image.
 
 ## Guest disks and I/O
 
 `modules/nixos/microvm-storage.nix` creates a private Btrfs subvolume and host user for each declared VM.
 The host uses `truncate` to create sparse raw images.
 It formats ext4 inside each image without fallocate preallocation.
-The default guest disk is 4096 MiB and mounts at `/var`.
-The size applies only when the host creates the image. A later change does not resize an existing disk.
+The disk size applies only when the host creates the image. A later change does not resize an existing disk.
 
 The upstream disk creator sets `chattr +C`.
-The guest profile disables upstream `autoCreate` to keep CoW, data checksums and compression.
+The storage module asserts `autoCreate = false` for each writable disk to keep CoW, data checksums and compression.
 The host rejects existing NOCOW disks.
-Each VM user owns its private directories and disks.
-The host store is the only default shared export.
-Define an explicit access policy for each additional host export.
+Root owns each VM state directory and disk directory.
+Each VM user owns only its sparse raw images and the `run` directory that holds the VMM API socket.
 
 Writable disks must have these settings:
 
@@ -127,11 +120,13 @@ Writable disks must have these settings:
 - `direct = false` and `autoCreate = false`.
 - An image path under `/storage/nvme/vms/<vm-name>/` or `/storage/sata/vms/<vm-name>/`.
 
-Cloud Hypervisor receives `direct=off` and uses buffered I/O.
-Its [block implementation](https://github.com/cloud-hypervisor/cloud-hypervisor/blob/v53.0/block/src/io/request.rs) sends guest flush requests to fsync.
+The workshop guest gives each Firecracker drive the `Sync` I/O engine.
+The writable drives use the `Writeback` cache type, which passes guest flushes to the host.
+See `modules/nixos/guests/workshop.nix`.
 The configuration does not suppress flush requests.
 Guest ext4 keeps its default journal and write barriers.
-Guest TRIM releases sparse disk extents. Host TRIM releases unused SSD blocks.
+The workshop guest has no TRIM. The pinned Firecracker release does not support guest TRIM.
+Host TRIM still runs and releases unused SSD blocks.
 
 Btrfs compresses data when compression reduces its size.
 The [Btrfs documentation](https://btrfs.readthedocs.io/en/latest/Compression.html) describes a kernel change:

@@ -18,10 +18,10 @@ For the first setup of a Mac, run this command with the role `personal` or `work
 
 After the first setup, use `reload!`.
 
-On the installed NixOS host, use this command:
+CI deploys `main` to the server. To apply `main` on the server by hand, use this command:
 
 ```sh
-sudo nixos-rebuild switch --flake /etc/nixos#server
+sudo nixos-rebuild switch --flake github:epk/dotfiles#server
 ```
 
 See the [workstation instructions](docs/workstations.md) and [server instructions](docs/server.md).
@@ -48,7 +48,7 @@ Keep employer settings in the work profile. Apply Home Manager through nix-darwi
 CI runs the flake checks on Linux and on macOS. The checks are the host outputs, the workshop guest VM test, format, lint, policy and encrypted-file recipients.
 CI builds the same outputs that the hosts apply. It does not decrypt secrets.
 It builds only the checks that no cache holds. See [server automation](docs/automation.md#binary-cache).
-CI does not activate hosts or test physical boot.
+CI does not activate the Macs or test physical boot.
 On a Mac, `nix flake check` runs the macOS checks. `nix flake check --all-systems --no-build` evaluates all outputs.
 Renovate opens update PRs for the flake inputs, the GitHub Actions and the Antigravity release. CI must pass before automatic merge.
 CI deploys `main` to the server through Cachix Deploy. Strict branch protection keeps only tested trees on `main`. See [server automation](docs/automation.md).

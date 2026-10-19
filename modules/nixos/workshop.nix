@@ -59,7 +59,6 @@ in
         MemoryMax = "5G";
         TasksMax = 2048;
         UMask = "0077";
-        RuntimeDirectory = "workshop-jail";
         RootDirectory = "/run/workshop-jail";
         BindReadOnlyPaths = [ "/nix/store" ];
         BindPaths = [
@@ -98,12 +97,21 @@ in
         ExecStopPost = lib.mkForce [ "" ];
       };
     };
+    # Systemd creates the mount points in the jail root as root. A RuntimeDirectory would belong to the VM user.
+    systemd.tmpfiles.settings."10-workshop-jail"."/run/workshop-jail".d = {
+      user = "root";
+      group = "root";
+      mode = "0755";
+    };
     # Firecracker cannot share the host store, so the guest boots from an image of its closure.
     # The host builds that image from its local store. Then a deployment carries no 3.6 GB image.
     systemd.services.workshop-store-disk = {
       description = "Store image of the workshop guest";
       requiredBy = [ "microvm@workshop.service" ];
       before = [ "microvm@workshop.service" ];
+      # The preparation service creates the directory for the image.
+      requires = [ "prepare-microvm-storage-workshop.service" ];
+      after = [ "prepare-microvm-storage-workshop.service" ];
       unitConfig.RequiresMountsFor = [ disks ];
       path = [
         pkgs.bubblewrap
@@ -117,9 +125,10 @@ in
       script = ''
         set -euo pipefail
         image=${disks}/store.erofs
-        if [ "$(cat "$image.contents" 2>/dev/null)" = ${storeContents} ]; then
+        if [ -s "$image" ] && [ "$(cat "$image.contents" 2>/dev/null)" = ${storeContents} ]; then
           exit 0
         fi
+        rm -f "$image.new" "$image.contents"
         binds=()
         for path in $(sort -u ${storeContents}); do
           binds+=(--ro-bind "$path" "/run/workshop-store/$(basename "$path")")

@@ -48,7 +48,7 @@ Systemd supplies a private credential file to the service.
 Do not put secret values in Nix expressions, derivations, command arguments, prompts or logs.
 
 The declared secrets are the Tailscale enrollment key and the Cachix agent token.
-See [server automation](automation.md) for the Tailscale secret and its replacement.
+See [server automation](automation.md) for the Tailscale secret, the Cachix tokens and their replacement.
 Declare each application secret only when its consumer exists.
 The host does not need a live 1Password connection for boot or Tailscale access.
 

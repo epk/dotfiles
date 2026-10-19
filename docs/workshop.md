@@ -81,6 +81,7 @@ The plugin uses a private Xvfb display. No GPU is passed through.
 Chromium keeps its sandbox. No `--no-sandbox` flag is configured.
 
 The VMM has a dedicated host user, restricted filesystem view, device permissions and empty Linux capabilities.
+Root owns the VM state and disk directories. The VMM can write only its sparse raw images and the directory of its API socket.
 Firecracker supplies its default seccomp filters.
 The guest cannot initiate connections to the host, private networks, tailnet addresses or other guests.
 It can use public IPv4 addresses through the `uplink` interface. Guest IPv6 traffic is blocked.
@@ -95,7 +96,7 @@ These values are limits, not performance measurements.
 The read-only EROFS image contains the guest system closure.
 Firecracker does not support a virtio-fs store export.
 The host service `workshop-store-disk` builds the image from the local store before the VM starts.
-It skips the build when the guest closure did not change. A deployment carries only store paths.
+It skips the build when the image exists and the guest closure did not change. A deployment carries only store paths.
 Sparse raw ext4 disks provide 8 GiB for `/var` and 32 GiB for `/home`.
 The host stores both disks in `/storage/nvme/vms/workshop`, a private Btrfs subvolume.
 Host CoW, Zstd compression and checksums remain enabled.

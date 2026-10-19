@@ -4,9 +4,10 @@ on:
   push:
     branches: ["**"]
 
+# A new main run waits. Cancellation would hide the result of a deployment that the agent continues.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -37,14 +38,16 @@ jobs:
 
       # The checks include the host outputs. A check that a cache holds is not built or downloaded.
       # One build at a time: the VM test fails when other builds take its CPU.
+      # Only main runs get the cache write token. Code from an unmerged lock update must not read it.
       - name: Build the uncached checks
         env:
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          CACHIX_AUTH_TOKEN: ${{ github.ref == 'refs/heads/main' && secrets.CACHIX_AUTH_TOKEN || '' }}
         run: >-
           nix run --inputs-from . nixpkgs#nix-fast-build --
-          --skip-cached --no-nom --max-jobs 1 --cachix-cache epk --flake .#checks.${{ matrix.system }}
+          --skip-cached --no-nom --max-jobs 1 ${{ github.ref == 'refs/heads/main' && '--cachix-cache epk' || '' }}
+          --flake .#checks.${{ matrix.system }}
 
-  # The agent downloads the server closure that the check job pushed, then activates it.
+  # The agent downloads the server closure, then activates it.
   # It rolls back if it cannot reach Cachix after the activation.
   deploy:
     needs: check
@@ -59,12 +62,24 @@ jobs:
         with:
           name: epk
           skipPush: true
+      # The cache can remove a dependency after the check. Get the full closure. Upload the missing paths.
+      - name: Build the server closure
+        id: server
+        run: |
+          server=.#nixosConfigurations.server.config
+          path=$(nix build --no-link --print-out-paths "$server.system.build.toplevel")
+          agent=$(nix eval --raw "$server.services.cachix-agent.name")
+          printf 'path=%s\nagent=%s\n' "$path" "$agent" >>"$GITHUB_OUTPUT"
+      - name: Upload the server closure
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          SERVER: ${{ steps.server.outputs.path }}
+        run: cachix push epk "$SERVER"
       - name: Deploy the server
         env:
           CACHIX_ACTIVATE_TOKEN: ${{ secrets.CACHIX_ACTIVATE_TOKEN }}
+          AGENT: ${{ steps.server.outputs.agent }}
+          SERVER: ${{ steps.server.outputs.path }}
         run: |
-          server=.#nixosConfigurations.server.config
-          jq -n --arg agent "$(nix eval --raw $server.services.cachix-agent.name)" \
-            --arg path "$(nix eval --raw $server.system.build.toplevel)" \
-            '{agents: {($agent): $path}}' >deploy.json
+          jq -n --arg agent "$AGENT" --arg path "$SERVER" '{agents: {($agent): $path}}' >deploy.json
           cachix deploy activate deploy.json
