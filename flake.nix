@@ -86,10 +86,7 @@
         nix-darwin.lib.darwinSystem {
           specialArgs = {
             inherit determinate nix-index-database try;
-            user = {
-              username = "aditya.sharma";
-              name = "Aditya Sharma";
-              signingPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/Cr+bIMxMzkk8dN7xxRsaJeHRifwlyTuh/ja9Uy9MN";
+            user = import ./lib/user.nix // {
               inherit role;
             };
           };

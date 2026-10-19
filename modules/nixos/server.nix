@@ -29,9 +29,7 @@ in
     isNormalUser = true;
     uid = 1000;
     extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/Cr+bIMxMzkk8dN7xxRsaJeHRifwlyTuh/ja9Uy9MN"
-    ];
+    openssh.authorizedKeys.keys = [ (import ../../lib/user.nix).sshPublicKey ];
   };
   security.sudo.wheelNeedsPassword = false;
 

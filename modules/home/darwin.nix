@@ -22,7 +22,7 @@
 
   programs.git = {
     signing = {
-      key = user.signingPublicKey;
+      key = user.sshPublicKey;
       format = "ssh";
       signer = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
       signByDefault = true;
@@ -36,7 +36,10 @@
   programs.zsh.initContent = ''
     reload!() {
       # Determinate Nix logs cause nom to stop. See nix-output-monitor issue 320.
-      nh darwin switch --hostname macos-${user.role} --no-nom "$@" && exec ${pkgs.zsh}/bin/zsh
+      # The new shell loads the session variables again only without these guards.
+      nh darwin switch --hostname macos-${user.role} --no-nom "$@" &&
+        unset __HM_SESS_VARS_SOURCED __HM_ZSH_SESS_VARS_SOURCED &&
+        exec ${pkgs.zsh}/bin/zsh
     }
   '';
 }
