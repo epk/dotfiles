@@ -115,7 +115,9 @@ The module defines the guest, private disks, resource limits and guest network r
 Set `administratorKeys` to the SSH public keys of the administrator. Set `uplink` and `storageDirectory` when the defaults do not apply.
 The module uses the pinned Antigravity release from the repository.
 The guest definition is `modules/nixos/guests/workshop.nix`.
-A deployment that changes the guest system or restarts the host firewall restarts the workshop VM.
+A deployment that changes the guest system restarts the workshop VM.
+Firewall rule updates reload atomically. They do not restart the VM.
+See [guest networking](guest-networking.md) for nftables rules and additional guests.
 Keep actual connection commands in the private inventory.
 
 Sources: [Paseo security](https://paseo.sh/docs/security),
