@@ -56,7 +56,7 @@ in
     trusted-users = [ "root" ];
     substituters = [ cachix.url ];
     trusted-public-keys = [ cachix.publicKey ];
-    # The 32 GiB root also holds builds. Collect garbage before it fills.
+    # The host filesystem also holds builds. Collect garbage before it fills.
     min-free = 4 * 1024 * 1024 * 1024;
     max-free = 8 * 1024 * 1024 * 1024;
   };

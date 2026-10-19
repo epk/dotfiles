@@ -15,8 +15,8 @@ These are local mount paths. [FHS defines `/srv` for served data](https://refspe
 | Device | Dataset and mount | Capacity and use |
 | --- | --- | --- |
 | NVMe partition 1 | `/boot`, FAT32 EFI | 512 MiB |
-| NVMe partition 3 | `@root` at `/`, `@nix` at `/nix` | 32 GiB shared host capacity |
-| NVMe partition 2 | `@fast`, `@artifacts`, `@vms` under `/storage/nvme` | 206 GiB for active VM disks and temporary artifacts |
+| NVMe partition 4 | `@root` at `/`, `@nix` at `/nix` | 64 GiB shared host capacity |
+| NVMe partition 2 | `@fast`, `@artifacts`, `@vms` under `/storage/nvme` | About 174 GiB for active VM disks and temporary artifacts |
 | SATA partition 1 | `@data`, `@artifacts`, `@shares`, `@vms` under `/storage/sata` | 931 GiB for bulk data, retained artifacts and larger VM disks |
 | VM subvolumes on either SSD | `@vms/<name>` | Shared capacity on the selected SSD |
 
@@ -33,7 +33,7 @@ All Btrfs mounts use `compress=zstd:1`, `noatime` and `discard=async`.
 CoW and data checksums stay enabled. The configuration keeps the default durability settings.
 The configuration does not enable NOCOW or automatic defragmentation.
 
-The physical 32 GiB partition limits the combined host capacity, including root, Nix and `/var`.
+The physical 64 GiB partition limits the combined host capacity, including root, Nix and `/var`.
 Root and Nix subvolumes share this limit. The configuration does not use qgroups.
 VM disks and bulk artifacts cannot consume this host capacity.
 The system journal has a 256 MiB limit. The boot loader retains a maximum of five system entries.
@@ -43,7 +43,7 @@ Use a larger guest volume for builds that exceed the host capacity.
 Check `df -h / /nix` and `sudo btrfs filesystem usage /`.
 Remove unused system generations and collect unreferenced store paths when necessary.
 Keep GC roots for guest closures before store collection.
-The 32 GiB limit controls host capacity; it does not guarantee space for an arbitrary build.
+The 64 GiB limit controls host capacity; it does not guarantee space for an arbitrary build.
 
 The host runs TRIM each week and Btrfs scrubs each month.
 Scrubs cover each filesystem once: the host partition, fast storage and SATA data.
