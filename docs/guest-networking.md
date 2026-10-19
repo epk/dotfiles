@@ -4,6 +4,7 @@
 Firecracker and Cloud Hypervisor use the same host network policy.
 Microvm.nix creates each TAP device. Systemd-networkd supplies its address and routing policy.
 Networkd matches only the declared TAP devices. It preserves routes and rules from Tailscale and DHCP.
+The server keeps its existing resolver instead of enabling systemd-resolved.
 
 ## Access policy
 
