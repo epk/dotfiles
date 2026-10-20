@@ -14,6 +14,7 @@ let
 in
 {
   home.packages = with pkgs; [
+    devenv
     gcloud
     nodejs_26
     python314

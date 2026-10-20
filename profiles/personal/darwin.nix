@@ -1,13 +1,19 @@
 { determinate, ... }:
 let
-  cachix = import ../../lib/cachix.nix;
+  caches = import ../../lib/cachix.nix;
 in
 {
   # The module owns /etc/nix/nix.custom.conf. The work Mac keeps the Shopify file there.
   imports = [ determinate.darwinModules.default ];
   determinateNix.customSettings = {
-    extra-substituters = [ cachix.url ];
-    extra-trusted-public-keys = [ cachix.publicKey ];
+    extra-substituters = [
+      caches.epk.url
+      caches.devenv.url
+    ];
+    extra-trusted-public-keys = [
+      caches.epk.publicKey
+      caches.devenv.publicKey
+    ];
   };
 
   homebrew = {
