@@ -27,9 +27,21 @@ in
     KUBECONFIG = "${home}/.kube/config:${shopifyKubeconfig}";
   };
 
+  # Tec supplies git, gh and pnpm earlier in PATH. Do not install second copies.
+  programs.gh.enable = lib.mkForce false;
+  programs.pnpm.package = null;
+
   # Shopify dev adds dev/gitconfig to config.local. Do not add a second include for it here.
   programs.git = {
+    package = null;
     settings.user.email = "aditya.sharma@shopify.com";
+    # Without the Home Manager gh module, Git needs these gh credential helpers.
+    settings.credential = lib.genAttrs [ "https://github.com" "https://gist.github.com" ] (_: {
+      helper = [
+        ""
+        "!${tecGlobal}/bin/gh auth git-credential"
+      ];
+    });
     # Commits in this public repository use the GitHub noreply address.
     includes = [
       {
