@@ -42,7 +42,6 @@ let
     pkgs.ripgrep
     pkgs.bubblewrap
   ];
-  tap = (lib.head config.microvm.interfaces).id;
   user = config.dotfiles.homeUser;
   codexConfig = pkgs.writeText "agent-codex.toml" ''
     approval_policy = "never"
@@ -106,9 +105,6 @@ in
       "antigravity-cli"
     ];
   networking.hostName = "workshop";
-  networking.useDHCP = false;
-  networking.enableIPv6 = false;
-  networking.usePredictableInterfaceNames = false;
   networking.interfaces.eth0.ipv4.addresses = [
     {
       address = "10.77.0.2";
@@ -119,16 +115,11 @@ in
     address = "10.77.0.1";
     interface = "eth0";
   };
-  networking.nameservers = [
-    "1.1.1.1"
-    "9.9.9.9"
-  ];
+  # The host builds the store image from its own store. See modules/nixos/workshop.nix.
+  dotfiles.guestStoreImage = "${workshop.storageDirectory}/store.erofs";
   microvm = {
-    hypervisor = "firecracker";
     vcpu = 2;
     mem = 4096;
-    balloon = false;
-    shares = [ ];
     # Keep the base image read-only. Guest builds write only to its private home disk.
     writableStoreOverlay = "/home/.nix-store";
     interfaces = [
@@ -142,50 +133,6 @@ in
       (disk "state" "/var" 8192)
       (disk "home" "/home" 32768)
     ];
-    # extraConfig replaces the upstream drive list. Writeback caching passes guest flushes to the host.
-    # The host builds the store image from its own store. See modules/nixos/workshop.nix.
-    firecracker.extraConfig.drives = [
-      {
-        drive_id = "store";
-        path_on_host = "${workshop.storageDirectory}/store.erofs";
-        is_root_device = false;
-        is_read_only = true;
-        io_engine = "Sync";
-      }
-    ]
-    ++ map (volume: {
-      drive_id = lib.removeSuffix ".raw" (baseNameOf volume.image);
-      path_on_host = volume.image;
-      is_root_device = false;
-      is_read_only = false;
-      io_engine = "Sync";
-      cache_type = "Writeback";
-    }) config.microvm.volumes;
-    # Upstream gives the TAP device to the user microvm. This VM runs as its own host user.
-    binScripts.tap-up = lib.mkForce ''
-      set -eu
-      # A crashed VM can leave its TAP device behind.
-      ${pkgs.iproute2}/bin/ip link delete ${tap} 2>/dev/null || true
-      ${pkgs.iproute2}/bin/ip tuntap add dev ${tap} mode tap user vm-${config.networking.hostName}
-      ${pkgs.iproute2}/bin/ip link set ${tap} up
-    '';
-  };
-  # The pinned Firecracker release does not support guest discard.
-  services.fstrim.enable = false;
-  services.openssh = {
-    enable = true;
-    hostKeys = [
-      {
-        path = "/var/lib/ssh/ssh_host_ed25519_key";
-        type = "ed25519";
-      }
-    ];
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "no";
-      AllowUsers = [ user ];
-    };
   };
   # The private state disk preserves this guest's Tailscale registration across rebuilds.
   services.tailscale = {
@@ -219,7 +166,6 @@ in
     home = "/home/agent";
   };
   users.groups.agent.gid = 1001;
-  security.sudo.wheelNeedsPassword = false;
   # Codex writes trust and notices to ~/.codex/config.toml. It reads this system layer below that file.
   environment.etc."codex/config.toml".source = codexConfig;
   environment.etc."gemini-cli/system-defaults.json".source =
@@ -299,5 +245,4 @@ in
     pkgs.noto-fonts-color-emoji
   ];
   services.journald.settings.Journal.SystemMaxUse = "128M";
-  time.timeZone = "UTC";
 }

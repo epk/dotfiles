@@ -18,17 +18,10 @@
 
   system.primaryUser = user.username;
 
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    backupFileExtension = "before-nix";
+  home-manager = (import ../../lib/hm.nix { inherit nix-index-database try; }) // {
     extraSpecialArgs = {
       inherit user;
     };
-    sharedModules = [
-      nix-index-database.homeModules.default
-      try.homeModules.default
-    ];
     # Each host adds its Home Manager profile to this list.
     users.${user.username}.imports = [
       ../home

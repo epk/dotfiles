@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   vpn,
@@ -41,9 +40,6 @@ in
   imports = [ ../microvm-guest.nix ];
   networking = {
     hostName = "vpn";
-    useDHCP = false;
-    enableIPv6 = false;
-    usePredictableInterfaceNames = false;
     interfaces.eth0.ipv4.addresses = [
       {
         address = "10.78.0.2";
@@ -54,10 +50,6 @@ in
       address = "10.78.0.1";
       interface = "eth0";
     };
-    nameservers = [
-      "1.1.1.1"
-      "9.9.9.9"
-    ];
     firewall = {
       checkReversePath = "loose";
       interfaces.eth0.allowedUDPPorts = [ 51820 ];
@@ -102,11 +94,8 @@ in
   boot.kernelModules = [ "wireguard" ];
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   microvm = {
-    hypervisor = "firecracker";
     vcpu = 1;
     mem = 512;
-    balloon = false;
-    shares = [ ];
     interfaces = [
       {
         type = "tap";
@@ -135,29 +124,6 @@ in
         direct = false;
       }
     ];
-    firecracker.extraConfig.drives = [
-      {
-        drive_id = "store";
-        path_on_host = config.microvm.storeDisk;
-        is_root_device = false;
-        is_read_only = true;
-        io_engine = "Sync";
-      }
-    ]
-    ++ map (volume: {
-      drive_id = lib.removeSuffix ".raw" (baseNameOf volume.image);
-      path_on_host = volume.image;
-      is_root_device = false;
-      is_read_only = volume.readOnly;
-      io_engine = "Sync";
-      cache_type = "Writeback";
-    }) config.microvm.volumes;
-    binScripts.tap-up = lib.mkForce ''
-      set -eu
-      ${pkgs.iproute2}/bin/ip link delete vpn-tap 2>/dev/null || true
-      ${pkgs.iproute2}/bin/ip tuntap add dev vpn-tap mode tap user vm-vpn
-      ${pkgs.iproute2}/bin/ip link set vpn-tap up
-    '';
   };
   # Deploy the complete system image. This appliance does not build or activate Nix profiles.
   nix.enable = false;
@@ -171,28 +137,11 @@ in
     ];
     noCheck = true;
   };
-  services.fstrim.enable = false;
-  services.openssh = {
-    enable = true;
-    hostKeys = [
-      {
-        path = "/var/lib/ssh/ssh_host_ed25519_key";
-        type = "ed25519";
-      }
-    ];
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "no";
-      AllowUsers = [ user ];
-    };
-  };
   users.users.${user} = {
     isNormalUser = true;
     openssh.authorizedKeys.keys = vpn.administratorKeys;
     extraGroups = [ "wheel" ];
   };
-  security.sudo.wheelNeedsPassword = false;
   users.users.wg-portal = {
     isSystemUser = true;
     group = "wg-portal";
@@ -364,6 +313,4 @@ in
     pkgs.wireguard-tools
     pkgs.curl
   ];
-  services.journald.settings.Journal.SystemMaxUse = "64M";
-  time.timeZone = "UTC";
 }
