@@ -186,6 +186,23 @@ in
       AllowUsers = [ user ];
     };
   };
+  # The private state disk preserves this guest's Tailscale registration across rebuilds.
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+    disableTaildrop = true;
+    extraSetFlags = [
+      "--hostname=workshop"
+      "--ssh"
+      "--accept-dns=false"
+      "--accept-routes=false"
+    ];
+  };
+  networking.nftables = {
+    enable = true;
+    flushRuleset = false;
+  };
+  systemd.services.tailscaled.environment.TS_DEBUG_FIREWALL_MODE = "nftables";
   networking.firewall.allowedTCPPorts = [ 22 ];
   fileSystems."/home".neededForBoot = true;
   users.users.${user} = {
