@@ -73,7 +73,7 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
           SERVER: ${{ steps.server.outputs.path }}
-        run: nix path-info --recursive "$SERVER" | cachix push epk
+        run: cachix push epk "$SERVER"
       - name: Deploy the server
         env:
           CACHIX_ACTIVATE_TOKEN: ${{ secrets.CACHIX_ACTIVATE_TOKEN }}
