@@ -48,8 +48,14 @@ in
     cores = 2;
     # Only root can change daemon trust or select privileged builders.
     trusted-users = [ "root" ];
-    substituters = [ caches.epk.url ];
-    trusted-public-keys = [ caches.epk.publicKey ];
+    substituters = [
+      caches.epk.url
+      caches.community.url
+    ];
+    trusted-public-keys = [
+      caches.epk.publicKey
+      caches.community.publicKey
+    ];
     # The host filesystem also holds builds. Collect garbage before it fills.
     min-free = 4 * 1024 * 1024 * 1024;
     max-free = 8 * 1024 * 1024 * 1024;
