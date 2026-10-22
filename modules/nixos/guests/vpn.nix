@@ -7,6 +7,9 @@
 }:
 let
   user = (import ../../../lib/user.nix).username;
+  tunnelPrefix = "10.199.29";
+  tunnelSubnet = "${tunnelPrefix}.0/24";
+  tunnelAddress = "${tunnelPrefix}.1/24";
   portal = pkgs.callPackage ../../../packages/wg-portal.nix { };
   settings = (pkgs.formats.yaml { }).generate "wg-portal.yaml" {
     core = {
@@ -17,7 +20,7 @@ let
     advanced = {
       use_ip_v6 = false;
       start_listen_port = 51820;
-      start_cidr_v4 = "10.66.66.0/24";
+      start_cidr_v4 = tunnelSubnet;
       config_storage_path = "/var/lib/wg-portal/configs";
     };
     database = {
@@ -80,8 +83,8 @@ in
           chain forward {
             type filter hook forward priority -10; policy drop;
             ct state invalid drop
-            iifname "wg_in" oifname "eth0" ip saddr 10.66.66.0/24 ip daddr != @non_public_v4 accept
-            iifname "eth0" oifname "wg_in" ip daddr 10.66.66.0/24 ct state { established, related } accept
+            iifname "wg_in" oifname "eth0" ip saddr ${tunnelSubnet} ip daddr != @non_public_v4 accept
+            iifname "eth0" oifname "wg_in" ip daddr ${tunnelSubnet} ct state { established, related } accept
           }
         '';
       };
@@ -90,7 +93,7 @@ in
         content = ''
           chain postrouting {
             type nat hook postrouting priority srcnat; policy accept;
-            iifname "wg_in" oifname "eth0" ip saddr 10.66.66.0/24 masquerade
+            iifname "wg_in" oifname "eth0" ip saddr ${tunnelSubnet} masquerade
           }
         '';
       };
@@ -249,7 +252,7 @@ in
       set -eu
       if ! ip link show wg_in >/dev/null 2>&1; then ip link add wg_in type wireguard; fi
       wg set wg_in private-key /var/lib/wg-portal/wireguard.key listen-port 51820
-      ip address replace 10.66.66.1/24 dev wg_in
+      ip address replace ${tunnelAddress} dev wg_in
       ip link set dev wg_in mtu 1420 up
     '';
   };
@@ -302,13 +305,12 @@ in
       ];
     };
   };
-  # Set useful defaults once. Later UI changes belong to Portal and remain in its database.
+  # Nix controls the server address and client pool. Portal stores peers and other UI settings.
   systemd.services.vpn-defaults = {
-    description = "Set initial WireGuard client defaults";
+    description = "Apply the declared WireGuard network";
     wantedBy = [ "multi-user.target" ];
     requires = [ "wg-portal.service" ];
     after = [ "wg-portal.service" ];
-    unitConfig.ConditionPathExists = "!/var/lib/wg-portal/defaults-v1";
     path = [
       pkgs.curl
       pkgs.jq
@@ -336,15 +338,25 @@ in
       api=http://10.78.0.2:8888/api/v1/interface/by-id/wg_in
       curl --config curl.conf --fail --silent --show-error --retry 20 --retry-connrefused \
         --retry-delay 1 --max-time 5 --output interface.json "$api"
-      endpoint=$(curl -4 --fail --silent --show-error --max-time 10 https://api.ipify.org)
-      # Check the response format before using it as an endpoint.
-      jq -en --arg address "$endpoint" '$address | test("^([0-9]{1,3}\\.){3}[0-9]{1,3}$")' >/dev/null
-      jq --arg endpoint "$endpoint:51820" \
-        '.Mode = "server" | .PeerDefNetwork = ["10.66.66.0/24"] | .PeerDefAllowedIPs = ["0.0.0.0/0"] |
-         .PeerDefDns = ["1.1.1.1", "9.9.9.9"] | .PeerDefEndpoint = $endpoint |
-         .PeerDefMtu = 1420 | .PeerDefPersistentKeepalive = 25' interface.json > defaults.json
-      curl --config curl.conf --fail --silent --show-error --max-time 10 \
-        --header 'Content-Type: application/json' --request PUT --data-binary @defaults.json --output /dev/null "$api"
+      jq -S . interface.json > current.json
+      jq -S --arg address ${lib.escapeShellArg tunnelAddress} --arg subnet ${lib.escapeShellArg tunnelSubnet} \
+        '.Addresses = [$address] | .PeerDefNetwork = [$subnet]' interface.json > network.json
+      if [ ! -e /var/lib/wg-portal/defaults-v1 ]; then
+        endpoint=$(curl -4 --fail --silent --show-error --max-time 10 https://api.ipify.org)
+        # Check the response format before using it as an endpoint.
+        jq -en --arg address "$endpoint" '$address | test("^([0-9]{1,3}\\.){3}[0-9]{1,3}$")' >/dev/null
+        jq --arg endpoint "$endpoint:51820" \
+          '.Mode = "server" | .PeerDefAllowedIPs = ["0.0.0.0/0"] |
+           .PeerDefDns = ["1.1.1.1", "9.9.9.9"] | .PeerDefEndpoint = $endpoint |
+           .PeerDefMtu = 1420 | .PeerDefPersistentKeepalive = 25' network.json > defaults.json
+      else
+        cp network.json defaults.json
+      fi
+      jq -S . defaults.json > desired.json
+      if ! cmp -s current.json desired.json; then
+        curl --config curl.conf --fail --silent --show-error --max-time 10 \
+          --header 'Content-Type: application/json' --request PUT --data-binary @desired.json --output /dev/null "$api"
+      fi
       touch /var/lib/wg-portal/defaults-v1
     '';
   };
