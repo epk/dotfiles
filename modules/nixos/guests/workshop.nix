@@ -45,8 +45,8 @@ let
   tap = (lib.head config.microvm.interfaces).id;
   user = config.dotfiles.homeUser;
   codexConfig = pkgs.writeText "agent-codex.toml" ''
-    approval_policy = "on-request"
-    sandbox_mode = "workspace-write"
+    approval_policy = "never"
+    sandbox_mode = "danger-full-access"
     cli_auth_credentials_store = "file"
     [mcp_servers.browser]
     command = "${browserMcp}/bin/chrome-devtools-mcp"
@@ -274,7 +274,7 @@ in
     environment.PATH = lib.mkForce "/etc/profiles/per-user/agent/bin:/run/current-system/sw/bin";
     serviceConfig = {
       WorkingDirectory = "/home/agent/workspace";
-      ExecStart = "${pkgs.claude-code}/bin/claude remote-control --name Workshop --capacity 2 --permission-mode default";
+      ExecStart = "${pkgs.claude-code}/bin/claude remote-control --name Workshop --capacity 4 --permission-mode bypassPermissions";
       Restart = "always";
       RestartSec = 15;
     };
