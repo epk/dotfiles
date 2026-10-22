@@ -3,6 +3,8 @@
   fetchFromGitHub,
   buildGoModule,
   buildNpmPackage,
+  autoPatchelfHook,
+  stdenv,
 }:
 let
   version = "2.3.1";
@@ -18,6 +20,12 @@ let
     sourceRoot = "source/frontend";
     npmDepsHash = "sha256-NTipEmFjHZ96HwX8jznMG/eIZfHw4KAd/2b39xkBlxU=";
     makeCacheWritable = true;
+    nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+    buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
+    # Sass embeds a native executable. Set its ELF interpreter before Vite starts.
+    postConfigure = lib.optionalString stdenv.hostPlatform.isLinux ''
+      autoPatchelf node_modules
+    '';
     env.DIST_OUT_DIR = "dist";
     installPhase = ''
       runHook preInstall
