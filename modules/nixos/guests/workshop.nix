@@ -265,6 +265,32 @@ in
     wants = [ "network-online.target" ];
     serviceConfig.ExecStart = "${pkgs.chromium}/bin/chromium --ozone-platform=x11 --user-data-dir=/home/agent/.config/chromium --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 --no-first-run --no-default-browser-check about:blank";
   };
+  systemd.services.workshop-claude-remote = lib.recursiveUpdate desktopService {
+    description = "Workshop Claude Code remote access";
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "/home/agent/.claude/.credentials.json";
+    environment.PATH = lib.mkForce "/etc/profiles/per-user/agent/bin:/run/current-system/sw/bin";
+    serviceConfig = {
+      WorkingDirectory = "/home/agent/workspace";
+      ExecStart = "${pkgs.claude-code}/bin/claude remote-control --name Workshop --capacity 2 --permission-mode default";
+      Restart = "always";
+      RestartSec = 15;
+    };
+  };
+  systemd.services.workshop-codex-remote = lib.recursiveUpdate desktopService {
+    description = "Workshop Codex remote access";
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "/home/agent/.codex/auth.json";
+    environment.PATH = lib.mkForce "/etc/profiles/per-user/agent/bin:/run/current-system/sw/bin";
+    serviceConfig = {
+      WorkingDirectory = "/home/agent/workspace";
+      ExecStart = "${pkgs.codex}/bin/codex remote-control --no-daemon";
+      Restart = "always";
+      RestartSec = 15;
+    };
+  };
   environment.systemPackages = agentTools ++ desktopTools;
   fonts.packages = [
     pkgs.dejavu_fonts
