@@ -1,10 +1,7 @@
 { user, ... }:
 
 {
-  imports = [
-    ../../modules/darwin
-    ../../profiles/work/darwin.nix
-  ];
+  imports = [ ../../modules/darwin ];
 
   networking = {
     computerName = "adityas-shopitop";
@@ -12,5 +9,7 @@
     localHostName = "adityas-shopitop";
   };
 
-  home-manager.users.${user.username}.imports = [ ../../profiles/work/home.nix ];
+  homebrew.casks = [ "tuple" ];
+
+  home-manager.users.${user.username}.imports = [ ./home.nix ];
 }

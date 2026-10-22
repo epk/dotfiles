@@ -6,35 +6,19 @@
 }:
 let
   cfg = config.services.vpn;
-  state = "${config.microvm.stateDir}/vpn";
 in
 {
   imports = [
-    ./microvm-storage.nix
-    ./microvm-network.nix
+    (import ./microvm-service.nix {
+      name = "vpn";
+      description = "the private WireGuard appliance";
+      guest = ./guests/vpn.nix;
+      cpuQuota = "100%";
+      memoryMax = "768M";
+      tasksMax = 256;
+    })
   ];
-  options.services.vpn = {
-    enable = lib.mkEnableOption "the private WireGuard appliance";
-    storageDirectory = lib.mkOption {
-      type = lib.types.strMatching "/storage/(nvme|sata)/vms/vpn";
-      default = "/storage/nvme/vms/vpn";
-      description = "Directory for the persistent VPN disk.";
-    };
-    uplink = lib.mkOption {
-      type = lib.types.str;
-      default = "eno1";
-    };
-    administratorKeys = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-    };
-  };
   config = lib.mkIf cfg.enable {
-    microvm.vms.vpn = {
-      pkgs = null;
-      specialArgs.vpn = cfg;
-      config = ./guests/vpn.nix;
-    };
     networking.microvm.guests.vpn = {
       interface = "vpn-tap";
       hostAddress = "10.78.0.1";
@@ -111,55 +95,7 @@ in
         mv "$image.new" "$image"
       '';
     };
-    systemd.tmpfiles.settings."10-vpn-jail"."/run/vpn-jail".d = {
-      user = "root";
-      group = "root";
-      mode = "0755";
-    };
     # The guest holds the read-only metadata disk open. Restart it after a metadata preparation change.
     systemd.services."microvm@vpn".restartTriggers = [ config.systemd.services.vpn-host-config.script ];
-    systemd.services."microvm@vpn".serviceConfig = {
-      CPUQuota = "100%";
-      CPUWeight = 50;
-      MemoryMax = "768M";
-      TasksMax = 256;
-      UMask = "0077";
-      RootDirectory = "/run/vpn-jail";
-      BindReadOnlyPaths = [ "/nix/store" ];
-      BindPaths = [
-        state
-        cfg.storageDirectory
-        "/dev/kvm"
-        "/dev/net/tun"
-      ];
-      ReadWritePaths = [
-        state
-        cfg.storageDirectory
-      ];
-      PrivateDevices = true;
-      PrivateTmp = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectKernelLogs = true;
-      ProtectControlGroups = true;
-      RestrictSUIDSGID = true;
-      LockPersonality = true;
-      NoNewPrivileges = true;
-      CapabilityBoundingSet = "";
-      RestrictAddressFamilies = [
-        "AF_UNIX"
-        "AF_INET"
-      ];
-      IPAddressDeny = "any";
-      DevicePolicy = "closed";
-      DeviceAllow = [
-        "/dev/kvm rw"
-        "/dev/net/tun rw"
-      ];
-      ExecStartPost = lib.mkForce [ "" ];
-      ExecStopPost = lib.mkForce [ "" ];
-    };
   };
 }
