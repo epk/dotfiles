@@ -82,12 +82,25 @@ in
         Type = "oneshot";
         RemainAfterExit = true;
         RuntimeDirectory = "vpn-host-config";
+        TimeoutStartSec = 60;
         UMask = "0077";
       };
       script = ''
         set -eu
-        address=$(tailscale ip -4 2>/dev/null || true)
-        if [ -n "$address" ]; then url="http://$address:51821"; else url="http://localhost:51821"; fi
+        address=
+        for _ in $(seq 1 20); do
+          address=$(timeout 1 tailscale ip -4 2>/dev/null || true)
+          if [ -n "$address" ]; then break; fi
+          sleep 1
+        done
+        if [ -n "$address" ]; then
+          url="http://$address:51821"
+          printf '%s\n' "$url" > ${cfg.storageDirectory}/portal.url
+        elif [ -s ${cfg.storageDirectory}/portal.url ]; then
+          url=$(cat ${cfg.storageDirectory}/portal.url)
+        else
+          url="http://localhost:51821"
+        fi
         printf 'WG_PORTAL_WEB_EXTERNAL_URL=%s\n' "$url" > /run/vpn-host-config/portal.env
         chmod 0444 /run/vpn-host-config/portal.env
         image=${cfg.storageDirectory}/host-config.raw
@@ -103,6 +116,8 @@ in
       group = "root";
       mode = "0755";
     };
+    # The guest holds the read-only metadata disk open. Restart it after a metadata preparation change.
+    systemd.services."microvm@vpn".restartTriggers = [ config.systemd.services.vpn-host-config.script ];
     systemd.services."microvm@vpn".serviceConfig = {
       CPUQuota = "100%";
       CPUWeight = 50;
