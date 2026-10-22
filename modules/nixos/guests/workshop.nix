@@ -40,6 +40,7 @@ let
     pkgs.curl
     pkgs.jq
     pkgs.ripgrep
+    pkgs.bubblewrap
   ];
   tap = (lib.head config.microvm.interfaces).id;
   user = config.dotfiles.homeUser;
@@ -286,7 +287,8 @@ in
     environment.PATH = lib.mkForce "/etc/profiles/per-user/agent/bin:/run/current-system/sw/bin";
     serviceConfig = {
       WorkingDirectory = "/home/agent/workspace";
-      ExecStart = "${pkgs.codex}/bin/codex remote-control --no-daemon";
+      # Keep the native control socket available for device pairing. Nix supplies the pinned binary.
+      ExecStart = "${pkgs.codex}/bin/codex app-server --remote-control --listen unix:// --managed-daemon";
       Restart = "always";
       RestartSec = 15;
     };
