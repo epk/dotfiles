@@ -11,10 +11,15 @@
     ./disko.nix
     ./secrets.nix
     ../../modules/nixos/workshop.nix
+    ../../modules/nixos/vpn.nix
     ../../modules/nixos/server-automation.nix
     ../../modules/nixos/home.nix
   ];
   services.workshop = {
+    enable = true;
+    administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
+  };
+  services.vpn = {
     enable = true;
     administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
   };
