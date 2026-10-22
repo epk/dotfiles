@@ -15,11 +15,11 @@ let
     direct = false;
     autoCreate = false;
   };
-  inherit (pkgs) paseo;
-  sharedBrowser = pkgs.callPackage ../../../packages/shared-browser.nix { };
+  waymote = pkgs.callPackage ../../../packages/waymote.nix { };
   antigravity = pkgs.callPackage ../../../packages/antigravity-cli.nix { };
-  # Paseo starts agents with the service PATH. Give them the same tools as a shell.
+  # The runner and its child agents use the same tools as a shell.
   agentTools = [
+    pkgs.amp-cli
     pkgs.codex
     pkgs.claude-code
     pkgs.gemini-cli
@@ -42,46 +42,21 @@ let
     [sandbox_workspace_write]
     network_access = true
   '';
-  paseoConfig = (pkgs.formats.json { }).generate "agent-paseo.json" {
-    daemon = {
-      listen = "127.0.0.1:6767";
-      relay.enabled = false;
-      browserTools.enabled = false;
-    };
-    features = {
-      webUi.enabled = true;
-      voiceMode.enabled = false;
-      dictation.enabled = false;
-    };
-    pluginsEnabled = true;
-    agents.providers = {
-      gemini = {
-        extends = "acp";
-        label = "Gemini CLI";
-        enabled = false;
-        command = [
-          "${pkgs.gemini-cli}/bin/gemini"
-          "--acp"
-        ];
-      };
-      antigravity = {
-        enabled = true;
-        command = [ "${antigravity}/bin/agy" ];
-      };
-      claude.env = {
-        DISABLE_NONESSENTIAL_TRAFFIC = "1";
-        FORCE_AUTOUPDATE_PLUGINS = "0";
-      };
-    };
-    plugins.shared-browser = {
-      source = "directory";
-      path = "${sharedBrowser}/plugin";
-      enabled = true;
-    };
-    log.file.rotate = {
-      maxSize = "10M";
-      maxFiles = 3;
-    };
+  desktopTools = [
+    waymote
+    pkgs.labwc
+    pkgs.wlr-randr
+    pkgs.ffmpeg
+    pkgs.xwayland
+    pkgs.wl-clipboard
+    pkgs.dbus
+    pkgs.pulseaudio
+    pkgs.chromium
+  ];
+  ampSettings = (pkgs.formats.json { }).generate "amp-managed-settings.json" {
+    "amp.updates.mode" = "disabled";
+    "amp.runner.autoUpdate.enabled" = false;
+    "amp.runner.env.enabled" = false;
   };
 in
 {
@@ -97,6 +72,7 @@ in
   nixpkgs.config.allowUnfreePredicate =
     package:
     builtins.elem (lib.getName package) [
+      "amp-cli"
       "claude-code"
       "antigravity-cli"
     ];
@@ -198,51 +174,61 @@ in
   security.sudo.wheelNeedsPassword = false;
   # Codex writes trust and notices to ~/.codex/config.toml. It reads this system layer below that file.
   environment.etc."codex/config.toml".source = codexConfig;
+  environment.etc."ampcode/managed-settings.json".source = ampSettings;
+  services.dbus.enable = true;
   systemd.tmpfiles.rules = [
     "d /home/${user} 0700 ${user} users -"
     "d /home/agent 0700 agent agent -"
     "d /home/agent/workspace 0700 agent agent -"
     "d /home/agent/.codex 0700 agent agent -"
-    "d /home/agent/.paseo 0700 agent agent -"
-    "d /home/agent/.paseo/plugin-data 0700 agent agent -"
-    "d /home/agent/.paseo/plugin-data/shared-browser 0700 agent agent -"
-    "L+ /home/agent/.paseo/plugin-data/shared-browser/runtime - agent agent - ${sharedBrowser}/runtime"
+    "d /home/agent/.config/amp 0700 agent agent -"
+    "d /home/agent/.local/share/amp 0700 agent agent -"
   ];
-  systemd.services.paseo = {
-    description = "Private agent control and shared browser";
+  # Login stores the account in the persistent home. No credential enters the Nix store.
+  systemd.paths.amp-runner = {
+    wantedBy = [ "multi-user.target" ];
+    pathConfig = {
+      PathExists = "/home/agent/.local/share/amp/secrets.json";
+      Unit = "amp-runner.service";
+    };
+  };
+  systemd.services.amp-runner = {
+    description = "Amp coding runner and desktop";
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
-    path = agentTools ++ [
-      pkgs.openssh
-      pkgs.bashInteractive
-      pkgs.procps
-    ];
+    unitConfig.ConditionPathExists = "/home/agent/.local/share/amp/secrets.json";
+    path =
+      agentTools
+      ++ desktopTools
+      ++ [
+        pkgs.openssh
+        pkgs.bashInteractive
+        pkgs.procps
+      ];
     environment = {
       HOME = "/home/agent";
-      PASEO_HOME = "/home/agent/.paseo";
-      PASEO_SHARED_BROWSER_CHROMIUM_EXECUTABLE = "${pkgs.chromium}/bin/chromium";
-      PASEO_SHARED_BROWSER_AGENT_BROWSER_BINARY = "${pkgs.agent-browser}/bin/agent-browser";
-      PASEO_SHARED_BROWSER_XVFB = "1";
+      XDG_RUNTIME_DIR = "/run/amp-runner";
+      NIXOS_OZONE_WL = "1";
+      DISABLE_NONESSENTIAL_TRAFFIC = "1";
+      FORCE_AUTOUPDATE_PLUGINS = "0";
     };
-    preStart = ''
-      install -m 0600 ${paseoConfig} /home/agent/.paseo/config.json
-    '';
+    restartTriggers = [ ampSettings ];
     serviceConfig = {
       User = "agent";
       Group = "agent";
       WorkingDirectory = "/home/agent/workspace";
-      ExecStart = "${paseo}/bin/paseo-server --no-relay";
+      ExecStart = "${pkgs.amp-cli}/bin/amp --no-tui --runner-id workshop --desktop --remote-control-terminal";
       Restart = "on-failure";
-      RestartSec = 5;
+      RestartSec = 30;
       UMask = "0077";
-      RuntimeDirectory = "paseo";
-      Environment = "XDG_RUNTIME_DIR=/run/paseo";
+      RuntimeDirectory = "amp-runner";
+      RuntimeDirectoryMode = "0700";
       PrivateTmp = true;
       ProtectSystem = "strict";
       ReadWritePaths = [
         "/home/agent"
-        "/run/paseo"
+        "/run/amp-runner"
       ];
       ProtectKernelTunables = true;
       ProtectKernelModules = true;
@@ -252,10 +238,7 @@ in
       CapabilityBoundingSet = "";
     };
   };
-  environment.systemPackages = agentTools ++ [
-    paseo
-    pkgs.chromium
-  ];
+  environment.systemPackages = agentTools ++ desktopTools;
   fonts.packages = [
     pkgs.dejavu_fonts
     pkgs.noto-fonts-color-emoji
