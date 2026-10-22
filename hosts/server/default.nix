@@ -27,9 +27,6 @@
   # Use the wired interface for host access.
   networking.useDHCP = false;
   networking.interfaces.eno1.useDHCP = true;
-  # Keep the current network connection during activation.
-  systemd.services.dhcpcd.restartIfChanged = false;
-  systemd.services.network-addresses-eno1.restartIfChanged = false;
   # Keep the existing resolver. Networkd configures only guest TAP devices.
   services.resolved.enable = false;
   networking.nameservers = [
