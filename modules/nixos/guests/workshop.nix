@@ -15,19 +15,27 @@ let
     direct = false;
     autoCreate = false;
   };
-  waymote = pkgs.callPackage ../../../packages/waymote.nix { };
+  browserMcp = pkgs.callPackage ../../../packages/chrome-devtools-mcp.nix { };
+  mcpSettings = {
+    mcpServers.browser = {
+      command = "${browserMcp}/bin/chrome-devtools-mcp";
+      args = [
+        "--browser-url=http://127.0.0.1:9222"
+        "--no-usage-statistics"
+        "--no-performance-crux"
+      ];
+    };
+  };
+  json = pkgs.formats.json { };
   antigravity = pkgs.callPackage ../../../packages/antigravity-cli.nix { };
-  # The runner and its child agents use the same tools as a shell.
+  # Each CLI runs directly and keeps its own account and model settings.
   agentTools = [
-    pkgs.amp-cli
     pkgs.codex
     pkgs.claude-code
     pkgs.gemini-cli
     antigravity
     pkgs.git
     pkgs.gh
-    pkgs.nodejs_24
-    pkgs.python3
     pkgs.tmux
     pkgs.curl
     pkgs.jq
@@ -39,25 +47,35 @@ let
     approval_policy = "on-request"
     sandbox_mode = "workspace-write"
     cli_auth_credentials_store = "file"
+    [mcp_servers.browser]
+    command = "${browserMcp}/bin/chrome-devtools-mcp"
+    args = ["--browser-url=http://127.0.0.1:9222", "--no-usage-statistics", "--no-performance-crux"]
     [sandbox_workspace_write]
     network_access = true
   '';
   desktopTools = [
-    waymote
-    pkgs.labwc
-    pkgs.wlr-randr
-    pkgs.ffmpeg
-    pkgs.xwayland
-    pkgs.wl-clipboard
-    pkgs.dbus
-    pkgs.pulseaudio
+    browserMcp
+    pkgs.tigervnc
+    pkgs.openbox
+    pkgs.xterm
     pkgs.chromium
   ];
-  ampSettings = (pkgs.formats.json { }).generate "amp-managed-settings.json" {
-    "amp.updates.mode" = "disabled";
-    "amp.runner.autoUpdate.enabled" = false;
-    "amp.runner.env.enabled" = false;
+  desktopService = {
+    wantedBy = [ "multi-user.target" ];
+    environment = {
+      HOME = "/home/agent";
+      DISPLAY = ":0";
+      XDG_RUNTIME_DIR = "/run/workshop-desktop";
+    };
+    serviceConfig = {
+      User = "agent";
+      Group = "agent";
+      UMask = "0077";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
   };
+
 in
 {
   imports = [
@@ -66,13 +84,23 @@ in
   ];
   # The guest is the coding workspace, so its administrator also gets the language toolchains.
   home-manager.users.${user}.imports = [ ../../home/dev.nix ];
+  home-manager.users.agent = {
+    imports = [ ../../home/dev.nix ];
+    home = {
+      username = "agent";
+      homeDirectory = "/home/agent";
+      stateVersion = "26.11";
+      sessionVariables.DISPLAY = ":0";
+      file.".gemini/config/mcp_config.json".text = builtins.toJSON mcpSettings;
+    };
+    programs.bash.enable = true;
+  };
   nixpkgs.overlays = [ inputs.rust-overlay.overlays.default ];
   # nixpkgs plans to remove Gemini CLI. Keep it for API-key access until then.
   nixpkgs.config.problems.handlers.gemini-cli.removal = "ignore";
   nixpkgs.config.allowUnfreePredicate =
     package:
     builtins.elem (lib.getName package) [
-      "amp-cli"
       "claude-code"
       "antigravity-cli"
     ];
@@ -176,69 +204,49 @@ in
   security.sudo.wheelNeedsPassword = false;
   # Codex writes trust and notices to ~/.codex/config.toml. It reads this system layer below that file.
   environment.etc."codex/config.toml".source = codexConfig;
-  environment.etc."ampcode/managed-settings.json".source = ampSettings;
+  environment.etc."gemini-cli/system-defaults.json".source =
+    json.generate "gemini-defaults.json" mcpSettings;
+  environment.etc."workshop/mcp.json".source = json.generate "browser-mcp.json" mcpSettings;
+  # Claude reads project MCP configuration without restricting other user MCP servers.
+  home-manager.users.agent.home.file."workspace/.mcp.json".text = builtins.toJSON mcpSettings;
   services.dbus.enable = true;
   systemd.tmpfiles.rules = [
     "d /home/${user} 0700 ${user} users -"
     "d /home/agent 0700 agent agent -"
     "d /home/agent/workspace 0700 agent agent -"
     "d /home/agent/.codex 0700 agent agent -"
-    "d /home/agent/.config/amp 0700 agent agent -"
-    "d /home/agent/.local/share/amp 0700 agent agent -"
   ];
-  # Login stores the account in the persistent home. No credential enters the Nix store.
-  systemd.paths.amp-runner = {
-    wantedBy = [ "multi-user.target" ];
-    pathConfig = {
-      PathExists = "/home/agent/.local/share/amp/secrets.json";
-      Unit = "amp-runner.service";
-    };
-  };
-  systemd.services.amp-runner = {
-    description = "Amp coding runner and desktop";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    unitConfig.ConditionPathExists = "/home/agent/.local/share/amp/secrets.json";
-    path =
-      agentTools
-      ++ desktopTools
-      ++ [
-        pkgs.openssh
-        pkgs.bashInteractive
-        pkgs.procps
-      ];
-    environment = {
-      HOME = "/home/agent";
-      XDG_RUNTIME_DIR = "/run/amp-runner";
-      NIXOS_OZONE_WL = "1";
-      DISABLE_NONESSENTIAL_TRAFFIC = "1";
-      FORCE_AUTOUPDATE_PLUGINS = "0";
-    };
-    restartTriggers = [ ampSettings ];
+  systemd.services.workshop-display = lib.recursiveUpdate desktopService {
+    description = "Workshop virtual desktop";
+    path = [ pkgs.xdpyinfo ];
     serviceConfig = {
-      User = "agent";
-      Group = "agent";
-      WorkingDirectory = "/home/agent/workspace";
-      ExecStart = "${pkgs.amp-cli}/bin/amp --no-tui --runner-id workshop --desktop --remote-control-terminal";
-      Restart = "on-failure";
-      RestartSec = 30;
-      UMask = "0077";
-      RuntimeDirectory = "amp-runner";
+      RuntimeDirectory = "workshop-desktop";
       RuntimeDirectoryMode = "0700";
-      PrivateTmp = true;
-      ProtectSystem = "strict";
-      ReadWritePaths = [
-        "/home/agent"
-        "/run/amp-runner"
-      ];
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectKernelLogs = true;
-      ProtectControlGroups = true;
-      NoNewPrivileges = true;
-      CapabilityBoundingSet = "";
+      ExecStart = "${pkgs.tigervnc}/bin/Xvnc :0 -geometry 1440x900 -depth 24 -localhost -SecurityTypes None -nolisten tcp";
     };
+    postStart = ''
+      for attempt in $(seq 1 50); do
+        if xdpyinfo >/dev/null 2>&1; then exit 0; fi
+        sleep 0.2
+      done
+      exit 1
+    '';
+  };
+  systemd.services.workshop-window-manager = lib.recursiveUpdate desktopService {
+    description = "Workshop window manager";
+    requires = [ "workshop-display.service" ];
+    after = [ "workshop-display.service" ];
+    serviceConfig.ExecStart = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.openbox}/bin/openbox";
+  };
+  systemd.services.workshop-browser = lib.recursiveUpdate desktopService {
+    description = "Workshop Chromium browser";
+    requires = [ "workshop-display.service" ];
+    after = [
+      "workshop-display.service"
+      "network-online.target"
+    ];
+    wants = [ "network-online.target" ];
+    serviceConfig.ExecStart = "${pkgs.chromium}/bin/chromium --ozone-platform=x11 --user-data-dir=/home/agent/.config/chromium --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 --no-first-run --no-default-browser-check about:blank";
   };
   environment.systemPackages = agentTools ++ desktopTools;
   fonts.packages = [
