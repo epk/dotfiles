@@ -158,6 +158,16 @@ in
   };
   # Deploy the complete system image. This appliance does not build or activate Nix profiles.
   nix.enable = false;
+  fileSystems."/run/host-config" = {
+    options = [
+      "ro"
+      "noload"
+      "nodev"
+      "nosuid"
+      "noexec"
+    ];
+    noCheck = true;
+  };
   services.fstrim.enable = false;
   services.openssh = {
     enable = true;
@@ -252,6 +262,10 @@ in
       "vpn-interface.service"
     ];
     requires = [ "vpn-interface.service" ];
+    unitConfig.RequiresMountsFor = [
+      "/run/host-config"
+      "/var/lib/wg-portal"
+    ];
     path = [
       pkgs.bash
       pkgs.iproute2
