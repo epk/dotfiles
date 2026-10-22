@@ -100,6 +100,8 @@ in
     mem = 4096;
     balloon = false;
     shares = [ ];
+    # Keep the base image read-only. Guest builds write only to its private home disk.
+    writableStoreOverlay = "/home/.nix-store";
     interfaces = [
       {
         type = "tap";
