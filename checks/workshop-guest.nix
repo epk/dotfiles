@@ -24,12 +24,10 @@ pkgs.testers.runNixOSTest {
       virtualisation.cores = 2;
     };
   testScript = ''
-    # The account login is private. CI checks the path unit without an Amp account.
-    guest.wait_for_unit("amp-runner.path")
-    guest.succeed("amp --version")
+    guest.wait_for_unit("workshop-browser.service")
+    guest.succeed("chrome-devtools-mcp --version")
     guest.succeed("getent group agent")
     guest.succeed('test "$(stat -c %U:%G /home/agent)" = agent:agent')
-    guest.succeed("systemctl show -p Environment amp-runner | grep -q procps")
     guest.wait_for_unit("home-manager-aditya.sharma.service")
     guest.succeed("getent passwd aditya.sharma | grep -q '/bin/zsh$'")
     guest.succeed("test -L /home/aditya.sharma/.zshrc")
