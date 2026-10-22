@@ -56,6 +56,11 @@ in
             type = interfaceType;
             description = "Only host interface permitted for guest internet traffic.";
           };
+          publicUDPPorts = lib.mkOption {
+            type = lib.types.listOf lib.types.port;
+            default = [ ];
+            description = "UDP ports forwarded from the uplink to the same guest port.";
+          };
         };
       }
     );
@@ -90,6 +95,22 @@ in
       {
         assertion = lib.all (guest: !(builtins.elem guest.uplink interfaces)) guests;
         message = "Do not use another guest TAP interface as an internet uplink.";
+      }
+      {
+        assertion = lib.all (
+          guest: lib.all (port: port > 0 && port != config.services.tailscale.port) guest.publicUDPPorts
+        ) guests;
+        message = "Use nonzero forwarded UDP ports. Do not forward the host Tailscale port.";
+      }
+      {
+        assertion =
+          let
+            bindings = lib.concatMap (
+              guest: map (port: "${guest.uplink}:${toString port}") guest.publicUDPPorts
+            ) guests;
+          in
+          lib.length (lib.unique bindings) == lib.length bindings;
+        message = "Forward each uplink UDP port to one guest only.";
       }
     ];
 
@@ -171,6 +192,13 @@ in
           chain guest_egress {
             ct state invalid counter drop
             meta nfproto != ipv4 counter drop
+            ${each (
+              guest:
+              lib.concatMapStringsSep "\n" (
+                port:
+                "iifname ${quote guest.interface} ip saddr ${guest.guestAddress} oifname ${quote guest.uplink} udp sport ${toString port} ct status dnat ct direction reply ct state established accept"
+              ) guest.publicUDPPorts
+            )}
             fib daddr type local counter drop
             ip daddr @non_public_v4 counter drop
             ${each (
@@ -183,6 +211,13 @@ in
             ct state invalid counter drop
             ${each (
               guest:
+              lib.concatMapStringsSep "\n" (
+                port:
+                "iifname ${quote guest.uplink} oifname ${quote guest.interface} ip daddr ${guest.guestAddress} udp dport ${toString port} ct status dnat ct direction original accept"
+              ) guest.publicUDPPorts
+            )}
+            ${each (
+              guest:
               "iifname ${quote guest.uplink} oifname ${quote guest.interface} ip daddr ${guest.guestAddress} ct state { established, related } accept"
             )}
             counter drop
@@ -192,6 +227,16 @@ in
       tables.microvm-nat = {
         family = "ip";
         content = ''
+          chain prerouting {
+            type nat hook prerouting priority dstnat; policy accept;
+            ${each (
+              guest:
+              lib.concatMapStringsSep "\n" (
+                port:
+                "iifname ${quote guest.uplink} fib daddr type local udp dport ${toString port} counter dnat to ${guest.guestAddress}:${toString port}"
+              ) guest.publicUDPPorts
+            )}
+          }
           chain postrouting {
             type nat hook postrouting priority srcnat; policy accept;
             ${each (

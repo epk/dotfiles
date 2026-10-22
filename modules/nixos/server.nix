@@ -21,10 +21,6 @@ in
     openFirewall = true;
     useRoutingFeatures = "server";
   };
-  # Keep the current Tailscale tunnel during activation.
-  # Boot starts the daemon from the new system closure.
-  systemd.services.tailscaled.restartIfChanged = false;
-
   users.users.${config.dotfiles.homeUser} = {
     isNormalUser = true;
     uid = 1000;
