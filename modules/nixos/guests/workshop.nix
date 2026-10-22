@@ -236,7 +236,7 @@ in
     description = "Workshop window manager";
     requires = [ "workshop-display.service" ];
     after = [ "workshop-display.service" ];
-    serviceConfig.ExecStart = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.openbox}/bin/openbox";
+    serviceConfig.ExecStart = "${pkgs.openbox}/bin/openbox";
   };
   systemd.services.workshop-browser = lib.recursiveUpdate desktopService {
     description = "Workshop Chromium browser";
