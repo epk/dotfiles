@@ -30,6 +30,8 @@ jobs:
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: epk
+          # devenv and nix-community supply paths the epk cache omits. CI builds them from source otherwise.
+          extraPullNames: nix-community,devenv
           skipPush: true
 
       # Each host pins nixpkgs.hostPlatform, so Linux also evaluates the Mac hosts.
@@ -61,6 +63,8 @@ jobs:
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: epk
+          # devenv and nix-community supply paths the epk cache omits. CI builds them from source otherwise.
+          extraPullNames: nix-community,devenv
           skipPush: true
       # The check job pushed the uncached closure paths to epk. The server downloads the rest from its upstream substituters.
       - name: Build the server closure

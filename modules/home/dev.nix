@@ -30,6 +30,8 @@ in
 
   programs.go = {
     enable = true;
+    # nixpkgs' default go is the previous major. Track the current one.
+    package = pkgs.go_1_27;
     env.GOPATH = home;
   };
 }
