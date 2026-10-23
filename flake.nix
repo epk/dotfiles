@@ -113,11 +113,15 @@
       };
 
       # nix-update targets these attributes. Renovate cannot compute Nix hashes for wg-portal.
-      packages = forAllSystems (pkgs: {
-        agenix = agenix.packages.${pkgs.stdenv.hostPlatform.system}.default;
-      } // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-        wg-portal = pkgs.callPackage ./packages/wg-portal.nix { };
-      });
+      packages = forAllSystems (
+        pkgs:
+        {
+          agenix = agenix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+        }
+        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          wg-portal = pkgs.callPackage ./packages/wg-portal.nix { };
+        }
+      );
 
       formatter = forAllSystems (
         pkgs:

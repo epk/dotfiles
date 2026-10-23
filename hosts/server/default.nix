@@ -1,8 +1,6 @@
 {
   pkgs,
   config,
-  inputs,
-  lib,
   ...
 }:
 
@@ -17,11 +15,6 @@
     ../../modules/nixos/server-automation.nix
     ../../modules/nixos/home.nix
   ];
-  nix.package = lib.mkForce (
-    pkgs.callPackage ../../packages/determinate-nix.nix {
-      inherit (inputs) determinate;
-    }
-  );
 
   services.workshop = {
     enable = true;
