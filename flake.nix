@@ -23,7 +23,7 @@
     # Pin Homebrew here. Let nix-homebrew use the same input.
     # Nix removes `flake = false` from overrides of indirect inputs.
     brew-src = {
-      url = "github:Homebrew/brew/7.0.8";
+      url = "github:Homebrew/brew/7.0.10";
       flake = false;
     };
     nix-homebrew = {
