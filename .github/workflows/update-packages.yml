@@ -1,0 +1,54 @@
+name: update-packages
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Renovate refreshes the lock on Mondays 00:00-05:00 in La Paz. Run after it.
+    - cron: "35 6 * * 2"
+
+# A queued run replaces the waiting one. A running update is not cancelled.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: epk
+          # devenv and nix-community supply paths the epk cache omits. CI builds them from source otherwise.
+          extraPullNames: nix-community,devenv
+          skipPush: true
+
+      # Renovate cannot compute Nix hashes. nix-update builds the package and rewrites them.
+      # The tool comes from the lock of main. Code from this branch must not run with the token.
+      - name: Update wg-portal
+        run: nix run --inputs-from github:epk/dotfiles/main nixpkgs#nix-update -- --build wg-portal
+
+      - name: Open a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet --exit-code -- packages/wg-portal.nix; then
+            echo 'No update.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          branch=update-wg-portal
+          git checkout -b "$branch"
+          git commit --all --message 'Update wg-portal'
+          # A merged pull request deletes the branch. A closed one may leave it behind. Force the new update over it.
+          git push --force origin "$branch"
+          gh pr create --fill-first --base main --head "$branch" || true
+          # The required checks must pass first. GitHub merges the request when they do.
+          gh pr merge "$branch" --auto --squash --delete-branch || true

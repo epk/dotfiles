@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: linux, os: ubuntu-latest, system: x86_64-linux }
+          - { name: linux, os: ubuntu-26.04, system: x86_64-linux }
           - { name: darwin, os: macos-26, system: aarch64-darwin }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,7 +54,7 @@ jobs:
   deploy:
     needs: check
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     environment: deploy
     steps:
