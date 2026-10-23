@@ -1,61 +1,36 @@
 {
   lib,
-  fetchFromGitHub,
-  buildGoModule,
-  buildNpmPackage,
-  autoPatchelfHook,
+  fetchurl,
   stdenv,
+  autoPatchelfHook,
 }:
 let
-  version = "2.3.1";
-  src = fetchFromGitHub {
-    owner = "h44z";
-    repo = "wg-portal";
-    tag = "v${version}";
-    hash = "sha256-nkDCEtG4gYv/8pppJtlGQcHhuupL9nnw90XKxRym5gA=";
-  };
-  frontend = buildNpmPackage {
-    pname = "wg-portal-frontend";
-    inherit version src;
-    sourceRoot = "source/frontend";
-    npmDepsHash = "sha256-NTipEmFjHZ96HwX8jznMG/eIZfHw4KAd/2b39xkBlxU=";
-    makeCacheWritable = true;
-    nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-    buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
-    # Sass embeds a native executable. Set its ELF interpreter before Vite starts.
-    postConfigure = lib.optionalString stdenv.hostPlatform.isLinux ''
-      autoPatchelf node_modules
-    '';
-    env.DIST_OUT_DIR = "dist";
-    installPhase = ''
-      runHook preInstall
-      cp -r dist $out
-      runHook postInstall
-    '';
-  };
+  release = builtins.fromJSON (builtins.readFile ./wg-portal-release.json);
 in
-buildGoModule {
+# Renovate updates the version and checksum together. GitHub publishes the checksum in the release asset digest.
+stdenv.mkDerivation {
   pname = "wg-portal";
-  inherit version src;
-  vendorHash = "sha256-Dkn+tSKktPfcOxNY7Ogp5ame8c9WH1goIFTFKJpm4sk=";
-  subPackages = [ "cmd/wg-portal" ];
-  env.CGO_ENABLED = 0;
-  tags = [ "netgo" ];
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/h44z/wg-portal/internal/server.Version=v${version}"
-  ];
-  preBuild = ''
-    cp -r ${frontend} internal/app/api/core/frontend-dist
+  inherit (release) version;
+  src = fetchurl {
+    name = "wg-portal_linux_amd64";
+    url = "https://github.com/h44z/wg-portal/releases/download/v${release.version}/wg-portal_linux_amd64";
+    sha256 = release.sha256;
+  };
+  # The source is a single binary, not an archive.
+  dontUnpack = true;
+  nativeBuildInputs = [ autoPatchelfHook ];
+  buildInputs = [ stdenv.cc.cc.lib ];
+  installPhase = ''
+    runHook preInstall
+    install -Dm555 $src $out/bin/wg-portal
+    runHook postInstall
   '';
-  doCheck = false;
-  passthru = { inherit frontend; };
   meta = {
     description = "Web management for WireGuard interfaces and peers";
     homepage = "https://wgportal.org";
     license = lib.licenses.mit;
     mainProgram = "wg-portal";
-    platforms = lib.platforms.linux;
+    platforms = [ "x86_64-linux" ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

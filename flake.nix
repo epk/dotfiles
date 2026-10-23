@@ -19,17 +19,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # nix-homebrew uses brew-src as its only input.
-    # Pin Homebrew here. Let nix-homebrew use the same input.
-    # Nix removes `flake = false` from overrides of indirect inputs.
-    brew-src = {
-      url = "github:Homebrew/brew/7.0.10";
-      flake = false;
-    };
-    nix-homebrew = {
-      url = "github:zhaofengli/nix-homebrew";
-      inputs.brew-src.follows = "brew-src";
-    };
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -42,7 +32,6 @@
     };
 
     determinate.url = "github:DeterminateSystems/determinate";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
