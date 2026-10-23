@@ -29,6 +29,12 @@
       "transformTemplates": [
         "{\"releases\":[{\"version\":version,\"digest\":dist.integrity}]}"
       ]
+    },
+    "wg-portal": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/h44z/wg-portal/releases/latest",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$substringAfter(tag_name,'v'),\"digest\":$substringAfter(assets[name='wg-portal_linux_amd64'].digest,':')}]}"
+      ]
     }
   },
   "customManagers": [
@@ -69,6 +75,19 @@
       "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"rev\": \"{{{newDigest}}}\"",
       "depNameTemplate": "Homebrew/brew",
       "datasourceTemplate": "github-tags",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/wg-portal-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+      ],
+      "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"sha256\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "wg-portal",
+      "datasourceTemplate": "custom.wg-portal",
       "versioningTemplate": "semver"
     }
   ],

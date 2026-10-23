@@ -31,12 +31,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    determinate = {
-      url = "github:DeterminateSystems/determinate";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nix.inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    determinate.url = "github:DeterminateSystems/determinate";
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -112,16 +107,9 @@
         ];
       };
 
-      # nix-update targets these attributes. Renovate cannot compute Nix hashes for wg-portal.
-      packages = forAllSystems (
-        pkgs:
-        {
-          agenix = agenix.packages.${pkgs.stdenv.hostPlatform.system}.default;
-        }
-        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-          wg-portal = pkgs.callPackage ./packages/wg-portal.nix { };
-        }
-      );
+      packages = forAllSystems (pkgs: {
+        agenix = agenix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      });
 
       formatter = forAllSystems (
         pkgs:
