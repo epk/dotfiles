@@ -7,7 +7,7 @@
 # Keep the upstream Boost version while using packages from the shared input.
 # Meson 1.12 generates incorrect unity paths for the nested libstore build directory.
 determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideScope (
-  final: prev: {
+  _: prev: {
     boost =
       (pkgs.boost189.override {
         extraB2Args = [
