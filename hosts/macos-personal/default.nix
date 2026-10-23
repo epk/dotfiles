@@ -27,6 +27,21 @@ in
     ];
   };
 
+  launchd.daemons.determinate-nix-upgrade = {
+    command = "/usr/local/bin/determinate-nixd upgrade";
+    serviceConfig = {
+      StartCalendarInterval = [
+        {
+          Weekday = 7;
+          Hour = 2;
+          Minute = 45;
+        }
+      ];
+      ProcessType = "Background";
+      LowPriorityIO = true;
+    };
+  };
+
   homebrew = {
     # Homebrew Bundle requires mas to install masApps.
     # Homebrew supplies a newer uv version than the pinned nixpkgs input.

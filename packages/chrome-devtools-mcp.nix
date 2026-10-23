@@ -5,13 +5,16 @@
   makeWrapper,
   nodejs_26,
 }:
+let
+  release = builtins.fromJSON (builtins.readFile ./chrome-devtools-mcp-release.json);
+in
 stdenvNoCC.mkDerivation {
   pname = "chrome-devtools-mcp";
-  version = "1.12.0";
+  inherit (release) version;
   # The official npm archive includes its JavaScript dependencies.
   src = fetchurl {
-    url = "https://registry.npmjs.org/chrome-devtools-mcp/-/chrome-devtools-mcp-1.12.0.tgz";
-    hash = "sha512-lAGpH0zXT1ZdaPefP1KK/MvxwihOlu7VGQ7p4wbhD9OhN17vUC4KWk/ImUYR9DE4s+7r4r0ySV4xr2OkTa7ZMA==";
+    url = "https://registry.npmjs.org/chrome-devtools-mcp/-/chrome-devtools-mcp-${release.version}.tgz";
+    inherit (release) hash;
   };
   nativeBuildInputs = [ makeWrapper ];
   dontBuild = true;

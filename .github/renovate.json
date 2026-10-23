@@ -1,23 +1,42 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
-  "nix": { "enabled": true },
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "nix": {
+    "enabled": true
+  },
   "automerge": true,
   "automergeStrategy": "squash",
   "rebaseWhen": "behind-base-branch",
-  "lockFileMaintenance": { "enabled": true, "automerge": true },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": [
+      "* 0-5 * * 1"
+    ]
+  },
   "customDatasources": {
     "antigravity": {
       "defaultRegistryUrlTemplate": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json",
       "transformTemplates": [
         "{\"releases\":[{\"version\":$match(url,/antigravity-cli\\/([0-9.]+-[0-9]+)\\/linux-x64\\//).groups[0],\"digest\":sha512}]}"
       ]
+    },
+    "chrome-devtools-mcp": {
+      "defaultRegistryUrlTemplate": "https://registry.npmjs.org/chrome-devtools-mcp/latest",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":version,\"digest\":dist.integrity}]}"
+      ]
     }
   },
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^packages/antigravity-release\\.json$/"],
+      "managerFilePatterns": [
+        "/^packages/antigravity-release\\.json$/"
+      ],
       "matchStrings": [
         "\"version\": \"[0-9.]+\",\\s+\"url\": \"https://storage\\.googleapis\\.com/antigravity-public/antigravity-cli/(?<currentValue>[0-9.]+-[0-9]+)/linux-x64/cli_linux_x64\\.tar\\.gz\",\\s+\"sha512\": \"(?<currentDigest>[0-9a-f]{128})\""
       ],
@@ -25,16 +44,56 @@
       "depNameTemplate": "antigravity-cli",
       "datasourceTemplate": "custom.antigravity",
       "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/chrome-devtools-mcp-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"hash\": \"(?<currentDigest>sha512-[^\"]+)\""
+      ],
+      "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"hash\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "chrome-devtools-mcp",
+      "datasourceTemplate": "custom.chrome-devtools-mcp",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/homebrew-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"rev\": \"(?<currentDigest>[0-9a-f]{40})\""
+      ],
+      "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"rev\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "Homebrew/brew",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "semver"
     }
   ],
   "packageRules": [
-    { "matchManagers": ["github-actions"], "minimumReleaseAge": "7 days" },
-    { "matchManagers": ["github-actions"], "matchUpdateTypes": ["major"], "automerge": false },
-    { "matchDatasources": ["github-runners"], "enabled": false },
     {
-      "description": "Lock file maintenance updates every input. This lookup maps nixpkgs to the wrong lock node.",
-      "matchPackageNames": ["/^https://flakehub\\.com//"],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    },
+    {
+      "matchDatasources": [
+        "github-runners"
+      ],
       "enabled": false
     }
-  ]
+  ],
+  "timezone": "America/La_Paz"
 }
