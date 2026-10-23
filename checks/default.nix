@@ -18,7 +18,8 @@ in
       ''
         cd ${self}
         # actionlint also runs shellcheck on each workflow script.
-        actionlint .github/workflows/*.yml
+        # actionlint 1.7.12 does not know the ubuntu-26.04 label. GitHub supports it since September 2026.
+        actionlint -ignore 'label "ubuntu-26\.04" is unknown' .github/workflows/*.yml
         shellcheck setup.sh
         ruff check --no-cache --select E,F,W,I,B .
         deadnix --fail .
