@@ -41,7 +41,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    determinate.url = "github:DeterminateSystems/determinate";
+    determinate = {
+      url = "github:DeterminateSystems/determinate";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix.inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     disko = {
       url = "github:nix-community/disko";
