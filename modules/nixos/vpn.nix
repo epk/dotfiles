@@ -2,39 +2,80 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
   cfg = config.services.vpn;
 in
 {
-  imports = [
-    (import ./microvm-service.nix {
-      name = "vpn";
-      description = "the private WireGuard appliance";
-      guest = ./guests/vpn.nix;
-      cpuQuota = "100%";
-      memoryMax = "768M";
-      tasksMax = 256;
-    })
-  ];
+  imports = [ ./microvm-network.nix ];
+  options.services.vpn = {
+    enable = lib.mkEnableOption "the private WireGuard container";
+    storageDirectory = lib.mkOption {
+      type = lib.types.strMatching "/storage/(nvme|sata)/containers/vpn";
+      default = "/storage/nvme/containers/vpn";
+      description = "Directory for persistent WireGuard container data.";
+    };
+    uplink = lib.mkOption {
+      type = lib.types.str;
+      default = "eno1";
+      description = "Host interface for public guest IPv4 traffic.";
+    };
+  };
   config = lib.mkIf cfg.enable {
+    boot.kernelModules = [ "wireguard" ];
     networking.microvm.guests.vpn = {
+      type = "veth";
       interface = "vpn-tap";
       hostAddress = "10.78.0.1";
       guestAddress = "10.78.0.2";
       inherit (cfg) uplink;
       publicUDPPorts = [ 51820 ];
     };
-    # Bind the management socket to Tailscale. The proxy makes a separate host-to-guest connection.
+    systemd.tmpfiles.rules = [
+      "d ${cfg.storageDirectory} 0700 root root -"
+      "d ${cfg.storageDirectory}/wireguard 0700 root root -"
+    ];
+    containers.vpn = {
+      autoStart = true;
+      ephemeral = true;
+      privateNetwork = true;
+      privateUsers = "pick";
+      additionalCapabilities = [ "CAP_NET_ADMIN" ];
+      # Preserve the existing firewall interface name. Map container root onto the private state directory.
+      extraFlags = [
+        "--network-veth-extra=vpn-tap:eth0"
+        "--bind=${cfg.storageDirectory}/wireguard:/var/lib/wg-ez:idmap"
+      ];
+      specialArgs = { inherit inputs; };
+      config = import ./guests/vpn.nix;
+    };
+    systemd.services."container@vpn" = {
+      requires = [ "nftables.service" ];
+      bindsTo = [ "nftables.service" ];
+      wants = [ "systemd-networkd.service" ];
+      after = [
+        "nftables.service"
+        "systemd-networkd.service"
+      ];
+      unitConfig.RequiresMountsFor = [ cfg.storageDirectory ];
+      serviceConfig = {
+        CPUQuota = "100%";
+        CPUWeight = 50;
+        MemoryMax = "256M";
+        TasksMax = 256;
+      };
+    };
+    # Bind management to Tailscale. Keep the existing host-to-guest proxy and port.
     systemd.sockets.vpn-portal = {
       wantedBy = [ "sockets.target" ];
       listenStreams = [ "0.0.0.0:51821" ];
       socketConfig.BindToDevice = "tailscale0";
     };
     systemd.services.vpn-portal = {
-      requires = [ "microvm@vpn.service" ];
-      after = [ "microvm@vpn.service" ];
+      requires = [ "container@vpn.service" ];
+      after = [ "container@vpn.service" ];
       serviceConfig = {
         ExecStart = "${config.systemd.package}/lib/systemd/systemd-socket-proxyd 10.78.0.2:8888";
         DynamicUser = true;
@@ -49,53 +90,5 @@ in
       };
     };
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 51821 ];
-    # Pass endpoint metadata in a read-only disk. Keep private access addresses outside Git and the store.
-    systemd.services.vpn-host-config = {
-      requiredBy = [ "microvm@vpn.service" ];
-      before = [ "microvm@vpn.service" ];
-      requires = [ "prepare-microvm-storage-vpn.service" ];
-      after = [
-        "prepare-microvm-storage-vpn.service"
-        "tailscaled.service"
-      ];
-      path = [
-        pkgs.e2fsprogs
-        pkgs.tailscale
-      ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        RuntimeDirectory = "vpn-host-config";
-        TimeoutStartSec = 60;
-        UMask = "0077";
-      };
-      script = ''
-        set -eu
-        address=
-        for _ in $(seq 1 20); do
-          address=$(timeout 1 tailscale ip -4 2>/dev/null || true)
-          if [ -n "$address" ]; then break; fi
-          sleep 1
-        done
-        if [ -n "$address" ]; then
-          url="http://$address:51821"
-          printf '%s\n' "$url" > ${cfg.storageDirectory}/portal.url
-        elif [ -s ${cfg.storageDirectory}/portal.url ]; then
-          url=$(cat ${cfg.storageDirectory}/portal.url)
-        else
-          url="http://localhost:51821"
-        fi
-        printf 'WG_PORTAL_WEB_EXTERNAL_URL=%s\n' "$url" > /run/vpn-host-config/portal.env
-        chmod 0444 /run/vpn-host-config/portal.env
-        image=${cfg.storageDirectory}/host-config.raw
-        truncate -s 8M "$image.new"
-        mkfs.ext4 -q -m 0 -E nodiscard -d /run/vpn-host-config "$image.new"
-        chown root:kvm "$image.new"
-        chmod 0640 "$image.new"
-        mv "$image.new" "$image"
-      '';
-    };
-    # The guest holds the read-only metadata disk open. Restart it after a metadata preparation change.
-    systemd.services."microvm@vpn".restartTriggers = [ config.systemd.services.vpn-host-config.script ];
   };
 }

@@ -35,9 +35,17 @@ in
     type = lib.types.attrsOf (
       lib.types.submodule {
         options = {
+          type = lib.mkOption {
+            type = lib.types.enum [
+              "tap"
+              "veth"
+            ];
+            default = "tap";
+            description = "Guest interface transport.";
+          };
           interface = lib.mkOption {
             type = interfaceType;
-            description = "TAP interface created by microvm.nix.";
+            description = "Host interface for the guest network.";
           };
           hostAddress = lib.mkOption {
             type = addressType;
@@ -70,7 +78,7 @@ in
     assertions = [
       {
         assertion = lib.length (lib.unique interfaces) == lib.length interfaces;
-        message = "Give each guest a separate TAP interface.";
+        message = "Give each guest a separate host interface.";
       }
       {
         assertion = lib.length (lib.unique addresses) == lib.length addresses;
@@ -273,6 +281,6 @@ in
           ExecStart = "${config.systemd.package}/lib/systemd/systemd-networkd-wait-online --interface=${guest.interface}:no-carrier --ipv4 --timeout=30";
         };
       }
-    ) cfg.guests;
+    ) (lib.filterAttrs (_: guest: guest.type == "tap") cfg.guests);
   };
 }
