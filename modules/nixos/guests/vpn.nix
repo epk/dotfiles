@@ -155,6 +155,10 @@ in
       PrivateTmp = true;
       ProtectSystem = "strict";
       ProtectHome = true;
+      InaccessiblePaths = [
+        "/nix/var/nix"
+        "/run/host"
+      ];
       ReadWritePaths = [ "/var/lib/wg-ez" ];
       ProtectKernelModules = true;
       ProtectKernelLogs = true;
