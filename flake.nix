@@ -21,6 +21,11 @@
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    wg-ez = {
+      url = "github:wg-ez/wg-ez";
+      flake = false;
+    };
+
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";

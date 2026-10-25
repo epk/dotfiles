@@ -20,10 +20,7 @@
     enable = true;
     administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
   };
-  services.vpn = {
-    enable = true;
-    administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
-  };
+  services.vpn.enable = true;
   networking.hostName = "servnerr";
   # Use the wired interface for host access.
   networking.useDHCP = false;

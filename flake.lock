@@ -420,7 +420,8 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_3",
         "rust-overlay": "rust-overlay",
-        "try": "try"
+        "try": "try",
+        "wg-ez": "wg-ez"
       }
     },
     "rust-overlay": {
@@ -477,6 +478,22 @@
       "original": {
         "owner": "tobi",
         "repo": "try",
+        "type": "github"
+      }
+    },
+    "wg-ez": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792921552,
+        "narHash": "sha256-vV1Lafa62A0NDfSoUszhg8NlXDxV8hdCEOz7misn44o=",
+        "owner": "wg-ez",
+        "repo": "wg-ez",
+        "rev": "18c87ed0354c7f1b5ee157e47f71ca692b560a97",
+        "type": "github"
+      },
+      "original": {
+        "owner": "wg-ez",
+        "repo": "wg-ez",
         "type": "github"
       }
     }
