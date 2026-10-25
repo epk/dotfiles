@@ -65,6 +65,8 @@ in
     "1.1.1.1"
     "9.9.9.9"
   ];
+  # wg-quick resolves interface names through /etc/wireguard.
+  environment.etc.wireguard.source = "/var/lib/wg-ez";
   nix.enable = false;
   documentation.enable = false;
   system.stateVersion = "26.11";
