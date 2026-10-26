@@ -24,8 +24,11 @@ importNpmLock.buildNodeModules {
     npmRebuildFlags = [ "--ignore-scripts" ];
     buildPhase = ''
       runHook preBuild
-      npm_config_build_from_source=true npm rebuild better-sqlite3 node-pty fs-native-extensions
-      rm -rf node_modules/better-sqlite3/prebuilds node_modules/node-pty/prebuilds
+      npm_config_build_from_source=true npm rebuild node-pty fs-native-extensions
+      # SQLite uses its upstream Node-API addon. Keep only the glibc x86_64 build.
+      find node_modules/better-sqlite3/prebuilds -mindepth 1 -maxdepth 1 \
+        ! -name linux-x64.node -exec rm -rf {} +
+      rm -rf node_modules/node-pty/prebuilds
       find node_modules/fs-native-extensions/prebuilds -mindepth 1 -maxdepth 1 \
         ! -name linux-x64 -exec rm -rf {} +
       runHook postBuild

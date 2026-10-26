@@ -64,6 +64,7 @@ in
         ++ lib.optional cfg.bb.enable 38886
         ++ lib.optional cfg.cua.enable 3211;
       systemd.tmpfiles.rules = [
+        "d /home/agent/.config 0700 agent agent -"
         "d /home/agent/.config/workshop 0700 agent agent -"
         "d /home/agent/integrations 0700 agent agent -"
       ];
