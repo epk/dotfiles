@@ -73,19 +73,15 @@ in
           PASEO_RELAY_ENABLED = "false";
           PASEO_WEB_UI_ENABLED = "true";
         };
-        path = [
-          pkgs.openssl
-          pkgs.tailscale
-        ];
         preStart = ''
           set -eu
           mkdir -p "$HOME/.paseo"
           credentials="$HOME/.paseo/server.env"
           if [ ! -s "$credentials" ]; then
             umask 077
-            printf 'PASEO_PASSWORD=%s\n' "$(openssl rand -hex 24)" > "$credentials"
+            printf 'PASEO_PASSWORD=%s\n' "$(${pkgs.openssl}/bin/openssl rand -hex 24)" > "$credentials"
           fi
-          ip=$(tailscale ip -4 2>/dev/null || true)
+          ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null || true)
           printf 'PASEO_HOSTNAMES=localhost,127.0.0.1,workshop%s\n' "''${ip:+,$ip}" > /run/workshop-paseo/access.env
         '';
         serviceConfig = {
@@ -106,9 +102,8 @@ in
           BB_TELEMETRY = "false";
           BB_DATA_DIR = "/home/agent/.bb";
         };
-        path = [ pkgs.tailscale ];
         preStart = ''
-          ip=$(tailscale ip -4 2>/dev/null || true)
+          ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null || true)
           printf 'BB_APP_URL=http://%s:38886\n' "''${ip:-127.0.0.1}" > /run/workshop-bb/access.env
         '';
         serviceConfig = {
@@ -130,13 +125,12 @@ in
       systemd.services.workshop-cua-desktop = lib.recursiveUpdate service {
         description = "Workshop Cua desktop endpoint";
         requires = [ "workshop-display.service" ];
-        path = [ pkgs.openssl ];
         preStart = ''
           set -eu
           directory="$HOME/.config/workshop"
           if [ ! -s "$directory/cua-token" ]; then
             umask 077
-            openssl rand -hex 32 > "$directory/cua-token"
+            ${pkgs.openssl}/bin/openssl rand -hex 32 > "$directory/cua-token"
           fi
         '';
         serviceConfig.ExecStart = "${cua.spacesd}/bin/cua-spacesd serve --listen 0.0.0.0:3211 --quic-port 0 --token-file /home/agent/.config/workshop/cua-token --data-dir /home/agent/.local/state/cua-spacesd";
