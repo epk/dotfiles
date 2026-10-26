@@ -230,9 +230,17 @@ in
   home-manager.users.agent.home.file.".omp/agent/mcp.json" = lib.mkIf tools.omp.enable {
     text = builtins.toJSON mcpSettings;
   };
-  home-manager.users.agent.home.file.".config/amp/settings.json" = lib.mkIf tools.amp.enable {
-    text = builtins.toJSON { "amp.mcpServers" = mcpServers; };
-  };
+  # Amp also writes model preferences here. Keep those settings writable.
+  home-manager.users.agent.home.activation.workshopAmpSettings =
+    lib.hm.dag.entryAfter [ "writeBoundary" ]
+      ''
+        ${pkgs.python3}/bin/python3 ${./workshop-amp-settings.py} ${
+          json.generate "workshop-amp-tools.json" {
+            enabled = tools.amp.enable;
+            servers = mcpServers;
+          }
+        }
+      '';
   services.dbus.enable = true;
   systemd.tmpfiles.rules = [
     "d /home/${user} 0700 ${user} users -"
