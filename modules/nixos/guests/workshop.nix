@@ -232,7 +232,7 @@ in
   };
   # Amp also writes model preferences here. Keep those settings writable.
   home-manager.users.agent.home.activation.workshopAmpSettings =
-    lib.hm.dag.entryAfter [ "writeBoundary" ]
+    inputs.home-manager.lib.hm.dag.entryAfter [ "writeBoundary" ]
       ''
         ${pkgs.python3}/bin/python3 ${./workshop-amp-settings.py} ${
           json.generate "workshop-amp-tools.json" {
