@@ -48,6 +48,9 @@ let
   ];
   package =
     name: release:
+    let
+      executable = if name == "cli" then "cua" else "cua-${name}";
+    in
     stdenvNoCC.mkDerivation {
       pname = "cua-${name}";
       inherit (release) version;
@@ -62,20 +65,20 @@ let
       installPhase = ''
         runHook preInstall
         mkdir -p $out/libexec/cua $out/bin
-        cp cua-${name} $out/libexec/cua/
+        cp ${executable} $out/libexec/cua/
         ${lib.optionalString (
           name == "driver"
         ) "cp cua-cursor-theme libcua_driver_sdk.so cua_driver_node_runtime.node $out/libexec/cua/"}
-        chmod +x $out/libexec/cua/cua-${name}
-        makeWrapper $out/libexec/cua/cua-${name} $out/bin/cua-${name} \
+        chmod +x $out/libexec/cua/${executable}
+        makeWrapper $out/libexec/cua/${executable} $out/bin/${executable} \
           --prefix LD_LIBRARY_PATH : "$out/libexec/cua:${lib.makeLibraryPath libraries}"
         runHook postInstall
       '';
       meta = {
         description = "Cua desktop control ${name}";
         homepage = "https://github.com/trycua/cua";
-        license = if name == "spacesd" then lib.licenses.fsl11Mit else lib.licenses.mit;
-        mainProgram = "cua-${name}";
+        license = if name == "driver" then lib.licenses.mit else lib.licenses.fsl11Mit;
+        mainProgram = executable;
         platforms = [ "x86_64-linux" ];
         sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
       };

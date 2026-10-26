@@ -51,6 +51,7 @@ in
         ++ lib.optional cfg.amp.enable pkgs.amp-cli
         ++ lib.optional cfg.omp.enable pkgs.omp
         ++ lib.optionals cfg.cua.enable [
+          cua.cli
           cua.driver
           cua.spacesd
         ];

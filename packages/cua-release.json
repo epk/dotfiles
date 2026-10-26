@@ -8,5 +8,10 @@
     "version": "0.8.0",
     "url": "https://github.com/trycua/cua/releases/download/cua-spacesd-v0.8.0/cua-spacesd-linux-x86_64.tar.gz",
     "sha256": "d0b43e96ab6a0fd0ee758195fa4aa1e228848c0472bef4950b028b37b44b168f"
+  },
+  "cli": {
+    "version": "0.9.0",
+    "url": "https://github.com/trycua/cua/releases/download/cua-sdk-v0.9.0/cua-cli-0.9.0-linux-x64.tar.gz",
+    "sha256": "97801ff4c3aa2f3d99f8f39ae2d08795dccec241593ab374be7ca925761421ca"
   }
 }

@@ -153,6 +153,7 @@ in
       "antigravity-cli"
       "amp-cli"
       "cua-spacesd"
+      "cua-cli"
     ];
   networking.hostName = "workshop";
   networking.interfaces.eth0.ipv4.addresses = [

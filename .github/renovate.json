@@ -41,6 +41,12 @@
       "transformTemplates": [
         "{\"releases\": $map($[prerelease = false and $exists($match(tag_name, /^cua-spacesd-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-spacesd-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-spacesd-linux-x86_64\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
       ]
+    },
+    "cua-cli": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/trycua/cua/releases?per_page=100",
+      "transformTemplates": [
+        "{\"releases\": $map($[prerelease = false and $exists($match(tag_name, /^cua-sdk-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-sdk-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-cli-[0-9.]+-linux-x64\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
+      ]
     }
   },
   "customManagers": [
@@ -107,6 +113,19 @@
       "autoReplaceStringTemplate": "\"spacesd\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-spacesd-v{{{newValue}}}/cua-spacesd-linux-x86_64.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
       "depNameTemplate": "cua-spacesd",
       "datasourceTemplate": "custom.cua-spacesd",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/cua-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"cli\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"url\": \"[^\"\\n]+\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+      ],
+      "autoReplaceStringTemplate": "\"cli\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-sdk-v{{{newValue}}}/cua-cli-{{{newValue}}}-linux-x64.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "cua-cli",
+      "datasourceTemplate": "custom.cua-cli",
       "versioningTemplate": "semver"
     }
   ],
