@@ -1,0 +1,8 @@
+{
+  "name": "workshop-pomerado",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pomerado": "0.4.0-canary.399"
+  }
+}

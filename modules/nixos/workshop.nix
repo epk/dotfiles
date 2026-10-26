@@ -29,6 +29,13 @@ in
       tasksMax = 2048;
     })
   ];
+  options.services.workshop.tools = lib.mkOption {
+    type = lib.types.submodule {
+      options = import ../../lib/workshop-tools.nix { inherit lib; };
+    };
+    default = { };
+    description = "Guest tools and their services. Disabling a tool preserves its data.";
+  };
   config = lib.mkIf cfg.enable {
     microvm.vms.workshop.specialArgs.inputs = inputs;
     # Firecracker cannot share the host store, so the guest boots from an image of its closure.
