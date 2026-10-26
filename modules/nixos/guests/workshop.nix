@@ -16,7 +16,7 @@ let
     autoCreate = false;
   };
   tools = config.services.workshopTools;
-  desktopEnabled = tools.browser.enable || tools.cua.enable;
+  desktopEnabled = tools.browser.enable || tools.cua.enable || tools.pomerado.enable;
   cua = pkgs.callPackage ../../../packages/cua.nix { };
   pomerado = pkgs.callPackage ../../../packages/pomerado { };
   browserMcp = pkgs.callPackage ../../../packages/chrome-devtools-mcp.nix { };
