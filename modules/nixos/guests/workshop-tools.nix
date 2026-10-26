@@ -11,9 +11,13 @@ let
   cua = pkgs.callPackage ../../../packages/cua.nix { };
   service = {
     wantedBy = [ "multi-user.target" ];
-    wants = [ "network-online.target" ];
+    wants = [
+      "network-online.target"
+      "tailscaled.service"
+    ];
     after = [
       "network-online.target"
+      "tailscaled.service"
       "workshop-display.service"
     ];
     environment = {
@@ -73,22 +77,23 @@ in
           PASEO_RELAY_ENABLED = "false";
           PASEO_WEB_UI_ENABLED = "true";
         };
-        path = [
-          pkgs.openssl
-          pkgs.tailscale
-        ];
         preStart = ''
           set -eu
           mkdir -p "$HOME/.paseo"
           credentials="$HOME/.paseo/server.env"
-          if [ ! -s "$credentials" ]; then
+          if [ ! -s "$credentials" ] || ! ${pkgs.gnugrep}/bin/grep -q '^PASEO_PASSWORD=.' "$credentials"; then
             umask 077
-            printf 'PASEO_PASSWORD=%s\n' "$(openssl rand -hex 24)" > "$credentials"
+            password=$(${pkgs.openssl}/bin/openssl rand -hex 24)
+            printf 'PASEO_PASSWORD=%s\n' "$password" > "$credentials.new"
+            mv "$credentials.new" "$credentials"
           fi
-          ip=$(tailscale ip -4 2>/dev/null || true)
+          while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
+            sleep 2
+          done
           printf 'PASEO_HOSTNAMES=localhost,127.0.0.1,workshop%s\n' "''${ip:+,$ip}" > /run/workshop-paseo/access.env
         '';
         serviceConfig = {
+          TimeoutStartSec = "infinity";
           RuntimeDirectory = "workshop-paseo";
           RuntimeDirectoryMode = "0700";
           EnvironmentFile = [
@@ -106,12 +111,14 @@ in
           BB_TELEMETRY = "false";
           BB_DATA_DIR = "/home/agent/.bb";
         };
-        path = [ pkgs.tailscale ];
         preStart = ''
-          ip=$(tailscale ip -4 2>/dev/null || true)
+          while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
+            sleep 2
+          done
           printf 'BB_APP_URL=http://%s:38886\n' "''${ip:-127.0.0.1}" > /run/workshop-bb/access.env
         '';
         serviceConfig = {
+          TimeoutStartSec = "infinity";
           RuntimeDirectory = "workshop-bb";
           RuntimeDirectoryMode = "0700";
           EnvironmentFile = "-/run/workshop-bb/access.env";
@@ -130,13 +137,12 @@ in
       systemd.services.workshop-cua-desktop = lib.recursiveUpdate service {
         description = "Workshop Cua desktop endpoint";
         requires = [ "workshop-display.service" ];
-        path = [ pkgs.openssl ];
         preStart = ''
           set -eu
           directory="$HOME/.config/workshop"
           if [ ! -s "$directory/cua-token" ]; then
             umask 077
-            openssl rand -hex 32 > "$directory/cua-token"
+            ${pkgs.openssl}/bin/openssl rand -hex 32 > "$directory/cua-token"
           fi
         '';
         serviceConfig.ExecStart = "${cua.spacesd}/bin/cua-spacesd serve --listen 0.0.0.0:3211 --quic-port 0 --token-file /home/agent/.config/workshop/cua-token --data-dir /home/agent/.local/state/cua-spacesd";
