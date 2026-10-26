@@ -77,9 +77,11 @@ in
           set -eu
           mkdir -p "$HOME/.paseo"
           credentials="$HOME/.paseo/server.env"
-          if [ ! -s "$credentials" ]; then
+          if [ ! -s "$credentials" ] || ! ${pkgs.gnugrep}/bin/grep -q '^PASEO_PASSWORD=.' "$credentials"; then
             umask 077
-            printf 'PASEO_PASSWORD=%s\n' "$(${pkgs.openssl}/bin/openssl rand -hex 24)" > "$credentials"
+            password=$(${pkgs.openssl}/bin/openssl rand -hex 24)
+            printf 'PASEO_PASSWORD=%s\n' "$password" > "$credentials.new"
+            mv "$credentials.new" "$credentials"
           fi
           ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null || true)
           printf 'PASEO_HOSTNAMES=localhost,127.0.0.1,workshop%s\n' "''${ip:+,$ip}" > /run/workshop-paseo/access.env
