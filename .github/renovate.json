@@ -29,6 +29,18 @@
       "transformTemplates": [
         "{\"releases\":[{\"version\":version,\"digest\":dist.integrity}]}"
       ]
+    },
+    "cua-driver": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/trycua/cua/releases?per_page=100",
+      "transformTemplates": [
+        "{\"releases\": $map($[prerelease = false and $exists($match(tag_name, /^cua-driver-rs-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-driver-rs-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-driver-rs-[0-9.]+-linux-x86_64-binary\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
+      ]
+    },
+    "cua-spacesd": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/trycua/cua/releases?per_page=100",
+      "transformTemplates": [
+        "{\"releases\": $map($[prerelease = false and $exists($match(tag_name, /^cua-spacesd-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-spacesd-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-spacesd-linux-x86_64\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
+      ]
     }
   },
   "customManagers": [
@@ -69,6 +81,32 @@
       "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"rev\": \"{{{newDigest}}}\"",
       "depNameTemplate": "Homebrew/brew",
       "datasourceTemplate": "github-tags",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/cua-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"driver\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"url\": \"[^\"\\n]+\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+      ],
+      "autoReplaceStringTemplate": "\"driver\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-driver-rs-v{{{newValue}}}/cua-driver-rs-{{{newValue}}}-linux-x86_64-binary.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "cua-driver",
+      "datasourceTemplate": "custom.cua-driver",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/cua-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"spacesd\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"url\": \"[^\"\\n]+\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+      ],
+      "autoReplaceStringTemplate": "\"spacesd\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-spacesd-v{{{newValue}}}/cua-spacesd-linux-x86_64.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "cua-spacesd",
+      "datasourceTemplate": "custom.cua-spacesd",
       "versioningTemplate": "semver"
     }
   ],

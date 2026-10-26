@@ -19,6 +19,19 @@
   services.workshop = {
     enable = true;
     administratorKeys = config.users.users.${config.dotfiles.homeUser}.openssh.authorizedKeys.keys;
+    tools = {
+      browser.enable = true;
+      claudeCode.enable = true;
+      codex.enable = true;
+      gemini.enable = true;
+      antigravity.enable = true;
+      paseo.enable = true;
+      bb.enable = true;
+      cua.enable = true;
+      amp.enable = true;
+      pomerado.enable = true;
+      omp.enable = true;
+    };
   };
   services.vpn.enable = true;
   networking.hostName = "servnerr";
