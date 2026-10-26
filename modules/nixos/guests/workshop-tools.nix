@@ -11,9 +11,13 @@ let
   cua = pkgs.callPackage ../../../packages/cua.nix { };
   service = {
     wantedBy = [ "multi-user.target" ];
-    wants = [ "network-online.target" ];
+    wants = [
+      "network-online.target"
+      "tailscaled.service"
+    ];
     after = [
       "network-online.target"
+      "tailscaled.service"
       "workshop-display.service"
     ];
     environment = {
@@ -83,10 +87,13 @@ in
             printf 'PASEO_PASSWORD=%s\n' "$password" > "$credentials.new"
             mv "$credentials.new" "$credentials"
           fi
-          ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null || true)
+          while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
+            sleep 2
+          done
           printf 'PASEO_HOSTNAMES=localhost,127.0.0.1,workshop%s\n' "''${ip:+,$ip}" > /run/workshop-paseo/access.env
         '';
         serviceConfig = {
+          TimeoutStartSec = "infinity";
           RuntimeDirectory = "workshop-paseo";
           RuntimeDirectoryMode = "0700";
           EnvironmentFile = [
@@ -105,10 +112,13 @@ in
           BB_DATA_DIR = "/home/agent/.bb";
         };
         preStart = ''
-          ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null || true)
+          while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
+            sleep 2
+          done
           printf 'BB_APP_URL=http://%s:38886\n' "''${ip:-127.0.0.1}" > /run/workshop-bb/access.env
         '';
         serviceConfig = {
+          TimeoutStartSec = "infinity";
           RuntimeDirectory = "workshop-bb";
           RuntimeDirectoryMode = "0700";
           EnvironmentFile = "-/run/workshop-bb/access.env";
