@@ -21,7 +21,10 @@
   # Put daemon settings in /etc/nix/nix.custom.conf.
   nix.enable = false;
 
+  # Apple LibreSSL tools such as /usr/bin/curl read /etc/ssl/cert.pem. The Apple copy trusts roots that Mozilla distrusts.
+  # LibreSSL ignores reject rules, so use plain PEM. environment.etc refuses to replace a file that macOS or the MDM rewrites.
   system.activationScripts.postActivation.text = lib.mkAfter ''
+    ln -sfn ${pkgs.cacert}/etc/ssl/certs/ca-no-trust-rules-bundle.crt /etc/ssl/cert.pem
     /nix/var/nix/profiles/default/bin/nix-env --profile /nix/var/nix/profiles/system --delete-generations +5
   '';
   launchd.daemons.nix-gc = {
