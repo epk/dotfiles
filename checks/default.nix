@@ -34,15 +34,19 @@ in
 
   ca-trust = import ./ca-trust.nix {
     inherit pkgs;
-    bundles = map (c: c.config.environment.etc."ssl/certs/ca-certificates.crt".source) (
+    bundles =
       if pkgs.stdenv.hostPlatform.isLinux then
         let
           server = self.nixosConfigurations.server;
         in
-        [ server ] ++ map (vm: vm.config) (lib.attrValues server.config.microvm.vms)
+        map (c: c.config.environment.etc."ssl/certs/ca-certificates.crt".source) (
+          [ server ] ++ map (vm: vm.config) (lib.attrValues server.config.microvm.vms)
+        )
       else
-        lib.attrValues self.darwinConfigurations
-    );
+        lib.concatMap (c: [
+          c.config.environment.etc."ssl/certs/ca-certificates.crt".source
+          "${c.pkgs.cacert}/etc/ssl/certs/ca-no-trust-rules-bundle.crt"
+        ]) (lib.attrValues self.darwinConfigurations);
   };
 
   recipients = pkgs.runCommand "recipients" { nativeBuildInputs = [ pkgs.python3 ]; } ''
