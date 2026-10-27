@@ -5,12 +5,14 @@
     package = null;
     settings = {
       # Sparkle updates this cask. Homebrew does not upgrade it.
-      # Select tip to use builds from the main branch.
       auto-update = "download";
-      auto-update-channel = "tip";
+      auto-update-channel = "stable";
       cursor-style = "block";
       cursor-style-blink = true;
       bold-color = "bright";
+      copy-on-select = "clipboard";
+      link-osc8 = false;
+      window-padding-balance = "equal";
       font-family = "JetBrainsMono Nerd Font";
       macos-titlebar-style = "tabs";
       macos-option-as-alt = true;
