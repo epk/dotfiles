@@ -33,7 +33,7 @@
     "cua-driver": {
       "defaultRegistryUrlTemplate": "https://api.github.com/repos/trycua/cua/releases?per_page=100",
       "transformTemplates": [
-        "{\"releases\": $map($[prerelease = false and $exists($match(tag_name, /^cua-driver-rs-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-driver-rs-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-driver-rs-[0-9.]+-linux-x86_64-binary\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
+        "{\"releases\": $map($[$exists($match(tag_name, /^cua-driver-rs-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-driver-rs-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-driver-rs-[0-9.]+-linux-x86_64-binary\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
       ]
     },
     "cua-spacesd": {
@@ -144,6 +144,15 @@
         "major"
       ],
       "automerge": false
+    },
+    {
+      "matchManagers": [
+        "nix"
+      ],
+      "matchPackageNames": [
+        "/^https://flakehub\\.com//"
+      ],
+      "enabled": false
     },
     {
       "matchDatasources": [

@@ -32,6 +32,19 @@ in
 
   policy = import ./policy.nix { inherit self pkgs; };
 
+  ca-trust = import ./ca-trust.nix {
+    inherit pkgs;
+    bundles = map (c: c.config.environment.etc."ssl/certs/ca-certificates.crt".source) (
+      if pkgs.stdenv.hostPlatform.isLinux then
+        let
+          server = self.nixosConfigurations.server;
+        in
+        [ server ] ++ map (vm: vm.config) (lib.attrValues server.config.microvm.vms)
+      else
+        lib.attrValues self.darwinConfigurations
+    );
+  };
+
   recipients = pkgs.runCommand "recipients" { nativeBuildInputs = [ pkgs.python3 ]; } ''
     python3 ${./recipients.py} ${self}/secrets ${lib.escapeShellArg (builtins.toJSON (import ../secrets/agenix-rules.nix))}
     touch $out
