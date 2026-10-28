@@ -143,7 +143,10 @@ in
     };
     programs.bash.enable = true;
   };
-  nixpkgs.overlays = [ inputs.rust-overlay.overlays.default ];
+  nixpkgs.overlays = [
+    inputs.rust-overlay.overlays.default
+    (import ../../../packages/tailscale.nix)
+  ];
   # nixpkgs plans to remove Gemini CLI. Keep it for API-key access until then.
   nixpkgs.config.problems.handlers.gemini-cli.removal = "ignore";
   nixpkgs.config.allowUnfreePredicate =

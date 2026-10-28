@@ -92,6 +92,19 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "/^packages/tailscale-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"tag\": \"(?<currentValue>v[0-9.]+)\",\\s+\"rev\": \"(?<currentDigest>[0-9a-f]{40})\""
+      ],
+      "autoReplaceStringTemplate": "\"tag\": \"{{{newValue}}}\",\n  \"rev\": \"{{{newDigest}}}\"",
+      "depNameTemplate": "tailscale/tailscale",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "/^packages/cua-release\\.json$/"
       ],
       "matchStrings": [

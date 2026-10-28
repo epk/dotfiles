@@ -6,6 +6,7 @@
 }:
 {
   imports = [ ./caches.nix ];
+  nixpkgs.overlays = [ (import ../../packages/tailscale.nix) ];
   services.openssh = {
     enable = true;
     settings = {
