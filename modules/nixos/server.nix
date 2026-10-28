@@ -39,10 +39,6 @@
   nix.registry.nixpkgs.flake = nixpkgs;
   nix.channel.enable = false;
   nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
     max-jobs = 1;
     cores = 2;
     # Only root can change daemon trust or select privileged builders.
