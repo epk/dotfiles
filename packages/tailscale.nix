@@ -1,4 +1,4 @@
-final: prev:
+_final: prev:
 let
   release = prev.lib.importJSON ./tailscale-release.json;
   src = builtins.fetchGit {
