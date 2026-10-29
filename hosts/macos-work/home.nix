@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -10,6 +11,17 @@ let
   tec = "${home}/.local/state/tec";
   tecGlobal = "${tec}/profiles/base/current/global";
   shopifyKubeconfig = "${home}/.kube/config.shopify.cloudplatform";
+  # tec init, dev.sh and brew shellenv export these in the interactive shell.
+  launchdVariables = lib.attrNames config.home.sessionVariables ++ [
+    "HOMEBREW_CELLAR"
+    "HOMEBREW_PREFIX"
+    "HOMEBREW_REPOSITORY"
+    "INFOPATH"
+    "NIX_PATH"
+    "NVM_DIR"
+    "TECTONIX_TOOLCHAIN_PROFILE_DIR"
+    "USING_DEV"
+  ];
 in
 {
   # Put Tec command paths before the shared paths.
@@ -27,6 +39,40 @@ in
     DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K = "false";
     CLAUDE_CODE_AUTO_COMPACT_WINDOW = "850000";
     KUBECONFIG = "${home}/.kube/config:${shopifyKubeconfig}";
+  };
+
+  # Applications that launchd starts, such as bb, do not read the shell configuration.
+  launchd.agents.session-variables = {
+    enable = true;
+    config = {
+      # Unset the earlier values, so that values that append to themselves, such as INFOPATH, do not grow.
+      ProgramArguments = [
+        "/usr/bin/env"
+      ]
+      ++ lib.concatMap (name: [
+        "-u"
+        name
+      ]) launchdVariables
+      ++ [
+        "${pkgs.zsh}/bin/zsh"
+        "-l"
+        "-i"
+        "-c"
+        ''
+          previous=$(/bin/launchctl getenv KUBECONFIG)
+          for name in ${lib.concatStringsSep " " launchdVariables}; do
+            if [[ -n ''${(P)name} ]]; then
+              /bin/launchctl setenv $name "''${(P)name}"
+            else
+              /bin/launchctl unsetenv $name
+            fi
+          done
+          # At login, bb can start first. Restart it only then, because a restart stops its threads.
+          [[ -n $previous ]] || /bin/launchctl kickstart -k gui/$UID/com.shopify.shop-bb-fy
+        ''
+      ];
+      RunAtLoad = true;
+    };
   };
 
   # Tec supplies git, gh and pnpm earlier in PATH. Do not install second copies.
