@@ -1,6 +1,7 @@
 # Mac-only parts: GUI applications and macOS paths.
 {
   config,
+  lib,
   pkgs,
   user,
   ...
@@ -19,6 +20,27 @@
 
   # The CLI signs in through the 1Password desktop application.
   home.packages = [ pkgs._1password-cli ];
+
+  # Applications that launchd starts, such as bb, do not read the shell session variables.
+  # The shell expands values that refer to other variables, such as TERMINFO_DIRS.
+  launchd.agents.session-variables = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/bin/sh"
+        "-c"
+        ''
+          . ${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh
+          exec /bin/launchctl setenv ${
+            lib.concatMapStringsSep " " (name: "${name} \"\$${name}\"") (
+              lib.attrNames config.home.sessionVariables
+            )
+          }
+        ''
+      ];
+      RunAtLoad = true;
+    };
+  };
 
   programs.git = {
     signing = {
