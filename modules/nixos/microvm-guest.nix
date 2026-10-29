@@ -9,7 +9,7 @@ let
   tap = (lib.head config.microvm.interfaces).id;
 in
 {
-  imports = [ ./caches.nix ];
+  imports = [ ./nix.nix ];
   options.dotfiles.guestStoreImage = lib.mkOption {
     type = lib.types.nullOr lib.types.str;
     default = null;

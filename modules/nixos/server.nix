@@ -5,7 +5,7 @@
   ...
 }:
 {
-  imports = [ ./caches.nix ];
+  imports = [ ./nix.nix ];
   nixpkgs.overlays = [ (import ../../packages/tailscale.nix) ];
   services.openssh = {
     enable = true;
@@ -37,16 +37,11 @@
     netcat-openbsd
   ];
   nix.registry.nixpkgs.flake = nixpkgs;
-  nix.channel.enable = false;
   nix.settings = {
     max-jobs = 1;
     cores = 2;
-    # Only root can change daemon trust or select privileged builders.
-    trusted-users = [ "root" ];
-    # The host filesystem also holds builds. Collect garbage before it fills.
-    min-free = 4 * 1024 * 1024 * 1024;
-    max-free = 8 * 1024 * 1024 * 1024;
   };
+  # Determinate Nixd collects unreferenced paths. It does not delete old generations.
   # The current system references every guest closure. Old generations are the rollback window.
   nix.gc = {
     automatic = true;
