@@ -16,6 +16,8 @@ in
     localHostName = "Adityas-MacBook-Pro";
   };
 
+  determinateNix.determinateNixd.garbageCollector.strategy = "automatic";
+
   determinateNix.customSettings = {
     extra-substituters = [
       caches.epk.url

@@ -8,12 +8,10 @@ in
     substituters = [
       caches.epk.url
       caches.community.url
-      caches.determinate.url
     ];
     trusted-public-keys = [
       caches.epk.publicKey
       caches.community.publicKey
-      caches.determinate.publicKey
     ];
   };
 }

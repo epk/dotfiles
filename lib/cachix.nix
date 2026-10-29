@@ -16,10 +16,4 @@
     url = "https://devenv.cachix.org";
     publicKey = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
   };
-
-  # Determinate publishes its Nix packages in this cache.
-  determinate = {
-    url = "https://install.determinate.systems";
-    publicKey = "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM=";
-  };
 }
