@@ -27,16 +27,6 @@
     ln -sfn ${pkgs.cacert}/etc/ssl/certs/ca-no-trust-rules-bundle.crt /etc/ssl/cert.pem
     /nix/var/nix/profiles/default/bin/nix-env --profile /nix/var/nix/profiles/system --delete-generations +5
   '';
-  launchd.daemons.nix-gc = {
-    command = "/nix/var/nix/profiles/default/bin/nix-collect-garbage";
-    serviceConfig.StartCalendarInterval = [
-      {
-        Weekday = 7;
-        Hour = 3;
-        Minute = 15;
-      }
-    ];
-  };
 
   # Manual generation removes the nixpkgs source context.
   # This causes an options.json error and a Nix warning.

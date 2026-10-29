@@ -119,6 +119,7 @@ in
     ../microvm-guest.nix
     ../home.nix
     ./workshop-tools.nix
+    inputs.determinate.nixosModules.default
   ];
   services.workshopTools =
     workshop.tools or {
