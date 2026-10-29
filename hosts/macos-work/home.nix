@@ -10,6 +10,11 @@ let
   tec = "${home}/.local/state/tec";
   tecGlobal = "${tec}/profiles/base/current/global";
   shopifyKubeconfig = "${home}/.kube/config.shopify.cloudplatform";
+  # Without the opt-out, the devx claude wrapper writes a 250K window to ~/.claude/settings.json.
+  claudeEnv = {
+    DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K = "false";
+    CLAUDE_CODE_AUTO_COMPACT_WINDOW = "850000";
+  };
 in
 {
   # Put Tec command paths before the shared paths.
@@ -22,9 +27,26 @@ in
     config.programs.pnpm.pnpmHome
   ];
 
-  home.sessionVariables = {
-    DEVX_CLAUDE_FEATURE_CONTEXT_WINDOW_250K = "false";
+  home.sessionVariables = claudeEnv // {
     KUBECONFIG = "${home}/.kube/config:${shopifyKubeconfig}";
+  };
+
+  # Applications that launchd starts, such as bb, do not read the shell session variables.
+  launchd.agents.claude-env = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/bin/launchctl"
+        "setenv"
+      ]
+      ++ lib.concatLists (
+        lib.mapAttrsToList (name: value: [
+          name
+          value
+        ]) claudeEnv
+      );
+      RunAtLoad = true;
+    };
   };
 
   # Tec supplies git, gh and pnpm earlier in PATH. Do not install second copies.
