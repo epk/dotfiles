@@ -5,9 +5,9 @@
     "sha256": "31ab9709dd91ce73677e49b9f3e75c6f0d3e4d9625c286c9e58262bfbea698dd"
   },
   "spacesd": {
-    "version": "0.10.0",
-    "url": "https://github.com/trycua/cua/releases/download/cua-spacesd-v0.10.0/cua-spacesd-linux-x86_64.tar.gz",
-    "sha256": "caa410cb6dc2733347426d54698f9d83b1cf4195851e3ed8aaf51823f098b130"
+    "version": "0.10.1",
+    "url": "https://github.com/trycua/cua/releases/download/cua-spacesd-v0.10.1/cua-spacesd-linux-x86_64.tar.gz",
+    "sha256": "7873f6821682b77c9bab0c1ff402ff510b2db6d050e0dfeea54510474b1d7beb"
   },
   "cli": {
     "version": "0.10.0",
