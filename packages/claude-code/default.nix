@@ -1,3 +1,4 @@
+# Claude Code at the version in release.json. packages/overlay.nix replaces pkgs.claude-code with it.
 {
   lib,
   stdenvNoCC,
@@ -8,7 +9,7 @@
 let
   inherit (stdenvNoCC.hostPlatform) node;
   platform = "${node.platform}-${node.arch}";
-  release = (lib.importJSON ./claude-code-release.json).${platform};
+  release = (lib.importJSON ./release.json).${platform};
 in
 # nixpkgs lags the official releases. Keep the nixpkgs wrapper and use the pinned npm binary.
 claude-code.overrideAttrs (old: {

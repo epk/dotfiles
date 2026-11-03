@@ -1,3 +1,4 @@
+# The Chrome DevTools MCP server at the version in release.json. packages/overlay.nix adds it as pkgs.chrome-devtools-mcp.
 {
   lib,
   stdenvNoCC,
@@ -6,7 +7,7 @@
   nodejs_26,
 }:
 let
-  release = lib.importJSON ./chrome-devtools-mcp-release.json;
+  release = lib.importJSON ./release.json;
 in
 stdenvNoCC.mkDerivation {
   pname = "chrome-devtools-mcp";

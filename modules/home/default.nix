@@ -1,3 +1,4 @@
+# Home Manager settings for your user on every machine. The Macs and the server import it.
 { options, pkgs, ... }:
 
 {

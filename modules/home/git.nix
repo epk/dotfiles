@@ -1,3 +1,4 @@
+# Git settings for every machine. modules/home/default.nix imports it.
 { config, lib, ... }:
 
 let

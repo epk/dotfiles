@@ -1,3 +1,4 @@
+# Antigravity CLI at the version in release.json. packages/overlay.nix replaces pkgs.antigravity-cli with it.
 {
   lib,
   antigravity-cli,
@@ -6,7 +7,7 @@
 }:
 
 let
-  manifest = lib.importJSON ./antigravity-release.json;
+  manifest = lib.importJSON ./release.json;
 in
 # nixpkgs lags the official releases. Use the pinned manifest and turn off self-updates.
 antigravity-cli.overrideAttrs (old: {

@@ -1,3 +1,4 @@
+# Home Manager settings for the work Mac only: Shopify tools, paths and caches. hosts/macos-work/default.nix imports it.
 {
   config,
   lib,

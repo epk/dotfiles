@@ -1,3 +1,4 @@
+# Command-line tools for every machine. modules/home/default.nix imports it.
 { pkgs, ... }:
 
 {

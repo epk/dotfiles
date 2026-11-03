@@ -1,3 +1,4 @@
+# Fails if a CA bundle trusts a distrusted root for TLS servers. checks/default.nix runs it.
 { pkgs, bundles }:
 let
   inherit (pkgs) lib;

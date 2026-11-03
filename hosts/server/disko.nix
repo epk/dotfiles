@@ -1,3 +1,4 @@
+# Disk layout of the server. hosts/server/default.nix imports it.
 let
   labelPrefix = "servnerr";
   mountOptions = [

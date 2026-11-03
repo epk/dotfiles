@@ -1,3 +1,4 @@
+# The work Mac: its name, work apps and garbage collection. flake.nix builds it as macos-work.
 { pkgs, user, ... }:
 
 {

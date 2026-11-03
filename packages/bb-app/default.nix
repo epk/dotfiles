@@ -1,3 +1,4 @@
+# The bb browser interface for coding agents. package.json pins the version. packages/overlay.nix adds it as pkgs.bb-app.
 {
   lib,
   importNpmLock,

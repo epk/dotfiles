@@ -1,3 +1,4 @@
+# The server host: Tailscale, the administrator account, Nix and disk settings. hosts/server/default.nix imports it.
 {
   config,
   inputs,

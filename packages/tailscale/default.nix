@@ -1,6 +1,7 @@
+# Tailscale at the tag in release.json. packages/overlay.nix replaces pkgs.tailscale with it.
 { lib, tailscale }:
 let
-  release = lib.importJSON ./tailscale-release.json;
+  release = lib.importJSON ./release.json;
   src = builtins.fetchGit {
     url = "https://github.com/tailscale/tailscale";
     ref = "refs/tags/${release.tag}";

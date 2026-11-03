@@ -1,3 +1,4 @@
+# The Ghostty terminal and its settings. modules/home/darwin.nix imports it.
 { pkgs, ... }:
 
 {

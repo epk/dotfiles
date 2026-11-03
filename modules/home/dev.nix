@@ -1,4 +1,4 @@
-# Language toolchains. They add about 3.5 GiB, so the server host does not import this module.
+# Language toolchains. The Macs and the workshop guest import it. The server host does not, because it adds about 3.5 GiB.
 { config, pkgs, ... }:
 
 let

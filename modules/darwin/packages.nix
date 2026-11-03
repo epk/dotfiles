@@ -1,18 +1,10 @@
+# Mac apps, fonts and Homebrew for both Macs. modules/darwin/default.nix imports it.
 {
   lib,
   pkgs,
   user,
   ...
 }:
-let
-  release = lib.importJSON ../../packages/homebrew-release.json;
-  source = builtins.fetchGit {
-    url = "https://github.com/Homebrew/brew";
-    ref = "refs/tags/${release.version}";
-    rev = release.rev;
-    shallow = true;
-  };
-in
 {
   fonts.packages = [
     pkgs.nerd-fonts.jetbrains-mono
@@ -35,11 +27,7 @@ in
   nix-homebrew = {
     enable = true;
     user = user.username;
-    # Renovate updates the release and commit together. Nix fetches that exact commit.
-    package = source // {
-      name = "brew-${release.version}";
-      version = release.version;
-    };
+    package = import ../../packages/homebrew { inherit lib; };
   };
 
   homebrew = {

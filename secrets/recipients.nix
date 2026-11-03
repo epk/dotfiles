@@ -1,3 +1,4 @@
+# Public keys of the machines and the recovery key. secrets/agenix-rules.nix reads them.
 {
   server = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEC2GNgR+dm+/yBYBz6j/91BCM+l6e16oRqa7EVO2vO2";
   recovery = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwaSQZpCARlBqMsSgH0IKhRaF3TK/mdDaUJKRQgOZYs";

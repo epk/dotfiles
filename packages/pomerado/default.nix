@@ -1,3 +1,4 @@
+# The Pomerado MCP server. package.json pins the version. packages/overlay.nix adds it as pkgs.pomerado.
 {
   lib,
   importNpmLock,

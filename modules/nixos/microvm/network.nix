@@ -1,3 +1,4 @@
+# Private IPv4 networks and firewall rules for the guests. The workshop and vpn host modules import it.
 {
   config,
   lib,
@@ -19,7 +20,7 @@ let
   blockSize = guest: lib.foldl' (value: _: value * 2) 1 (lib.range guest.prefixLength 31);
   first = guest: builtins.div (number guest.hostAddress) (blockSize guest) * blockSize guest;
   last = guest: first guest + blockSize guest - 1;
-  inherit (import ../../lib/network.nix) nonPublicV4;
+  inherit (import ../../../lib/network.nix) nonPublicV4;
   private =
     address:
     let

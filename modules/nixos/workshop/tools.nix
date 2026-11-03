@@ -1,4 +1,4 @@
-# Tools installed only inside Workshop.
+# Optional workshop tools and their services: paseo, bb, cua, amp and omp. modules/nixos/workshop/guest.nix imports it.
 {
   lib,
   pkgs,

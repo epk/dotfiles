@@ -1,3 +1,4 @@
+# Inside the WireGuard container: the tunnel, the firewall and wg-ez. modules/nixos/vpn/host.nix runs it.
 {
   inputs,
   lib,

@@ -1,3 +1,4 @@
+# All CI checks. flake.nix exposes them as checks.<system>, and CI builds the checks that are not in the cache.
 { self, pkgs }:
 let
   inherit (pkgs) lib;

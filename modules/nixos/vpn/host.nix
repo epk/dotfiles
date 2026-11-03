@@ -1,3 +1,4 @@
+# The WireGuard container on the server and its management portal. hosts/server/default.nix imports it.
 {
   config,
   lib,
@@ -9,7 +10,7 @@ let
   network = config.networking.microvm.guests.vpn;
 in
 {
-  imports = [ ./microvm-network.nix ];
+  imports = [ ../microvm/network.nix ];
   options.services.vpn = {
     enable = lib.mkEnableOption "the private WireGuard container";
     storageDirectory = lib.mkOption {
@@ -49,7 +50,7 @@ in
         "--bind=${cfg.storageDirectory}/wireguard:/var/lib/wg-ez:idmap"
       ];
       specialArgs = { inherit inputs network; };
-      config = import ./guests/vpn.nix;
+      config = import ./guest.nix;
     };
     systemd.services."container@vpn" = {
       requires = [ "nftables.service" ];

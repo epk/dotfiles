@@ -1,3 +1,4 @@
+# Disk images, users and directories for each microvm. modules/nixos/workshop/host.nix imports it.
 {
   config,
   lib,

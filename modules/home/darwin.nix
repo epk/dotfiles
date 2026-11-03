@@ -1,4 +1,4 @@
-# Mac-only parts: GUI applications and macOS paths.
+# Home Manager settings for the Macs only: Git signing, Ghostty, SSH and reload!. modules/darwin/default.nix imports it.
 {
   config,
   pkgs,

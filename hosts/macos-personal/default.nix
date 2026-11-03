@@ -1,3 +1,4 @@
+# The personal Mac: its name, caches, upgrades and personal apps. flake.nix builds it as macos-personal.
 { inputs, pkgs, ... }:
 
 let

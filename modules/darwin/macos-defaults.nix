@@ -1,3 +1,4 @@
+# macOS preferences, such as Touch ID for sudo and system.defaults. modules/darwin/default.nix imports it.
 {
   security.pam.services.sudo_local = {
     touchIdAuth = true;

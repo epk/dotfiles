@@ -1,3 +1,4 @@
+# SSH client settings for the Macs. modules/home/darwin.nix imports it.
 {
   programs.ssh = {
     enable = true;
