@@ -10,8 +10,8 @@
     "sha256": "7873f6821682b77c9bab0c1ff402ff510b2db6d050e0dfeea54510474b1d7beb"
   },
   "cli": {
-    "version": "0.10.0",
-    "url": "https://github.com/trycua/cua/releases/download/cua-sdk-v0.10.0/cua-cli-0.10.0-linux-x64.tar.gz",
-    "sha256": "42afe39ce63c57f960091e5f4dc93b9cc90e708e1d38525d5147e93fe5cd1b35"
+    "version": "0.10.1",
+    "url": "https://github.com/trycua/cua/releases/download/cua-sdk-v0.10.1/cua-cli-0.10.1-linux-x64.tar.gz",
+    "sha256": "ea420b0ac21c524b09507c576cf9c55a2177ce3c84169dcb5e2d1792f18c2929"
   }
 }
