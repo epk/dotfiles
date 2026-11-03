@@ -1,4 +1,4 @@
-# Shared Home Manager settings for the NixOS and darwin hosts.
+# Shared Home Manager settings. modules/darwin/default.nix and modules/nixos/home.nix use them.
 inputs: {
   useGlobalPkgs = true;
   useUserPackages = true;

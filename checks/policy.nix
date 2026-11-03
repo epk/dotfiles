@@ -1,3 +1,4 @@
+# Asserts security settings of the server that a build cannot detect. checks/default.nix runs it.
 { self, pkgs }:
 let
   inherit (pkgs) lib;

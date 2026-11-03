@@ -1,3 +1,4 @@
+# zsh, the prompt and the shell tools for every machine. modules/home/default.nix imports it.
 { config, pkgs, ... }:
 
 let

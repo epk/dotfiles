@@ -1,3 +1,4 @@
+# The three Cua binaries at the versions in release.json. packages/overlay.nix adds them as pkgs.cua-*.
 {
   lib,
   stdenvNoCC,
@@ -24,7 +25,7 @@
   zlib,
 }:
 let
-  releases = lib.importJSON ./cua-release.json;
+  releases = lib.importJSON ./release.json;
   urls = version: {
     driver = "https://github.com/trycua/cua/releases/download/cua-driver-rs-v${version}/cua-driver-rs-${version}-linux-x86_64-binary.tar.gz";
     spacesd = "https://github.com/trycua/cua/releases/download/cua-spacesd-v${version}/cua-spacesd-linux-x86_64.tar.gz";

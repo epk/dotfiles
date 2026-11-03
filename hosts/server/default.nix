@@ -1,3 +1,4 @@
+# The server: its services, network and boot loader. flake.nix builds it as server.
 { config, ... }:
 
 {
@@ -6,8 +7,8 @@
     ./hardware-configuration.nix
     ./disko.nix
     ./secrets.nix
-    ../../modules/nixos/workshop.nix
-    ../../modules/nixos/vpn.nix
+    ../../modules/nixos/workshop/host.nix
+    ../../modules/nixos/vpn/host.nix
     ../../modules/nixos/server-automation.nix
     ../../modules/nixos/home.nix
   ];

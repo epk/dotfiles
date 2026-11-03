@@ -1,4 +1,4 @@
-# Shared settings for the server host and the workshop guest.
+# Shared settings for the server host and the workshop guest. Both import it.
 { pkgs, ... }:
 let
   caches = import ../../lib/cachix.nix;

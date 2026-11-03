@@ -1,3 +1,4 @@
+# Hardware of the server: kernel modules, CPU and platform. hosts/server/default.nix imports it.
 {
   config,
   lib,

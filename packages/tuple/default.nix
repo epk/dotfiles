@@ -1,3 +1,4 @@
+# Tuple for macOS at the version in release.json. packages/overlay.nix replaces pkgs.tuple with it.
 {
   lib,
   tuple,
@@ -7,7 +8,7 @@
 }:
 
 let
-  release = (lib.importJSON ./cask-release.json).tuple;
+  release = lib.importJSON ./release.json;
   # The cask version also has the build date and commit: 3.3.19,2026-11-02,65446df1e4.
   version = lib.head (lib.splitString "," release.version);
   archive = fetchurl {

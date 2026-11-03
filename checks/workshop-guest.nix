@@ -35,7 +35,7 @@ pkgs.testers.runNixOSTest {
     {
       imports = [
         self.inputs.microvm.nixosModules.microvm
-        ../modules/nixos/guests/workshop.nix
+        ../modules/nixos/workshop/guest.nix
       ];
       # Keep the microvm options, but boot as a test VM instead of Firecracker.
       microvm.guest.enable = false;

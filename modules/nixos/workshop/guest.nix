@@ -1,3 +1,4 @@
+# Inside the workshop VM: users, agent CLIs, MCP servers and the desktop. modules/nixos/workshop/host.nix boots it.
 {
   config,
   lib,
@@ -48,7 +49,7 @@ let
   json = pkgs.formats.json { };
   mcpJson = json.generate "workshop-mcp.json" { inherit mcpServers; };
   ampSettings = pkgs.writers.writePython3Bin "workshop-amp-settings" { } (
-    builtins.readFile ./workshop-amp-settings.py
+    builtins.readFile ./amp-settings.py
   );
   # Each CLI runs directly and keeps its own account and model settings.
   agentTools =
@@ -100,7 +101,7 @@ in
   imports = [
     ../base.nix
     ../home.nix
-    ./workshop-tools.nix
+    ./tools.nix
     inputs.determinate.nixosModules.default
   ];
   _module.args = { inherit agentUnit agentPath; };
@@ -228,7 +229,7 @@ in
       ${pkgs.iproute2}/bin/ip link set ${network.interface} up
     '';
     # extraConfig replaces the upstream drive list. Writeback caching passes guest flushes to the host.
-    # The host builds the store image from its own store. See modules/nixos/workshop.nix.
+    # The host builds the store image from its own store. See modules/nixos/workshop/host.nix.
     firecracker.extraConfig.drives = [
       {
         drive_id = "store";

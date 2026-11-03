@@ -1,3 +1,4 @@
+# Ghostty for macOS at the version in release.json. packages/overlay.nix replaces pkgs.ghostty-bin with it.
 {
   lib,
   ghostty-bin,
@@ -5,7 +6,7 @@
 }:
 
 let
-  release = (lib.importJSON ./cask-release.json).ghostty;
+  release = lib.importJSON ./release.json;
 in
 # nixpkgs can lag the official releases. The Homebrew cask API publishes the hash of each download.
 ghostty-bin.overrideAttrs {

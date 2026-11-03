@@ -1,3 +1,4 @@
+# VS Code for macOS at the version in release.json. packages/overlay.nix replaces pkgs.vscode with it.
 {
   lib,
   vscode,
@@ -5,7 +6,7 @@
 }:
 
 let
-  release = lib.importJSON ./vscode-release.json;
+  release = lib.importJSON ./release.json;
 in
 # nixpkgs lags the official releases.
 vscode.overrideAttrs (old: {

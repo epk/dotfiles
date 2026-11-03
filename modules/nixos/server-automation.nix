@@ -1,3 +1,4 @@
+# CI deployment through Cachix and the Tailscale login of the server. hosts/server/default.nix imports it.
 {
   config,
   pkgs,

@@ -1,3 +1,4 @@
+# Binary cache URLs and keys. The Mac hosts and modules/nixos/base.nix read them.
 let
   # CI pushes to this cache. The server and the Macs download from it.
   epk = {

@@ -1,3 +1,4 @@
+# Network constants for the guests. The microvm, vpn and workshop modules read them.
 {
   # Guests have no IPv6, so they use only IPv4 resolvers.
   guestNameservers = [

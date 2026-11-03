@@ -1,3 +1,4 @@
+# Codex at the version in release.json. packages/overlay.nix replaces pkgs.codex with it.
 {
   lib,
   stdenvNoCC,
@@ -7,7 +8,7 @@
 let
   inherit (stdenvNoCC.hostPlatform) node;
   platform = "${node.platform}-${node.arch}";
-  release = (lib.importJSON ./codex-release.json).${platform};
+  release = (lib.importJSON ./release.json).${platform};
   target =
     {
       darwin-arm64 = "aarch64-apple-darwin";

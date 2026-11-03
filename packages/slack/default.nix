@@ -1,3 +1,4 @@
+# Slack for macOS at the version in release.json. packages/overlay.nix replaces pkgs.slack with it.
 {
   lib,
   slack,
@@ -5,7 +6,7 @@
 }:
 
 let
-  release = (lib.importJSON ./cask-release.json).slack;
+  release = lib.importJSON ./release.json;
 in
 # nixpkgs lags the official releases. The Homebrew cask API publishes the hash of each download.
 slack.overrideAttrs (old: {

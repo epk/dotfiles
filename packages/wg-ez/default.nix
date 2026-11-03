@@ -1,3 +1,4 @@
+# wg-ez, built from the wg-ez flake input. packages/overlay.nix adds it as pkgs.wg-ez.
 {
   lib,
   rustPlatform,

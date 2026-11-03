@@ -1,3 +1,4 @@
+# Start here. This file defines the two Macs, the server, the package overlay, the packages and the checks.
 {
   description = "Workstation and server configurations";
 

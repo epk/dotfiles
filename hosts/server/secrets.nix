@@ -1,3 +1,4 @@
+# Secret decryption on the server. hosts/server/default.nix imports it.
 { pkgs, ... }:
 
 {

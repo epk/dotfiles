@@ -1,3 +1,4 @@
+# The workshop VM on the server: its options, store image and sandbox. hosts/server/default.nix imports it.
 {
   config,
   inputs,
@@ -21,8 +22,8 @@ let
 in
 {
   imports = [
-    ./microvm-storage.nix
-    ./microvm-network.nix
+    ../microvm/storage.nix
+    ../microvm/network.nix
   ];
   options.services.workshop = {
     enable = lib.mkEnableOption "the persistent coding and browser guest";
@@ -76,7 +77,7 @@ in
           network = config.networking.microvm.guests.workshop;
         };
       };
-      config = ./guests/workshop.nix;
+      config = ./guest.nix;
     };
     # Systemd creates the mount points in the jail root as root. A RuntimeDirectory would belong to the VM user.
     systemd.tmpfiles.settings."10-workshop-jail"."/run/workshop-jail".d = {

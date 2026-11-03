@@ -1,4 +1,4 @@
-# zsh and the shared Home Manager configuration for one account.
+# zsh and the shared Home Manager configuration for one account. The server and the workshop guest import it.
 {
   config,
   inputs,
