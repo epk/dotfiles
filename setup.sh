@@ -3,7 +3,5 @@
 set -eu
 cd "$(dirname "$0")"
 host=macos-${1:?Usage: ./setup.sh personal|work}
-system=$(nix build --no-link --print-out-paths ".#darwinConfigurations.$host.system")
-sudo -H /nix/var/nix/profiles/default/bin/nix-env -p /nix/var/nix/profiles/system --set "$system"
-sudo "$system/activate"
+sudo -H /nix/var/nix/profiles/default/bin/nix run --inputs-from . nix-darwin#darwin-rebuild -- switch --flake ".#$host"
 echo "Setup of $host is complete. Open a new shell. Then use reload!"

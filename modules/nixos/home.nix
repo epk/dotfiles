@@ -27,7 +27,7 @@ in
     users.users.${user}.shell = pkgs.zsh;
     # SSH sessions from Ghostty need its terminal description.
     environment.systemPackages = [ pkgs.ghostty.terminfo ];
-    home-manager = (import ../../lib/hm.nix { inherit (inputs) nix-index-database try; }) // {
+    home-manager = (import ../../lib/hm.nix inputs) // {
       users.${user}.imports = [ ../home ];
     };
   };

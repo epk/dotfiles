@@ -1,11 +1,10 @@
 # Shared Home Manager settings for the NixOS and darwin hosts.
-{ nix-index-database, try }:
-{
+inputs: {
   useGlobalPkgs = true;
   useUserPackages = true;
   backupFileExtension = "before-nix";
   sharedModules = [
-    nix-index-database.homeModules.default
-    try.homeModules.default
+    inputs.nix-index-database.homeModules.default
+    inputs.try.homeModules.default
   ];
 }

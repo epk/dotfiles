@@ -6,8 +6,30 @@ pkgs.testers.runNixOSTest {
   node.specialArgs.workshop = {
     storageDirectory = "/var/lib/workshop";
     administratorKeys = [ ];
+    network = {
+      interface = "workshop-tap";
+      hostAddress = "10.77.0.1";
+      guestAddress = "10.77.0.2";
+      prefixLength = 30;
+    };
+    # The test boots a small tool set. paseo and bb wait for a Tailscale login.
+    tools = {
+      browser.enable = true;
+      claudeCode.enable = true;
+      codex.enable = true;
+      gemini.enable = true;
+      antigravity.enable = true;
+      amp.enable = false;
+      bb.enable = false;
+      cua.enable = false;
+      omp.enable = false;
+      paseo.enable = false;
+      pomerado.enable = false;
+    };
   };
-  node.specialArgs.inputs = self.inputs;
+  node.specialArgs.inputs = self.inputs // {
+    inherit self;
+  };
   nodes.guest =
     { lib, ... }:
     {
@@ -29,6 +51,9 @@ pkgs.testers.runNixOSTest {
     guest.succeed("getent group agent")
     guest.succeed('test "$(stat -c %U:%G /home/agent)" = agent:agent')
     guest.wait_for_unit("home-manager-aditya.sharma.service")
+    guest.wait_for_unit("home-manager-agent.service")
+    guest.succeed("grep -q daemon_auto_start /home/agent/.codex/config.toml")
+    guest.succeed("test -s /home/agent/.gemini/config/mcp_config.json")
     guest.succeed("getent passwd aditya.sharma | grep -q '/bin/zsh$'")
     guest.succeed("test -L /home/aditya.sharma/.zshrc")
   '';

@@ -10,10 +10,8 @@
     enable = true;
     credentialsFile = config.age.secrets.cachix-agent.path;
   };
-  # The agent reads its token only at start. Restart it when the encrypted token changes.
-  systemd.services.cachix-agent.restartTriggers = [
-    (builtins.hashFile "sha256" config.age.secrets.cachix-agent.file)
-  ];
+  # The agent runs the deployment, so a switch must not stop it. Restart it by hand after a token change.
+  systemd.services.cachix-agent.restartIfChanged = false;
 
   age.secrets.tailscale-auth = {
     file = ../../secrets/tailscale/server.age;

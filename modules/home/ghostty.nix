@@ -1,12 +1,12 @@
+{ pkgs, ... }:
+
 {
   programs.ghostty = {
     enable = true;
-    # Homebrew supplies Ghostty. Set only its configuration here.
-    package = null;
+    package = pkgs.ghostty-bin;
     settings = {
-      # Sparkle updates this cask. Homebrew does not upgrade it.
-      auto-update = "download";
-      auto-update-channel = "stable";
+      # The Nix store copy is read-only, so the built-in updater cannot replace it.
+      auto-update = "off";
       cursor-style = "block";
       cursor-style-blink = true;
       bold-color = "bright";

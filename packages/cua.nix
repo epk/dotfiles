@@ -22,10 +22,14 @@
   pipewire,
   openssl,
   zlib,
-  ...
 }:
 let
   releases = lib.importJSON ./cua-release.json;
+  urls = version: {
+    driver = "https://github.com/trycua/cua/releases/download/cua-driver-rs-v${version}/cua-driver-rs-${version}-linux-x86_64-binary.tar.gz";
+    spacesd = "https://github.com/trycua/cua/releases/download/cua-spacesd-v${version}/cua-spacesd-linux-x86_64.tar.gz";
+    cli = "https://github.com/trycua/cua/releases/download/cua-sdk-v${version}/cua-cli-${version}-linux-x64.tar.gz";
+  };
   libraries = [
     stdenv.cc.cc.lib
     dbus
@@ -54,7 +58,10 @@ let
     stdenvNoCC.mkDerivation {
       pname = "cua-${name}";
       inherit (release) version;
-      src = fetchurl { inherit (release) url sha256; };
+      src = fetchurl {
+        url = (urls release.version).${name};
+        inherit (release) sha256;
+      };
       sourceRoot = ".";
       nativeBuildInputs = [
         autoPatchelfHook

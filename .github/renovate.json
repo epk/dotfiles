@@ -9,12 +9,12 @@
   },
   "automerge": true,
   "automergeStrategy": "squash",
-  "rebaseWhen": "behind-base-branch",
+  "prHourlyLimit": 0,
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
     "schedule": [
-      "* 0-5 * * 1"
+      "* 0-5 * * *"
     ]
   },
   "customDatasources": {
@@ -22,12 +22,6 @@
       "defaultRegistryUrlTemplate": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json",
       "transformTemplates": [
         "{\"releases\":[{\"version\":$match(url,/antigravity-cli\\/([0-9.]+-[0-9]+)\\/linux-x64\\//).groups[0],\"digest\":sha512}]}"
-      ]
-    },
-    "chrome-devtools-mcp": {
-      "defaultRegistryUrlTemplate": "https://registry.npmjs.org/chrome-devtools-mcp/latest",
-      "transformTemplates": [
-        "{\"releases\":[{\"version\":version,\"digest\":dist.integrity}]}"
       ]
     },
     "cua-driver": {
@@ -46,6 +40,24 @@
       "defaultRegistryUrlTemplate": "https://api.github.com/repos/trycua/cua/releases?per_page=100",
       "transformTemplates": [
         "{\"releases\": $map($[prerelease = false and $exists($match(tag_name, /^cua-sdk-v[0-9.]+$/))], function($r) { {\"version\": $substringAfter($r.tag_name, \"cua-sdk-v\"), \"digest\": $substringAfter($r.assets[$exists($match(name, /^cua-cli-[0-9.]+-linux-x64\\.tar\\.gz$/))].digest, \"sha256:\")} })}"
+      ]
+    },
+    "vscode": {
+      "defaultRegistryUrlTemplate": "https://update.code.visualstudio.com/api/update/darwin-arm64/stable/latest",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":productVersion,\"digest\":sha256hash}]}"
+      ]
+    },
+    "npm": {
+      "defaultRegistryUrlTemplate": "https://registry.npmjs.org/{{packageName}}",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$replace(version, /-(darwin|linux|win32)-(arm64|x64)$/, \"\"),\"digest\":dist.integrity}]}"
+      ]
+    },
+    "homebrew-cask": {
+      "defaultRegistryUrlTemplate": "https://formulae.brew.sh/api/cask/{{packageName}}.json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":version,\"digest\":sha256}]}"
       ]
     }
   },
@@ -71,10 +83,10 @@
       "matchStrings": [
         "\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"hash\": \"(?<currentDigest>sha512-[^\"]+)\""
       ],
-      "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"hash\": \"{{{newDigest}}}\"",
       "depNameTemplate": "chrome-devtools-mcp",
-      "datasourceTemplate": "custom.chrome-devtools-mcp",
-      "versioningTemplate": "semver"
+      "datasourceTemplate": "custom.npm",
+      "versioningTemplate": "semver",
+      "packageNameTemplate": "chrome-devtools-mcp/latest"
     },
     {
       "customType": "regex",
@@ -84,7 +96,6 @@
       "matchStrings": [
         "\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"rev\": \"(?<currentDigest>[0-9a-f]{40})\""
       ],
-      "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n  \"rev\": \"{{{newDigest}}}\"",
       "depNameTemplate": "Homebrew/brew",
       "datasourceTemplate": "github-tags",
       "versioningTemplate": "semver"
@@ -97,7 +108,6 @@
       "matchStrings": [
         "\"tag\": \"(?<currentValue>v[0-9.]+)\",\\s+\"rev\": \"(?<currentDigest>[0-9a-f]{40})\""
       ],
-      "autoReplaceStringTemplate": "\"tag\": \"{{{newValue}}}\",\n  \"rev\": \"{{{newDigest}}}\"",
       "depNameTemplate": "tailscale/tailscale",
       "datasourceTemplate": "github-tags",
       "versioningTemplate": "semver"
@@ -108,38 +118,61 @@
         "/^packages/cua-release\\.json$/"
       ],
       "matchStrings": [
-        "\"driver\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"url\": \"[^\"\\n]+\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+        "\"(?<packageName>driver|spacesd|cli)\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
       ],
-      "autoReplaceStringTemplate": "\"driver\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-driver-rs-v{{{newValue}}}/cua-driver-rs-{{{newValue}}}-linux-x86_64-binary.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
-      "depNameTemplate": "cua-driver",
-      "datasourceTemplate": "custom.cua-driver",
+      "depNameTemplate": "cua-{{{packageName}}}",
+      "datasourceTemplate": "custom.cua-{{{packageName}}}",
       "versioningTemplate": "semver"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^packages/cua-release\\.json$/"
+        "/^packages/claude-code-release\\.json$/"
       ],
       "matchStrings": [
-        "\"spacesd\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"url\": \"[^\"\\n]+\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+        "\"(?<packageName>[a-z0-9-]+)\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"hash\": \"(?<currentDigest>sha512-[^\"]+)\""
       ],
-      "autoReplaceStringTemplate": "\"spacesd\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-spacesd-v{{{newValue}}}/cua-spacesd-linux-x86_64.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
-      "depNameTemplate": "cua-spacesd",
-      "datasourceTemplate": "custom.cua-spacesd",
+      "depNameTemplate": "claude-code-{{{packageName}}}",
+      "datasourceTemplate": "custom.npm",
+      "versioningTemplate": "semver",
+      "packageNameTemplate": "@anthropic-ai/claude-code-{{{packageName}}}/latest"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/codex-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"(?<packageName>[a-z0-9-]+)\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"hash\": \"(?<currentDigest>sha512-[^\"]+)\""
+      ],
+      "depNameTemplate": "codex-{{{packageName}}}",
+      "datasourceTemplate": "custom.npm",
+      "versioningTemplate": "semver",
+      "packageNameTemplate": "@openai/codex/{{{packageName}}}"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^packages/vscode-release\\.json$/"
+      ],
+      "matchStrings": [
+        "\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+      ],
+      "depNameTemplate": "vscode",
+      "datasourceTemplate": "custom.vscode",
       "versioningTemplate": "semver"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^packages/cua-release\\.json$/"
+        "/^packages/cask-release\\.json$/"
       ],
       "matchStrings": [
-        "\"cli\": \\{\\s+\"version\": \"(?<currentValue>[0-9.]+)\",\\s+\"url\": \"[^\"\\n]+\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
+        "\"(?<packageName>[a-z0-9-]+)\": \\{\\s+\"version\": \"(?<currentValue>[^\"]+)\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
       ],
-      "autoReplaceStringTemplate": "\"cli\": {\n    \"version\": \"{{{newValue}}}\",\n    \"url\": \"https://github.com/trycua/cua/releases/download/cua-sdk-v{{{newValue}}}/cua-cli-{{{newValue}}}-linux-x64.tar.gz\",\n    \"sha256\": \"{{{newDigest}}}\"",
-      "depNameTemplate": "cua-cli",
-      "datasourceTemplate": "custom.cua-cli",
-      "versioningTemplate": "semver"
+      "depNameTemplate": "{{{packageName}}}",
+      "datasourceTemplate": "custom.homebrew-cask",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:,.+)?$"
     }
   ],
   "packageRules": [
@@ -172,6 +205,18 @@
         "github-runners"
       ],
       "enabled": false
+    },
+    {
+      "matchDepNames": [
+        "/^claude-code-/"
+      ],
+      "groupName": "claude-code"
+    },
+    {
+      "matchDepNames": [
+        "/^codex-/"
+      ],
+      "groupName": "codex"
     }
   ],
   "timezone": "America/La_Paz"

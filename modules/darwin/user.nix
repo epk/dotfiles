@@ -1,7 +1,6 @@
 {
-  nix-index-database,
+  inputs,
   pkgs,
-  try,
   user,
   ...
 }:
@@ -18,7 +17,7 @@
 
   system.primaryUser = user.username;
 
-  home-manager = (import ../../lib/hm.nix { inherit nix-index-database try; }) // {
+  home-manager = (import ../../lib/hm.nix inputs) // {
     extraSpecialArgs = {
       inherit user;
     };

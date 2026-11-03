@@ -6,6 +6,7 @@
 }:
 let
   cfg = config.services.vpn;
+  network = config.networking.microvm.guests.vpn;
 in
 {
   imports = [ ./microvm-network.nix ];
@@ -47,7 +48,7 @@ in
         "--network-veth-extra=vpn-tap:eth0"
         "--bind=${cfg.storageDirectory}/wireguard:/var/lib/wg-ez:idmap"
       ];
-      specialArgs = { inherit inputs; };
+      specialArgs = { inherit inputs network; };
       config = import ./guests/vpn.nix;
     };
     systemd.services."container@vpn" = {
@@ -76,7 +77,7 @@ in
       requires = [ "container@vpn.service" ];
       after = [ "container@vpn.service" ];
       serviceConfig = {
-        ExecStart = "${config.systemd.package}/lib/systemd/systemd-socket-proxyd 10.78.0.2:8888";
+        ExecStart = "${config.systemd.package}/lib/systemd/systemd-socket-proxyd ${network.guestAddress}:8888";
         DynamicUser = true;
         PrivateTmp = true;
         ProtectSystem = "strict";

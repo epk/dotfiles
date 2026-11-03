@@ -1,26 +1,46 @@
-{ pkgs, inputs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  network,
+  ...
+}:
 let
+  inherit (import ../../../lib/network.nix) guestNameservers nonPublicV4;
   tunnelSubnet = "10.199.29.0/24";
-  wg-ez = pkgs.callPackage ../../../packages/wg-ez.nix { src = inputs.wg-ez; };
+  tunnelInterface = "wg_in";
+  tunnelPort = 51820;
+  # Nix owns the firewall and tunnel pool. The application owns keys, users and peers.
+  settings = pkgs.writeText "wg-ez-settings.sql" ''
+    PRAGMA foreign_keys = ON;
+    BEGIN;
+    UPDATE interfaces SET name = '${tunnelInterface}' WHERE name = 'wg0'
+      AND NOT EXISTS (SELECT 1 FROM interfaces WHERE name = '${tunnelInterface}');
+    UPDATE interfaces SET device = 'eth0', port = ${toString tunnelPort}, ipv4Cidr = '${tunnelSubnet}',
+      mtu = 1420, firewallEnabled = 0 WHERE name = '${tunnelInterface}';
+    UPDATE hooks SET preUp = ''', postUp = ''', preDown = ''', postDown = ''';
+    COMMIT;
+  '';
 in
 {
+  nixpkgs.overlays = [ inputs.self.overlays.default ];
   networking = {
     hostName = "vpn";
     interfaces.eth0.ipv4.addresses = [
       {
-        address = "10.78.0.2";
-        prefixLength = 30;
+        address = network.guestAddress;
+        inherit (network) prefixLength;
       }
     ];
     defaultGateway = {
-      address = "10.78.0.1";
+      address = network.hostAddress;
       interface = "eth0";
     };
     firewall = {
       checkReversePath = "loose";
-      interfaces.eth0.allowedUDPPorts = [ 51820 ];
+      interfaces.eth0.allowedUDPPorts = [ tunnelPort ];
       extraInputRules = ''
-        iifname "eth0" ip saddr 10.78.0.1 tcp dport { 22, 8888 } accept
+        iifname "eth0" ip saddr ${network.hostAddress} tcp dport { 22, 8888 } accept
       '';
     };
     nftables = {
@@ -31,18 +51,13 @@ in
           set non_public_v4 {
             type ipv4_addr
             flags interval
-            elements = {
-              0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8,
-              169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24,
-              192.168.0.0/16, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24,
-              224.0.0.0/4, 240.0.0.0/4
-            }
+            elements = { ${lib.concatStringsSep ", " nonPublicV4} }
           }
           chain forward {
             type filter hook forward priority -10; policy drop;
             ct state invalid drop
-            iifname "wg_in" oifname "eth0" ip saddr ${tunnelSubnet} ip daddr != @non_public_v4 accept
-            iifname "eth0" oifname "wg_in" ip daddr ${tunnelSubnet} ct state { established, related } accept
+            iifname "${tunnelInterface}" oifname "eth0" ip saddr ${tunnelSubnet} ip daddr != @non_public_v4 accept
+            iifname "eth0" oifname "${tunnelInterface}" ip daddr ${tunnelSubnet} ct state { established, related } accept
           }
         '';
       };
@@ -51,7 +66,7 @@ in
         content = ''
           chain postrouting {
             type nat hook postrouting priority srcnat; policy accept;
-            iifname "wg_in" oifname "eth0" ip saddr ${tunnelSubnet} masquerade
+            iifname "${tunnelInterface}" oifname "eth0" ip saddr ${tunnelSubnet} masquerade
           }
         '';
       };
@@ -61,10 +76,7 @@ in
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   networking.useDHCP = false;
   networking.enableIPv6 = false;
-  networking.nameservers = [
-    "1.1.1.1"
-    "9.9.9.9"
-  ];
+  networking.nameservers = guestNameservers;
   # wg-quick resolves interface names through /etc/wireguard.
   environment.etc.wireguard.source = "/var/lib/wg-ez";
   nix.enable = false;
@@ -127,25 +139,25 @@ in
       PORT = "8888";
       INSECURE = "true";
       IP_MODE = "ipv4";
-      WG_INTERFACE = "wg_in";
+      WG_INTERFACE = tunnelInterface;
       WG_CONF_DIR = "/var/lib/wg-ez";
       DB_PATH = "/var/lib/wg-ez/wg-ez.db";
       INIT_ENABLED = "true";
       INIT_USERNAME = "admin";
-      INIT_PORT = "51820";
-      INIT_DNS = "1.1.1.1,9.9.9.9";
+      INIT_PORT = toString tunnelPort;
+      INIT_DNS = lib.concatStringsSep "," guestNameservers;
       INIT_IPV4_CIDR = tunnelSubnet;
       INIT_ALLOWED_IPS = "0.0.0.0/0";
     };
-    # Nix owns the firewall and tunnel pool. The application owns keys, users and peers.
+    # The first CLI call creates the database. Then apply the declared settings.
     preStart = ''
-      ${wg-ez}/bin/wg-ez cli clients:list >/dev/null
-      ${pkgs.python3}/bin/python3 ${./wg-ez-settings.py}
+      ${pkgs.wg-ez}/bin/wg-ez cli clients:list >/dev/null
+      ${pkgs.sqlite}/bin/sqlite3 -bail "$DB_PATH" < ${settings}
     '';
     serviceConfig = {
       EnvironmentFile = "/var/lib/wg-ez/credentials.env";
-      ExecStart = "${wg-ez}/bin/wg-ez serve";
-      WorkingDirectory = "${wg-ez}/share/wg-ez";
+      ExecStart = "${pkgs.wg-ez}/bin/wg-ez serve";
+      WorkingDirectory = "${pkgs.wg-ez}/share/wg-ez";
       StateDirectory = "wg-ez";
       StateDirectoryMode = "0700";
       Restart = "on-failure";

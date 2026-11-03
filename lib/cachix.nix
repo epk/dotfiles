@@ -1,4 +1,4 @@
-{
+let
   # CI pushes to this cache. The server and the Macs download from it.
   epk = {
     url = "https://epk.cachix.org";
@@ -16,4 +16,13 @@
     url = "https://devenv.cachix.org";
     publicKey = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
   };
+in
+{
+  inherit epk community devenv;
+  # The Macs add these caches to their default substituters.
+  mac = [
+    epk
+    community
+    devenv
+  ];
 }

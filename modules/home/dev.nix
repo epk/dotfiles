@@ -16,11 +16,13 @@ in
   home.packages = with pkgs; [
     devenv
     gcloud
-    nodejs_26
-    python314
+    nodejs_latest
+    python315
     ruby_4_0
     rust-bin.stable.latest.default
   ];
+
+  programs.uv.enable = true;
 
   programs.pnpm = {
     enable = true;
@@ -30,8 +32,7 @@ in
 
   programs.go = {
     enable = true;
-    # nixpkgs' default go is the previous major. Track the current one.
-    package = pkgs.go_1_27;
+    package = pkgs.go_latest;
     env.GOPATH = home;
   };
 }

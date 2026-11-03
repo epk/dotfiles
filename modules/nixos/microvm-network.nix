@@ -19,6 +19,7 @@ let
   blockSize = guest: lib.foldl' (value: _: value * 2) 1 (lib.range guest.prefixLength 31);
   first = guest: builtins.div (number guest.hostAddress) (blockSize guest) * blockSize guest;
   last = guest: first guest + blockSize guest - 1;
+  inherit (import ../../lib/network.nix) nonPublicV4;
   private =
     address:
     let
@@ -122,7 +123,6 @@ in
       }
     ];
 
-    boot.kernel.sysctl."net.ipv4.conf.all.forwarding" = true;
     # networkd owns only the declared TAP devices. Preserve routes and rules from Tailscale and DHCP.
     systemd.network = {
       enable = true;
@@ -173,12 +173,7 @@ in
           set non_public_v4 {
             type ipv4_addr
             flags interval
-            elements = {
-              0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8,
-              169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24,
-              192.168.0.0/16, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24,
-              224.0.0.0/4, 240.0.0.0/4
-            }
+            elements = { ${lib.concatStringsSep ", " nonPublicV4} }
           }
           chain input {
             type filter hook input priority -10; policy accept;

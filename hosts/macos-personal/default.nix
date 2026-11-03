@@ -1,4 +1,4 @@
-{ determinate, ... }:
+{ inputs, pkgs, ... }:
 
 let
   caches = import ../../lib/cachix.nix;
@@ -7,7 +7,7 @@ in
   # The module owns /etc/nix/nix.custom.conf. The work Mac keeps the Shopify file there.
   imports = [
     ../../modules/darwin
-    determinate.darwinModules.default
+    inputs.determinate.darwinModules.default
   ];
 
   networking = {
@@ -17,14 +17,8 @@ in
   };
 
   determinateNix.customSettings = {
-    extra-substituters = [
-      caches.epk.url
-      caches.devenv.url
-    ];
-    extra-trusted-public-keys = [
-      caches.epk.publicKey
-      caches.devenv.publicKey
-    ];
+    extra-substituters = map (cache: cache.url) caches.mac;
+    extra-trusted-public-keys = map (cache: cache.publicKey) caches.mac;
   };
 
   launchd.daemons.determinate-nix-upgrade = {
@@ -42,18 +36,11 @@ in
     };
   };
 
-  homebrew = {
-    # Homebrew Bundle requires mas to install masApps.
-    # Homebrew supplies a newer uv version than the pinned nixpkgs input.
-    brews = [
-      "mas"
-      "uv"
-    ];
+  environment.systemPackages = [ pkgs.slack ];
 
-    casks = [
-      "slack"
-      "tailscale-app"
-    ];
+  homebrew = {
+    # The Network Extension requires the signed application in /Applications.
+    casks = [ "tailscale-app" ];
 
     masApps = {
       Infuse = 1136220934;
