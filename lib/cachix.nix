@@ -22,6 +22,7 @@ in
   # The Macs add these caches to their default substituters.
   mac = [
     epk
+    community
     devenv
   ];
 }
