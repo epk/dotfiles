@@ -165,7 +165,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^packages/(ghostty-bin|slack|tuple)/release\\.json$/"
+        "/^packages/(1password|1password-cli|ghostty-bin|slack|tuple)/release\\.json$/"
       ],
       "matchStrings": [
         "\"cask\": \"(?<packageName>[a-z0-9-]+)\",\\s+\"version\": \"(?<currentValue>[^\"]+)\",\\s+\"sha256\": \"(?<currentDigest>[0-9a-f]{64})\""
@@ -217,6 +217,13 @@
         "/^codex-/"
       ],
       "groupName": "codex"
+    },
+    {
+      "matchDepNames": [
+        "1password",
+        "1password-cli"
+      ],
+      "groupName": "1password"
     }
   ],
   "timezone": "America/La_Paz"

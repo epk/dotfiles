@@ -5,6 +5,8 @@ let
   cua = final.callPackage ./cua { };
 in
 {
+  _1password-cli = final.callPackage ./1password-cli { inherit (prev) _1password-cli; };
+  _1password-gui = final.callPackage ./1password { inherit (prev) _1password-gui; };
   antigravity-cli = final.callPackage ./antigravity-cli { inherit (prev) antigravity-cli; };
   bb-app = final.callPackage ./bb-app { };
   chrome-devtools-mcp = final.callPackage ./chrome-devtools-mcp { };
