@@ -17,9 +17,6 @@
   # Leave XDG variables unset. Use the standard dotfile paths in $HOME.
   xdg.enable = false;
 
-  # The CLI signs in through the 1Password desktop application.
-  home.packages = [ pkgs._1password-cli ];
-
   programs.git = {
     signing = {
       key = user.sshPublicKey;

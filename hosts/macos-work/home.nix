@@ -102,8 +102,8 @@ in
   # Shopify's nix.conf.d/shopify.conf makes this user trusted, so a user setting can add a cache.
   # The Shopify include owns /etc/nix/nix.custom.conf on this Mac.
   home.file.".config/nix/nix.conf".text = ''
-    extra-substituters = ${caches.epk.url} ${caches.devenv.url}
-    extra-trusted-public-keys = ${caches.epk.publicKey} ${caches.devenv.publicKey}
+    extra-substituters = ${toString (map (cache: cache.url) caches.mac)}
+    extra-trusted-public-keys = ${toString (map (cache: cache.publicKey) caches.mac)}
   '';
 
   programs.ssh.includes = [

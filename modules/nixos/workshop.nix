@@ -8,6 +8,7 @@
 let
   cfg = config.services.workshop;
   disks = cfg.storageDirectory;
+  state = "${config.microvm.stateDir}/workshop";
   vm = config.microvm.vms.workshop.config;
   guest = vm.config;
   # The same paths as the microvm.nix store disk: the guest system and its registration.
@@ -20,24 +21,112 @@ let
 in
 {
   imports = [
-    (import ./microvm-service.nix {
-      name = "workshop";
-      description = "the persistent coding and browser guest";
-      guest = ./guests/workshop.nix;
-      cpuQuota = "200%";
-      memoryMax = "5G";
-      tasksMax = 2048;
-    })
+    ./microvm-storage.nix
+    ./microvm-network.nix
   ];
-  options.services.workshop.tools = lib.mkOption {
-    type = lib.types.submodule {
-      options = import ../../lib/workshop-tools.nix { inherit lib; };
+  options.services.workshop = {
+    enable = lib.mkEnableOption "the persistent coding and browser guest";
+    storageDirectory = lib.mkOption {
+      type = lib.types.strMatching "/storage/(nvme|sata)/vms/workshop";
+      default = "/storage/nvme/vms/workshop";
+      description = "Directory for the persistent guest disks.";
     };
-    default = { };
-    description = "Guest tools and their services. Disabling a tool preserves its data.";
+    uplink = lib.mkOption {
+      type = lib.types.str;
+      default = "eno1";
+      description = "Host interface for public guest IPv4 traffic.";
+    };
+    administratorKeys = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Public SSH keys for the guest administrator.";
+    };
+    tools = lib.mkOption {
+      type = lib.types.submodule {
+        options =
+          lib.genAttrs
+            [
+              "browser"
+              "claudeCode"
+              "codex"
+              "gemini"
+              "antigravity"
+              "paseo"
+              "bb"
+              "cua"
+              "amp"
+              "pomerado"
+              "omp"
+            ]
+            (name: {
+              enable = lib.mkEnableOption "Workshop ${name}";
+            });
+      };
+      default = { };
+      description = "Guest tools and their services. Disabling a tool preserves its data.";
+    };
   };
   config = lib.mkIf cfg.enable {
-    microvm.vms.workshop.specialArgs.inputs = inputs;
+    microvm.vms.workshop = {
+      # The guest evaluates its own nixpkgs, so its unfree and problem settings apply.
+      pkgs = null;
+      specialArgs = {
+        inherit inputs;
+        workshop = cfg // {
+          network = config.networking.microvm.guests.workshop;
+        };
+      };
+      config = ./guests/workshop.nix;
+    };
+    # Systemd creates the mount points in the jail root as root. A RuntimeDirectory would belong to the VM user.
+    systemd.tmpfiles.settings."10-workshop-jail"."/run/workshop-jail".d = {
+      user = "root";
+      group = "root";
+      mode = "0755";
+    };
+    systemd.services."microvm@workshop".serviceConfig = {
+      CPUQuota = "200%";
+      CPUWeight = 50;
+      MemoryMax = "5G";
+      TasksMax = 2048;
+      UMask = "0077";
+      RootDirectory = "/run/workshop-jail";
+      BindReadOnlyPaths = [ "/nix/store" ];
+      BindPaths = [
+        state
+        disks
+        "/dev/kvm"
+        "/dev/net/tun"
+      ];
+      ReadWritePaths = [
+        state
+        disks
+      ];
+      PrivateDevices = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectControlGroups = true;
+      RestrictSUIDSGID = true;
+      LockPersonality = true;
+      NoNewPrivileges = true;
+      CapabilityBoundingSet = "";
+      RestrictAddressFamilies = [
+        "AF_UNIX"
+        "AF_INET"
+      ];
+      IPAddressDeny = "any";
+      DevicePolicy = "closed";
+      DeviceAllow = [
+        "/dev/kvm rw"
+        "/dev/net/tun rw"
+      ];
+      ExecStartPost = lib.mkForce [ "" ];
+      ExecStopPost = lib.mkForce [ "" ];
+    };
     # Firecracker cannot share the host store, so the guest boots from an image of its closure.
     # The host builds that image from its local store. Then a deployment carries no 3.6 GB image.
     systemd.services.workshop-store-disk = {

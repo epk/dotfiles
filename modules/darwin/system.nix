@@ -8,11 +8,17 @@
   nixpkgs.hostPlatform = "aarch64-darwin";
 
   # Permit only the required unfree packages.
-  # modules/home/packages.nix uses the 1Password CLI package.
+  # modules/darwin/packages.nix and the hosts install these packages.
   nixpkgs.config.allowUnfreePredicate =
     pkg:
     builtins.elem (lib.getName pkg) [
+      "1password"
       "1password-cli"
+      "appcleaner"
+      "claude-code"
+      "slack"
+      "tuple"
+      "vscode"
     ];
 
   # Determinate Nix controls the daemon and /etc/nix/nix.conf.

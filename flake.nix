@@ -64,10 +64,8 @@
       determinate,
       disko,
       microvm,
-      nix-index-database,
       nix-homebrew,
       rust-overlay,
-      try,
       ...
     }:
     let
@@ -79,32 +77,37 @@
         role:
         nix-darwin.lib.darwinSystem {
           specialArgs = {
-            inherit determinate nix-index-database try;
+            inherit inputs;
             user = import ./lib/user.nix // {
               inherit role;
             };
           };
           modules = [
             ./hosts/macos-${role}
-            { nixpkgs.overlays = [ rust-overlay.overlays.default ]; }
+            {
+              nixpkgs.overlays = [
+                rust-overlay.overlays.default
+                self.overlays.default
+              ];
+            }
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
           ];
         };
     in
     {
+      overlays.default = import ./packages/overlay.nix { inherit inputs; };
+
       # reload! selects macos-<role>. Build each name from its role so that the two cannot differ.
       darwinConfigurations = lib.genAttrs' [ "personal" "work" ] (
         role: lib.nameValuePair "macos-${role}" (mkDarwinConfiguration role)
       );
 
       nixosConfigurations.server = lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit nixpkgs inputs;
-        };
+        specialArgs = { inherit inputs; };
         modules = [
           ./hosts/server
+          { nixpkgs.overlays = [ self.overlays.default ]; }
           agenix.nixosModules.default
           determinate.nixosModules.default
           microvm.nixosModules.host
@@ -112,9 +115,23 @@
         ];
       };
 
-      packages = forAllSystems (pkgs: {
-        agenix = agenix.packages.${pkgs.stdenv.hostPlatform.system}.default;
-      });
+      packages = forAllSystems (
+        pkgs:
+        let
+          inherit (pkgs.stdenv) hostPlatform;
+          custom = import nixpkgs {
+            inherit (hostPlatform) system;
+            config.allowUnfree = true;
+            overlays = [ self.overlays.default ];
+          };
+          # The overlay attribute names do not depend on its arguments.
+          names = builtins.attrNames (self.overlays.default null null);
+        in
+        lib.filterAttrs (_: lib.meta.availableOn hostPlatform) (lib.getAttrs names custom)
+        // {
+          agenix = agenix.packages.${hostPlatform.system}.default;
+        }
+      );
 
       formatter = forAllSystems (
         pkgs:

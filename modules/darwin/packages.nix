@@ -1,6 +1,11 @@
-{ pkgs, user, ... }:
+{
+  lib,
+  pkgs,
+  user,
+  ...
+}:
 let
-  release = builtins.fromJSON (builtins.readFile ../../packages/homebrew-release.json);
+  release = lib.importJSON ../../packages/homebrew-release.json;
   source = builtins.fetchGit {
     url = "https://github.com/Homebrew/brew";
     ref = "refs/tags/${release.version}";
@@ -12,6 +17,20 @@ in
   fonts.packages = [
     pkgs.nerd-fonts.jetbrains-mono
   ];
+
+  # nix-darwin copies these applications to /Applications/Nix Apps. nixpkgs or Renovate supplies the updates.
+  environment.systemPackages = [
+    pkgs.appcleaner
+    pkgs.claude-code
+    pkgs.codex
+    pkgs.rectangle
+    pkgs.vscode
+  ];
+
+  # The module copies the application to /Applications/1Password.app, the path of op-ssh-sign.
+  # It also puts the CLI at /usr/local/bin/op, which the desktop integration requires.
+  programs._1password.enable = true;
+  programs._1password-gui.enable = true;
 
   nix-homebrew = {
     enable = true;
@@ -26,16 +45,8 @@ in
   homebrew = {
     enable = true;
 
-    casks = [
-      "1password"
-      "appcleaner"
-      # Homebrew casks supply newer agent CLI versions.
-      "claude-code@latest"
-      "codex"
-      "ghostty"
-      "rectangle"
-      "visual-studio-code"
-    ];
+    # Casks that update themselves are skipped by brew upgrade without greedy mode.
+    greedyCasks = true;
 
     onActivation = {
       # Homebrew auto-update causes mas 7 to report installed applications as absent.

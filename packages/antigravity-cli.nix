@@ -14,4 +14,7 @@ antigravity-cli.overrideAttrs (old: {
   src = fetchurl { inherit (manifest) url sha512; };
   nativeBuildInputs = old.nativeBuildInputs ++ [ makeWrapper ];
   postInstall = "wrapProgram $out/bin/agy --set AGY_CLI_DISABLE_AUTO_UPDATE 1";
+  meta = old.meta // {
+    platforms = [ "x86_64-linux" ];
+  };
 })

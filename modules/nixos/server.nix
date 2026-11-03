@@ -1,20 +1,11 @@
 {
   config,
+  inputs,
   pkgs,
-  nixpkgs,
   ...
 }:
 {
-  imports = [ ./nix.nix ];
-  nixpkgs.overlays = [ (import ../../packages/tailscale.nix) ];
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };
+  imports = [ ./base.nix ];
   services.tailscale = {
     enable = true;
     openFirewall = true;
@@ -26,7 +17,6 @@
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [ (import ../../lib/user.nix).sshPublicKey ];
   };
-  security.sudo.wheelNeedsPassword = false;
 
   environment.systemPackages = with pkgs; [
     gitMinimal
@@ -36,7 +26,7 @@
     curl
     netcat-openbsd
   ];
-  nix.registry.nixpkgs.flake = nixpkgs;
+  nix.registry.nixpkgs.flake = inputs.nixpkgs;
   nix.settings = {
     max-jobs = 1;
     cores = 2;
@@ -52,6 +42,4 @@
   hardware.ksm.enable = false;
   services.fstrim.enable = true;
   services.journald.settings.Journal.SystemMaxUse = "256M";
-  documentation.nixos.enable = false;
-  time.timeZone = "UTC";
 }

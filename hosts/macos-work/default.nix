@@ -1,4 +1,4 @@
-{ user, ... }:
+{ pkgs, user, ... }:
 
 {
   imports = [ ../../modules/darwin ];
@@ -9,7 +9,7 @@
     localHostName = "adityas-shopitop";
   };
 
-  homebrew.casks = [ "tuple" ];
+  environment.systemPackages = [ pkgs.tuple ];
 
   # The Shopify Determinate Nixd configuration disables its garbage collector.
   launchd.daemons.nix-gc = {

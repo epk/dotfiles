@@ -1,0 +1,10 @@
+{
+  "darwin-arm64": {
+    "version": "2.1.317",
+    "hash": "sha512-Xnf9K4aGBuoYaODmEZ0o/lRvuYUCv2ZIDP+AXv15WVITryGgrsSA7CFL7KH+43kC6WhK8i6oysF6EbGdgBW4Aw=="
+  },
+  "linux-x64": {
+    "version": "2.1.317",
+    "hash": "sha512-u19fYJ4llqi+dAGAj6P1BNu/CRSe0rv4O8Mv/5SQPU5oXCYmUssbJgrBI6rWbIFRAE3YcLCzKlwdHbzlSXBlSA=="
+  }
+}

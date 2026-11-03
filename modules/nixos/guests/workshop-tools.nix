@@ -1,16 +1,15 @@
+# Tools installed only inside Workshop.
 {
-  config,
   lib,
   pkgs,
+  workshop,
+  agentUnit,
+  agentPath,
   ...
 }:
 let
-  cfg = config.services.workshopTools;
-  bb = pkgs.callPackage ../../../packages/bb-app { };
-  pomerado = pkgs.callPackage ../../../packages/pomerado { };
-  cua = pkgs.callPackage ../../../packages/cua.nix { };
-  service = {
-    wantedBy = [ "multi-user.target" ];
+  cfg = workshop.tools;
+  service = lib.recursiveUpdate agentUnit {
     wants = [
       "network-online.target"
       "tailscaled.service"
@@ -20,44 +19,33 @@ let
       "tailscaled.service"
       "workshop-display.service"
     ];
-    environment = {
-      HOME = "/home/agent";
-      DISPLAY = ":0";
-      XDG_RUNTIME_DIR = "/run/user/1001";
-      DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/user/1001/bus";
-      PATH = lib.mkForce "/etc/profiles/per-user/agent/bin:/run/current-system/sw/bin";
-    };
+    environment.PATH = lib.mkForce agentPath;
     serviceConfig = {
-      User = "agent";
-      Group = "agent";
       WorkingDirectory = "/home/agent/workspace";
-      UMask = "0077";
-      Restart = "on-failure";
       RestartSec = 5;
       NoNewPrivileges = true;
     };
   };
+  # The services wait for the Tailscale address. Fail and restart if the guest has no Tailscale login.
+  waitForTailscale = ''
+    while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
+      sleep 2
+    done
+  '';
 in
 {
-  options.services.workshopTools = lib.mkOption {
-    type = lib.types.submodule {
-      options = import ../../../lib/workshop-tools.nix { inherit lib; };
-    };
-    default = { };
-    description = "Tools installed only inside Workshop.";
-  };
   config = lib.mkMerge [
     {
       environment.systemPackages =
         lib.optional cfg.paseo.enable pkgs.paseo
-        ++ lib.optional cfg.bb.enable bb
-        ++ lib.optional cfg.pomerado.enable pomerado
+        ++ lib.optional cfg.bb.enable pkgs.bb-app
+        ++ lib.optional cfg.pomerado.enable pkgs.pomerado
         ++ lib.optional cfg.amp.enable pkgs.amp-cli
         ++ lib.optional cfg.omp.enable pkgs.omp
         ++ lib.optionals cfg.cua.enable [
-          cua.cli
-          cua.driver
-          cua.spacesd
+          pkgs.cua-cli
+          pkgs.cua-driver
+          pkgs.cua-spacesd
         ];
       networking.firewall.interfaces.tailscale0.allowedTCPPorts =
         lib.optional cfg.paseo.enable 6767
@@ -88,13 +76,11 @@ in
             printf 'PASEO_PASSWORD=%s\n' "$password" > "$credentials.new"
             mv "$credentials.new" "$credentials"
           fi
-          while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
-            sleep 2
-          done
-          printf 'PASEO_HOSTNAMES=localhost,127.0.0.1,workshop%s\n' "''${ip:+,$ip}" > /run/workshop-paseo/access.env
+          ${waitForTailscale}
+          printf 'PASEO_HOSTNAMES=localhost,127.0.0.1,workshop,%s\n' "$ip" > /run/workshop-paseo/access.env
         '';
         serviceConfig = {
-          TimeoutStartSec = "infinity";
+          TimeoutStartSec = "5min";
           RuntimeDirectory = "workshop-paseo";
           RuntimeDirectoryMode = "0700";
           EnvironmentFile = [
@@ -113,27 +99,24 @@ in
           BB_DATA_DIR = "/home/agent/.bb";
         };
         preStart = ''
-          while ! ip=$(${pkgs.tailscale}/bin/tailscale ip -4 2>/dev/null) || [ -z "$ip" ]; do
-            sleep 2
-          done
-          printf 'BB_APP_URL=http://%s:38886\n' "''${ip:-127.0.0.1}" > /run/workshop-bb/access.env
+          ${waitForTailscale}
+          printf 'BB_APP_URL=http://%s:38886\n' "$ip" > /run/workshop-bb/access.env
         '';
         serviceConfig = {
-          TimeoutStartSec = "infinity";
+          TimeoutStartSec = "5min";
           RuntimeDirectory = "workshop-bb";
           RuntimeDirectoryMode = "0700";
           EnvironmentFile = "-/run/workshop-bb/access.env";
-          ExecStart = "${bb}/bin/bb-app --no-in-app-updates --server-bind-host 0.0.0.0";
+          ExecStart = "${pkgs.bb-app}/bin/bb-app --no-in-app-updates --server-bind-host 0.0.0.0";
         };
       };
     })
     (lib.mkIf cfg.cua.enable {
-      users.users.agent.linger = true;
       services.gnome.at-spi2-core.enable = true;
       systemd.services.workshop-cua-driver = lib.recursiveUpdate service {
         description = "Workshop Cua Driver";
         requires = [ "workshop-display.service" ];
-        serviceConfig.ExecStart = "${cua.driver}/bin/cua-driver serve";
+        serviceConfig.ExecStart = "${pkgs.cua-driver}/bin/cua-driver serve";
       };
       systemd.services.workshop-cua-desktop = lib.recursiveUpdate service {
         description = "Workshop Cua desktop endpoint";
@@ -146,7 +129,7 @@ in
             ${pkgs.openssl}/bin/openssl rand -hex 32 > "$directory/cua-token"
           fi
         '';
-        serviceConfig.ExecStart = "${cua.spacesd}/bin/cua-spacesd serve --listen 0.0.0.0:3211 --quic-port 0 --token-file /home/agent/.config/workshop/cua-token --data-dir /home/agent/.local/state/cua-spacesd";
+        serviceConfig.ExecStart = "${pkgs.cua-spacesd}/bin/cua-spacesd serve --listen 0.0.0.0:3211 --quic-port 0 --token-file /home/agent/.config/workshop/cua-token --data-dir /home/agent/.local/state/cua-spacesd";
       };
     })
   ];

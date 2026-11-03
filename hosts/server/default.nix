@@ -1,8 +1,4 @@
-{
-  pkgs,
-  config,
-  ...
-}:
+{ config, ... }:
 
 {
   imports = [
@@ -49,7 +45,4 @@
     configurationLimit = 5;
   };
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-  system.stateVersion = "26.11";
-
 }

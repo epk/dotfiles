@@ -6,7 +6,7 @@
   nodejs_26,
 }:
 let
-  release = builtins.fromJSON (builtins.readFile ./chrome-devtools-mcp-release.json);
+  release = lib.importJSON ./chrome-devtools-mcp-release.json;
 in
 stdenvNoCC.mkDerivation {
   pname = "chrome-devtools-mcp";
