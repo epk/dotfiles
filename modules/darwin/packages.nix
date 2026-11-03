@@ -19,10 +19,8 @@
     pkgs.vscode
   ];
 
-  # The module copies the application to /Applications/1Password.app, the path of op-ssh-sign.
-  # It also puts the CLI at /usr/local/bin/op, which the desktop integration requires.
+  # The desktop integration requires the CLI at /usr/local/bin/op.
   programs._1password.enable = true;
-  programs._1password-gui.enable = true;
 
   nix-homebrew = {
     enable = true;
@@ -33,6 +31,15 @@
   homebrew = {
     enable = true;
 
+    # 1Password must update itself. A newer app migrates the vault data, and an older read-only copy cannot open it.
+    # A beta build migrated the vault data, so only this cask opens it. The app updates itself on the stable channel.
+    # Without greedy, brew upgrade does not replace it with a newer beta.
+    casks = [
+      {
+        name = "1password@beta";
+        greedy = false;
+      }
+    ];
     # Casks that update themselves are skipped by brew upgrade without greedy mode.
     greedyCasks = true;
 
