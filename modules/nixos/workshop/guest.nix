@@ -143,6 +143,7 @@ in
         approval_policy = "never";
         sandbox_mode = "danger-full-access";
         cli_auth_credentials_store = "file";
+        check_for_update_on_startup = false;
         sandbox_workspace_write.network_access = true;
         # The nixpkgs build disabled this feature. See openai/codex issue 48195.
         features.daemon_auto_start = false;
@@ -282,8 +283,15 @@ in
     linger = true;
   };
   users.groups.agent.gid = 1001;
+  # Nix updates Gemini CLI, so turn off its own updater.
   environment.etc."gemini-cli/system-defaults.json" = lib.mkIf tools.gemini.enable {
-    source = mcpJson;
+    source = json.generate "gemini-defaults.json" {
+      inherit mcpServers;
+      general = {
+        enableAutoUpdate = false;
+        enableAutoUpdateNotification = false;
+      };
+    };
   };
   environment.etc."workshop/mcp.json".source = mcpJson;
   services.dbus.enable = true;

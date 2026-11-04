@@ -1,6 +1,7 @@
 # Home Manager settings for the Macs only: Git signing, Ghostty, SSH and reload!. modules/darwin/default.nix imports it.
 {
   config,
+  lib,
   pkgs,
   user,
   ...
@@ -27,6 +28,21 @@
 
     settings.user.name = user.name;
   };
+
+  # Nix updates VS Code. Its settings.json has comments, so insert the key as text instead of a JSON rewrite.
+  home.activation.vscodeUpdateMode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    settings="${config.home.homeDirectory}/Library/Application Support/Code/User/settings.json"
+    if [ ! -e "$settings" ]; then
+      run mkdir -p "$(dirname "$settings")"
+      run ${pkgs.bash}/bin/bash -c 'printf "{\n  \"update.mode\": \"none\"\n}\n" > "$1"' _ "$settings"
+    elif ! ${pkgs.gnugrep}/bin/grep -q '"update.mode": *"none"' "$settings"; then
+      if ${pkgs.gnugrep}/bin/grep -q '"update.mode"' "$settings"; then
+        run ${pkgs.gnused}/bin/sed -i -E 's/("update\.mode": *)"[^"]*"/\1"none"/' "$settings"
+      else
+        run ${pkgs.gnused}/bin/sed -i '0,/{/s//{\n  "update.mode": "none",/' "$settings"
+      fi
+    fi
+  '';
 
   programs.nh.flake = "${config.home.homeDirectory}/src/github.com/epk/dotfiles";
 

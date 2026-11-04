@@ -11,6 +11,11 @@
   };
 
   environment.systemPackages = [ pkgs.tuple ];
+  # Nix updates Tuple, so turn off its own Sparkle updater.
+  system.defaults.CustomUserPreferences."app.tuple.app" = {
+    SUEnableAutomaticChecks = false;
+    SUAutomaticallyUpdate = false;
+  };
 
   # The Shopify Determinate Nixd configuration disables its garbage collector.
   launchd.daemons.nix-gc = {
