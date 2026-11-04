@@ -38,6 +38,8 @@ in
   };
 
   environment.systemPackages = [ pkgs.slack ];
+  # Nix updates Slack. Slack documents this key to turn off its own updater.
+  system.defaults.CustomUserPreferences."com.tinyspeck.slackmacgap".SlackNoAutoUpdates = true;
 
   homebrew = {
     # The Network Extension requires the signed application in /Applications.

@@ -9,6 +9,10 @@ let
   # 1Password 8.12.44-25.BETA migrated the vault data on the work Mac, and an older app cannot open it.
   # Nix installs 1Password when Renovate pins a stable release at this version or newer.
   nixOnePassword = lib.versionAtLeast pkgs._1password-gui.version "8.12.44";
+  sparkleOff = {
+    SUEnableAutomaticChecks = false;
+    SUAutomaticallyUpdate = false;
+  };
 in
 {
   fonts.packages = [
@@ -23,6 +27,17 @@ in
     pkgs.rectangle
     pkgs.vscode
   ];
+
+  # Nix updates these applications, so turn off their own Sparkle updaters.
+  system.defaults.CustomUserPreferences = lib.genAttrs [
+    "com.knollsoft.Rectangle"
+    "net.freemacsoft.AppCleaner"
+  ] (_: sparkleOff);
+
+  # The system layer under ~/.codex/config.toml. Nix updates codex.
+  environment.etc."codex/config.toml".text = ''
+    check_for_update_on_startup = false
+  '';
 
   # The desktop integration requires the CLI at /usr/local/bin/op.
   programs._1password.enable = true;
