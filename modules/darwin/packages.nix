@@ -29,6 +29,31 @@ in
   # The module copies the application to /Applications/1Password.app, the path of op-ssh-sign.
   programs._1password-gui.enable = nixOnePassword;
 
+  # A running 1Password aborts when its bundle changes under it. The module copies the bundle at mkAfter.
+  # SIGTERM quits it cleanly. Its AppleScript quit needs an Automation permission.
+  system.activationScripts.applications.text = lib.mkIf nixOnePassword (
+    lib.mkMerge [
+      (lib.mkOrder 1400 ''
+        onePasswordRestart=
+        onePasswordVersion=$(/usr/bin/defaults read /Applications/1Password.app/Contents/Info.plist CFBundleShortVersionString 2>/dev/null || true)
+        if [ "$onePasswordVersion" != ${pkgs._1password-gui.version} ] && /usr/bin/pgrep -xq 1Password; then
+          echo "quitting 1Password for the update to ${pkgs._1password-gui.version}..." >&2
+          onePasswordRestart=1
+          /usr/bin/pkill -TERM -x 1Password || true
+          for _ in $(seq 1 50); do /usr/bin/pgrep -xq 1Password || break; sleep 0.2; done
+          if /usr/bin/pgrep -xq 1Password; then
+            echo "warning: 1Password did not quit. It can crash when its bundle changes." >&2
+          fi
+        fi
+      '')
+      (lib.mkOrder 1600 ''
+        if [ -n "$onePasswordRestart" ]; then
+          launchctl asuser "$(id -u -- ${user.username})" sudo --user=${user.username} -- /usr/bin/open -g -a /Applications/1Password.app || true
+        fi
+      '')
+    ]
+  );
+
   nix-homebrew = {
     enable = true;
     user = user.username;
