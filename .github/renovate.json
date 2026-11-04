@@ -224,6 +224,15 @@
         "1password-cli"
       ],
       "groupName": "1password"
+    },
+    {
+      "matchFileNames": [
+        "packages/bb-app/package.json"
+      ],
+      "matchUpdateTypes": [
+        "lockFileMaintenance"
+      ],
+      "enabled": false
     }
   ],
   "timezone": "America/La_Paz"
