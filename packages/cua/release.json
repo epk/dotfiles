@@ -4,8 +4,8 @@
     "sha256": "31ab9709dd91ce73677e49b9f3e75c6f0d3e4d9625c286c9e58262bfbea698dd"
   },
   "spacesd": {
-    "version": "0.10.1",
-    "sha256": "7873f6821682b77c9bab0c1ff402ff510b2db6d050e0dfeea54510474b1d7beb"
+    "version": "0.11.0",
+    "sha256": "9e32871866b9a8e1726cf2f2e79d6ce55273c7417c7feb36c76814247ed195df"
   },
   "cli": {
     "version": "0.10.1",
