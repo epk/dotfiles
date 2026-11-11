@@ -1,10 +1,10 @@
 {
   "darwin-arm64": {
-    "version": "0.167.0",
-    "hash": "sha512-7YtMDZX/jbWH9+fCVQg7BVsov8WvBzu4iuedXJEDlUdZxaTrYX2bEQwHIn3p0gxgSMfm30HGK9+bZm1aGSZaHw=="
+    "version": "0.167.1",
+    "hash": "sha512-IMUByWGPhdbJFZzuk18iIdF/mfd21cPwalRTp5vGYIsOCyv3SJGRY5snbzZd0zO37WGuNjfUvH/62LvQHqNT2A=="
   },
   "linux-x64": {
-    "version": "0.167.0",
-    "hash": "sha512-FNc7danfUng9Sp6w+Fh7kofNHHZpA6VMyNKWsWrS3OwHly69gywTWeiuwrUPXpJSho8Df4xqRsHfHRPzj7zYQg=="
+    "version": "0.167.1",
+    "hash": "sha512-qZteglyvMCj1QVymMyPyKdtw38HaXCv5gvw8WN+N0+JJstu3k/d8xiYj9ciL7OwFLhcujgP8bCGJgaREeqrHkw=="
   }
 }
