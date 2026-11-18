@@ -8,7 +8,7 @@
     "sha256": "91dc98a418ce6463c889f9dd1b98557274429d7689277697408673fb8e8ee129"
   },
   "cli": {
-    "version": "0.28.2",
-    "sha256": "000ec58c151a9d9eeac3f89f984962e8ef2c8dc96749418a4bdbec9574b282e9"
+    "version": "0.28.3",
+    "sha256": "830f8343d65a90ed802ca9ff3cab03573e9113601d9b3f9715833b34df9925df"
   }
 }
