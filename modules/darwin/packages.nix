@@ -63,7 +63,8 @@ in
       '')
       (lib.mkOrder 1600 ''
         if [ -n "$onePasswordRestart" ]; then
-          launchctl asuser "$(id -u -- ${user.username})" sudo --user=${user.username} -- /usr/bin/open -g -a /Applications/1Password.app || true
+          # Without --set-home, 1Password gets HOME=/var/root and asks to create a login keychain.
+          launchctl asuser "$(id -u -- ${user.username})" sudo --set-home --user=${user.username} -- /usr/bin/open -g -a /Applications/1Password.app || true
         fi
       '')
     ]
