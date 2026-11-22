@@ -1,7 +1,7 @@
 {
   "driver": {
-    "version": "0.57.0",
-    "sha256": "941fb984efd804516b850ba5734a33ee73a7c2132655c740d915d153e82a1949"
+    "version": "0.58.1",
+    "sha256": "c6270d240330aa12a3d643689daec160ddd9cfd4b8ad85963158b5f281db317b"
   },
   "spacesd": {
     "version": "0.17.4",
