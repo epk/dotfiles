@@ -62,8 +62,8 @@ in
       ];
       unitConfig.RequiresMountsFor = [ cfg.storageDirectory ];
       serviceConfig = {
-        CPUQuota = "100%";
-        CPUWeight = 50;
+        CPUQuota = "200%";
+        CPUWeight = 100;
         MemoryMax = "256M";
         TasksMax = 256;
       };
