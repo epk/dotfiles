@@ -43,4 +43,29 @@
   hardware.ksm.enable = false;
   services.fstrim.enable = true;
   services.journald.settings.Journal.SystemMaxUse = "256M";
+
+  # Enable BBR congestion control and larger socket buffers for gigabit links.
+  boot.kernelModules = [
+    "tcp_bbr"
+    "sch_fq"
+  ];
+  boot.kernel.sysctl = {
+    "net.core.default_qdisc" = "fq";
+    "net.ipv4.tcp_congestion_control" = "bbr";
+    "net.core.rmem_max" = 16777216;
+    "net.core.wmem_max" = 16777216;
+    "net.core.rmem_default" = 262144;
+    "net.core.wmem_default" = 262144;
+    "net.ipv4.tcp_rmem" = "4096 131072 16777216";
+    "net.ipv4.tcp_wmem" = "4096 131072 16777216";
+    "net.core.netdev_max_backlog" = 16384;
+    "net.ipv4.tcp_mtu_probing" = 1;
+    "net.ipv4.tcp_fastopen" = 3;
+    "net.ipv4.tcp_slow_start_after_idle" = 0;
+    "vm.swappiness" = 10;
+  };
+  # Spread single-queue NIC receive processing across all six CPU cores.
+  services.udev.extraRules = ''
+    ACTION=="add|change", SUBSYSTEM=="net", KERNEL=="eno1", ATTR{queues/rx-0/rps_cpus}="3f"
+  '';
 }

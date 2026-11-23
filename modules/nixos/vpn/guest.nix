@@ -57,6 +57,7 @@ in
           chain forward {
             type filter hook forward priority -10; policy drop;
             ct state invalid drop
+            tcp flags syn / syn,rst tcp option maxseg size set rt mtu
             iifname "${tunnelInterface}" oifname "eth0" ip saddr ${tunnelSubnet} ip daddr != @non_public_v4 accept
             iifname "eth0" oifname "${tunnelInterface}" ip daddr ${tunnelSubnet} ct state { established, related } accept
           }
