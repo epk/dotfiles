@@ -22,9 +22,9 @@ stdenvNoCC.mkDerivation {
   installPhase = ''
     runHook preInstall
     mkdir -p $out/libexec/chrome-devtools-mcp $out/bin
-    cp -r build package.json LICENSE $out/libexec/chrome-devtools-mcp/
+    cp -r out package.json LICENSE $out/libexec/chrome-devtools-mcp/
     makeWrapper ${nodejs_26}/bin/node $out/bin/chrome-devtools-mcp \
-      --add-flags "$out/libexec/chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js" \
+      --add-flags "$out/libexec/chrome-devtools-mcp/out/Default/gen/src/bin/chrome-devtools-mcp.js" \
       --set CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS 1
     runHook postInstall
   '';
