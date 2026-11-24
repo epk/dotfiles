@@ -12,6 +12,8 @@ in
   chrome-devtools-mcp = final.callPackage ./chrome-devtools-mcp { };
   claude-code = final.callPackage ./claude-code { inherit (prev) claude-code; };
   codex = final.callPackage ./codex { };
+  # The nixpkgs package supplies no system aws-lc, so it must build the bundled copy.
+  firecracker = prev.firecracker.overrideAttrs { dontCargoUseSystemLibs = true; };
   cua-cli = cua.cli;
   cua-driver = cua.driver;
   cua-spacesd = cua.spacesd;
