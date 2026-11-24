@@ -1,7 +1,9 @@
 # wg-ez, built from the wg-ez flake input. packages/overlay.nix adds it as pkgs.wg-ez.
 {
   lib,
+  pkg-config,
   rustPlatform,
+  sqlite,
   src,
 }:
 
@@ -10,6 +12,8 @@ rustPlatform.buildRustPackage {
   version = (lib.importTOML "${src}/Cargo.toml").package.version;
   inherit src;
   cargoLock.lockFile = "${src}/Cargo.lock";
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ sqlite ];
   doCheck = false;
   postInstall = ''
     mkdir -p $out/share/wg-ez
